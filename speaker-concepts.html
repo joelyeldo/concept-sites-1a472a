@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Speaker / Music Player Concepts — NPD Studio</title>
+<style>
+  :root {
+    --bg:#0e0e10; --card:#17171b; --card-2:#1c1c22; --line:#26262c;
+    --ink:#f4f3ef; --mut:#9a9aa2; --dim:#6c6c74;
+    --acc:#c0563b; --acc-soft:#e07a5f;
+    --lead:#5fa07a; --strong:#7c9dd9; --mid:#d9b75f; --weak:#c97c5a; --cut:#a04a4a;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; padding:48px 24px 80px; line-height:1.55; }
+  .wrap { max-width:1180px; margin:0 auto; }
+
+  /* Header */
+  .nav { font-size:13px; color:var(--mut); margin-bottom:24px; }
+  .nav a { color:var(--acc); text-decoration:none; }
+  .nav a:hover { text-decoration:underline; }
+  .kick { font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--acc); font-weight:600; }
+  h1 { font-size:38px; font-weight:600; margin:8px 0 14px; letter-spacing:-.01em; line-height:1.15; }
+  .lede { color:var(--mut); font-size:17px; max-width:780px; margin-bottom:8px; }
+  .meta-line { color:var(--dim); font-size:13px; margin-bottom:40px; }
+  .meta-line .sep { margin:0 8px; color:var(--dim); }
+
+  /* Section headings */
+  h2 { font-size:22px; font-weight:600; margin:56px 0 18px; letter-spacing:-.005em; }
+  h2 .num { color:var(--dim); margin-right:10px; font-weight:400; }
+  h3 { font-size:16px; font-weight:600; margin:20px 0 8px; color:var(--ink); }
+
+  /* Intro paragraphs */
+  p { color:var(--ink); margin-bottom:14px; font-size:15.5px; }
+  p.muted { color:var(--mut); }
+  ul { margin:8px 0 16px 22px; }
+  ul li { margin-bottom:6px; color:var(--ink); font-size:15px; }
+  strong { font-weight:600; color:var(--ink); }
+  em { font-style:italic; color:var(--ink); }
+
+  /* Key takeaway cards */
+  .takeaways { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin:24px 0 8px; }
+  .takeaway { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; }
+  .takeaway .label { font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--acc); font-weight:600; margin-bottom:8px; }
+  .takeaway .text { font-size:14px; line-height:1.5; color:var(--ink); }
+
+  /* Comps panel */
+  .comps { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:24px; margin:20px 0; }
+  .comps h3 { margin-top:0; }
+  .comp-row { padding:12px 0; border-bottom:1px solid var(--line); font-size:14.5px; }
+  .comp-row:last-child { border-bottom:none; }
+  .comp-name { font-weight:600; color:var(--ink); }
+  .comp-data { color:var(--acc-soft); font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:13px; }
+  .comp-desc { color:var(--mut); font-size:13.5px; margin-top:3px; }
+
+  /* Summary table */
+  .table-wrap { background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:8px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead th { background:var(--card-2); color:var(--mut); text-align:left; padding:14px 16px; font-weight:600; font-size:12px; letter-spacing:.04em; text-transform:uppercase; border-bottom:1px solid var(--line); }
+  tbody td { padding:14px 16px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tbody tr:last-child td { border-bottom:none; }
+  tbody tr:hover { background:var(--card-2); }
+  td.rank { color:var(--dim); font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:600; width:50px; }
+  td.concept { font-weight:600; color:var(--ink); min-width:170px; }
+  td.metric { font-family:"SF Mono",ui-monospace,Menlo,monospace; color:var(--acc-soft); font-size:13px; white-space:nowrap; }
+  td.status { font-size:12px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap; }
+  .status-lead { color:var(--lead); }
+  .status-strong { color:var(--strong); }
+  .status-mid { color:var(--mid); }
+  .status-weak { color:var(--weak); }
+  .status-cut { color:var(--cut); }
+  .hook { color:var(--mut); font-size:13.5px; }
+
+  /* Per-concept card */
+  .concept-cards { display:flex; flex-direction:column; gap:16px; }
+  .concept-card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:24px; }
+  .concept-card .head { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:10px; margin-bottom:8px; }
+  .concept-card .head .left { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+  .concept-card .rk { color:var(--dim); font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:14px; font-weight:600; }
+  .concept-card .nm { font-size:20px; font-weight:600; color:var(--ink); }
+  .concept-card .head .right { font-size:12px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+  .concept-card .one-liner { color:var(--mut); font-size:15px; margin-bottom:18px; max-width:820px; font-style:italic; }
+  .concept-card .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-bottom:18px; }
+  .field .lbl { font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin-bottom:4px; font-weight:600; }
+  .field .val { font-size:14px; color:var(--ink); line-height:1.5; }
+  .field .val.mono { font-family:"SF Mono",ui-monospace,Menlo,monospace; color:var(--acc-soft); }
+  .concept-card .longfield { margin-top:14px; }
+  .concept-card .longfield .lbl { font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin-bottom:6px; font-weight:600; }
+  .concept-card .longfield .val { font-size:14px; color:var(--ink); line-height:1.55; }
+
+  /* Pull quote / strategic flag */
+  .pullquote { background:linear-gradient(180deg,#1c1410,#17171b); border:1px solid var(--acc); border-left:3px solid var(--acc); border-radius:10px; padding:20px 22px; margin:24px 0; }
+  .pullquote .label { font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--acc); font-weight:600; margin-bottom:8px; }
+  .pullquote .text { font-size:15.5px; color:var(--ink); line-height:1.6; }
+
+  /* Methodology */
+  .method { background:var(--card); border:1px dashed var(--line); border-radius:10px; padding:18px; font-size:13.5px; color:var(--mut); margin:18px 0; }
+  .method strong { color:var(--ink); }
+
+  /* Footer */
+  footer { color:var(--mut); font-size:12.5px; margin-top:64px; line-height:1.7; padding-top:24px; border-top:1px solid var(--line); }
+  footer a { color:var(--acc); text-decoration:none; }
+  footer a:hover { text-decoration:underline; }
+
+  @media (max-width:760px) {
+    body { padding:32px 16px 64px; }
+    h1 { font-size:28px; }
+    h2 { font-size:19px; }
+    .table-wrap { overflow-x:auto; }
+    .concept-card .grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav"><a href="./index.html">← Concept Sites</a></div>
+
+  <div class="kick">New Product Development Studio</div>
+  <h1>Speaker / Music Player Concepts</h1>
+  <div class="lede">Eleven candidates evaluated against the $250k Kickstarter threshold. Ranked, comp-anchored, and pressure-tested across audio category data through June 2026.</div>
+  <div class="meta-line">v2 · grounded · live ranking <span class="sep">·</span> internal pre-launch reference <span class="sep">·</span> not for distribution</div>
+
+  <!-- KEY TAKEAWAYS -->
+  <h2><span class="num">01</span>What the data says</h2>
+  <p class="muted">A research pass across the Kickstarter audio category forced four corrections to our prior judgment-based estimates. These are now empirically grounded.</p>
+
+  <div class="takeaways">
+    <div class="takeaway">
+      <div class="label">Display-as-hook is the proven pattern</div>
+      <div class="text">Two direct comps prove visual-spectacle speakers clear $250k decisively: <strong>Haloasis A1</strong> ($345k / 518 backers at $599 EB) and <strong>MorningBlues SonicGlass A1</strong> (live, multi-million trajectory). Lead with a visual hook, not audio specs.</div>
+    </div>
+    <div class="takeaway">
+      <div class="label">Wall-mounted is NOT dead</div>
+      <div class="text"><strong>Trettitre</strong> cleared <strong>$1,003,881 from 2,490 backers</strong> in April 2026 with a wall-mounted modular retro hi-fi system. Yanko Design is actively covering the decor-speaker trend. Wall-mount category is empirically alive — magnetic-mount path solves renter resistance.</div>
+    </div>
+    <div class="takeaway">
+      <div class="label">MorningBlues is in our lane right now</div>
+      <div class="text">SonicGlass A1 (the new MorningBlues product) is currently raising multi-millions in the exact transparent + display-speaker lane the studio was working in. Refined Cube is structurally contested. Light Box must differentiate visually (diorama scene ≠ floating lyric text).</div>
+    </div>
+    <div class="takeaway">
+      <div class="label">Hardware-wrapper-for-software fails</div>
+      <div class="text"><strong>Humane AI Pin</strong>: 90% sales miss, $850M→$116M valuation (86% loss), all bricked Feb 2025. <strong>Rabbit R1</strong>: 100k sold but only ~5k daily users. Concepts whose value is "software via dedicated hardware" carry empirical failure risk.</div>
+    </div>
+  </div>
+
+  <!-- COMPS -->
+  <h2><span class="num">02</span>Comp landscape</h2>
+
+  <h3 style="margin-top:14px">Proven $250k+ comps</h3>
+  <div class="comps">
+    <div class="comp-row">
+      <div><span class="comp-name">MorningBlues SonicGlass A1</span> <span class="comp-data">· live (June 2026) · multi-million trajectory · transparent glass + floating lyrics + AI music videos</span></div>
+      <div class="comp-desc">Display-as-hook. Active competitor in vinyl-soul / transparent / display-speaker lane.</div>
+    </div>
+    <div class="comp-row">
+      <div><span class="comp-name">Haloasis A1 Holographic Lyric Speaker</span> <span class="comp-data">· $345k / 518 backers · $599 EB / ~$1k retail · Apr–May 2024 · 3,460% funded</span></div>
+      <div class="comp-desc">Mini-LED transparent display + 3-driver audio + karaoke. Direct lineage for Light Box concept.</div>
+    </div>
+    <div class="comp-row">
+      <div><span class="comp-name">Trettitre Retro Back to the Future</span> <span class="comp-data">· $1,003,881 / 2,490 backers · $399 EB bundle / $899 retail · April 2026</span></div>
+      <div class="comp-desc">Modular wall-mounted retro audio (turntable + CD + cassette). Validates wall-mounted / modular / retro lane — though it's a media-player system, not pure speaker.</div>
+    </div>
+  </div>
+
+  <h3>Cautionary comps</h3>
+  <div class="comps">
+    <div class="comp-row">
+      <div><span class="comp-name">Transparent (brand) — Flic Button speaker</span> <span class="comp-data">· $143,810 / 533 backers · 57% of $250k threshold</span></div>
+      <div class="comp-desc">Brand pedigree + smart-speaker hook alone does not clear $250k without a fresh visual/narrative hook. Empirical ceiling for transparent-without-spectacle.</div>
+    </div>
+    <div class="comp-row">
+      <div><span class="comp-name">Humane AI Pin</span> <span class="comp-data">· 90% sales miss · $850M → $116M valuation (86% loss) · all bricked Feb 28, 2025</span></div>
+      <div class="comp-desc">Hardware-wrapper-for-software failure pattern. Returns exceeded purchases May–Aug 2024.</div>
+    </div>
+    <div class="comp-row">
+      <div><span class="comp-name">Rabbit R1</span> <span class="comp-data">· 100k units sold · ~5k daily users · 11-second response latencies</span></div>
+      <div class="comp-desc">Same failure pattern. Lesson: augment the phone, don't try to replace it.</div>
+    </div>
+  </div>
+
+  <!-- METHODOLOGY -->
+  <div class="method">
+    <strong>Methodology.</strong> KS Success % is structured judgment across five factors (singular hook strength, form uniqueness, community size × spend, execution feasibility, competitive defensibility) — directionally trustworthy, not a statistical forecast. Raise ranges and backer counts are computed from pricing × success probability. Comps verified across 3–8 independent sources per claim via deep-research adversarial verification pass. Where data is unavailable (untested KS sub-categories), the row is flagged explicitly.
+  </div>
+
+  <!-- RANKED TABLE -->
+  <h2><span class="num">03</span>Ranked summary</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Concept</th>
+          <th>Status</th>
+          <th>Success %</th>
+          <th>Approx Raise</th>
+          <th>Key Hook</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="rank">01</td><td class="concept">Light Box / Diorama</td><td class="status status-lead">Lead Candidate</td><td class="metric">~65%</td><td class="metric">$300k–$700k</td><td class="hook">Per-song stage / silhouette behind frosted glass. Direct comps: Haloasis A1, SonicGlass A1.</td></tr>
+        <tr><td class="rank">02</td><td class="concept">Flow Tubular</td><td class="status status-strong">Strong</td><td class="metric">~50%</td><td class="metric">$200k–$500k</td><td class="hook">Mondrian wall-art speaker + detachable tactile remote. Wall-mount alive (Trettitre $1M).</td></tr>
+        <tr><td class="rank">03</td><td class="concept">World Radio</td><td class="status status-strong">Strong</td><td class="metric">~50%</td><td class="metric">$200k–$400k</td><td class="hook">Tune to a country, hear music born there. Untested KS category but strong form+hook.</td></tr>
+        <tr><td class="rank">04</td><td class="concept">Donut Box / RoniDoni</td><td class="status status-strong">Strong</td><td class="metric">~40%</td><td class="metric">$150k–$300k</td><td class="hook">Unbox-as-campaign + modular party speakers. Highest pure scroll-stop in field.</td></tr>
+        <tr><td class="rank">05</td><td class="concept">Concrete Cube</td><td class="status status-strong">Strong</td><td class="metric">~32%</td><td class="metric">$100k–$300k</td><td class="hook">Brutalist + warm-orange + cassette buttons + detachable puck. Sidesteps MorningBlues.</td></tr>
+        <tr><td class="rank">06</td><td class="concept">Counter / Music Wrapped Object</td><td class="status status-mid">Mid</td><td class="metric">~30%</td><td class="metric">$120k–$300k</td><td class="hook">"Music your home heard" — physical Wrapped journal. Zero Spotify API dependency.</td></tr>
+        <tr><td class="rank">07</td><td class="concept">Refined Cube</td><td class="status status-mid">Mid</td><td class="metric">~25%</td><td class="metric">$80k–$200k</td><td class="hook">Transparent glass + vinyl-disc display. Directly contested by MorningBlues right now.</td></tr>
+        <tr><td class="rank">08</td><td class="concept">Origami Fold</td><td class="status status-weak">Weak</td><td class="metric">~20%</td><td class="metric">$40k–$120k</td><td class="hook">Pleated fabric on bamboo, modular pairing. Saturated category (B&O owns it).</td></tr>
+        <tr><td class="rank">09</td><td class="concept">Voronoi Customizable</td><td class="status status-weak">Weak</td><td class="metric">~20%</td><td class="metric">$40k–$120k</td><td class="hook">3D-printed mesh grille, customizable. Reads prototype-tier; customization too shallow alone.</td></tr>
+        <tr><td class="rank">10</td><td class="concept">Compass Speaker</td><td class="status status-weak">Weak</td><td class="metric">~15%</td><td class="metric">$40k–$120k</td><td class="hook">Physical music-discovery puck. Humane/Rabbit failure pattern matches shape.</td></tr>
+        <tr><td class="rank">11</td><td class="concept">Flow Flat Block</td><td class="status status-cut">Cut</td><td class="metric">~10%</td><td class="metric">$20k–$60k</td><td class="hook">Mondrian flat block. Decorated not designed — recommended cut.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- STRATEGIC FLAG -->
+  <div class="pullquote">
+    <div class="label">Strategic Flag</div>
+    <div class="text"><strong>MorningBlues isn't a reference anymore — they're an active competitor.</strong> SonicGlass A1 is currently raising multi-millions on Kickstarter in the exact transparent + vinyl-soul + display-speaker lane the studio has been working in. Any concept that enters this aesthetic territory must clearly differentiate within the first 3 seconds. The Light Box's frosted-glass diorama (silhouette/scene performance) is distinct from SonicGlass's transparent floating-lyric text — but the lanes are adjacent and the differentiator must be sharp.</div>
+  </div>
+
+  <!-- PER-CONCEPT CARDS -->
+  <h2><span class="num">04</span>Concepts in detail</h2>
+
+  <div class="concept-cards">
+
+    <!-- 01 LIGHT BOX -->
+    <div class="concept-card">
+      <div class="head">
+        <div class="left"><span class="rk">01</span><span class="nm">Light Box / Diorama</span></div>
+        <div class="right status-lead">Lead Candidate · ~65%</div>
+      </div>
+      <div class="one-liner">A speaker becomes a tiny stage where every song's performance plays out behind frosted glass.</div>
+
+      <div class="grid">
+        <div class="field"><div class="lbl">Audience</div><div class="val">Narrative-music listeners (singer-songwriter, indie folk, soul, jazz vocal); vinyl romantics overlap.</div></div>
+        <div class="field"><div class="lbl">Form Language</div><div class="val">Glowing-window / theatrical proscenium. Current box housing is generic and needs form work.</div></div>
+        <div class="field"><div class="lbl">Scroll-Stop</div><div class="val mono">5/5</div></div>
+        <div class="field"><div class="lbl">Pricing (EB / Retail)</div><div class="val mono">$599 / $999</div></div>
+        <div class="field"><div class="lbl">Backers to $250k</div><div class="val mono">~420</div></div>
+        <div class="field"><div class="lbl">Approx Raise</div><div class="val mono">$300k–$700k</div></div>
+      </div>
+
+      <div class="longfield"><div class="lbl">Wins / Novelty</div><div class="val">Strongest singular hook in field. Narrative-perfect for studio method (method IS narrative). Comprehensible in 3 seconds. Photogenic in stillshot. Lower exec risk than painting feature (no single-point-of-failure artist hire).</div></div>
+      <div class="longfield"><div class="lbl">Direct Comp / Data Anchor</div><div class="val">Haloasis A1: $345k / 518 backers at $599 EB / ~$1k retail (Apr–May 2024, 3,460% funded). MorningBlues SonicGlass A1: live (June 2026), raising into the multi-millions. Both validate display-as-hook as the &gt;$250k pattern.</div></div>
+      <div class="longfield"><div class="lbl">Challenges</div><div class="val">Current housing is generic — needs form work. MorningBlues is direct competitor — must differentiate visually. Content variety problem after week 2. Artist likeness = rights minefield (use archetypes). Scene asset production cost.</div></div>
+    </div>
+
+    <!-- 02 FLOW TUBULAR -->
+    <div class="concept-card">
+      <div class="head">
+        <div class="left"><span class="rk">02</span><span class="nm">Flow Tubular</span></div>
+        <div class="right status-strong">Strong · ~50%</div>
+      </div>
+      <div class="one-liner">A Mondrian-CMF tubular wall-art speaker with a spinning vinyl display and a detachable tactile remote.</div>
+
+      <div class="grid">
+        <div class="field"><div class="lbl">Audience</div><div class="val">Interior design / Memphis-Mondrian aesthetes; Kinfolk-Monocle tribe; wall-art collectors.</div></div>
+        <div class="field"><div class="lbl">Form Language</div><div class="val">Postmodern Memphis / Mondrian-meets-PVC / sculptural wall art.</div></div>
+        <div class="field"><div class="lbl">Scroll-Stop</div><div class="val mono">4/5</div></div>
+        <div class="field"><div class="lbl">Pricing (EB / Retail)</div><div class="val mono">$399 / $799</div></div>
+        <div class="field"><div class="lbl">Backers to $250k</div><div class="val mono">~625</div></div>
+        <div class="field"><div class="lbl">Approx Raise</div><div class="val mono">$200k–$500k</div></div>
+      </div>
+
+      <div class="longfield"><div class="lbl">Wins / Novelty</div><div class="val">Most unprecedented form in the field. Wall-mounted category now empirically alive. Detachable tactile remote is real UX innovation — "live with music, not through your phone."</div></div>
+      <div class="longfield"><div class="lbl">Direct Comp / Data Anchor</div><div class="val">Trettitre: $1,003,881 / 2,490 backers (April 2026, wall-mounted modular retro audio). Monar Canvas Speaker: $799 KS / $1,299 retail. Yanko Design covering decor-speaker trend.</div></div>
+      <div class="longfield"><div class="lbl">Challenges</div><div class="val">Mondrian aesthetic polarizes hard (hero or flop). Renters won't drill (magnetic-mount path exists, per Trettitre). ICR on curved/tubular forms is high. Pairing two units complex.</div></div>
+    </div>
+
+    <!-- 03 WORLD RADIO -->
+    <div class="concept-card">
+      <div class="head">
+        <div class="left"><span class="rk">03</span><span class="nm">World Radio</span></div>
+        <div class="right status-strong">Strong · ~50%</div>
+      </div>
+      <div class="one-liner">Vintage radio with an embossed world-map grille — tune to any country, hear music born there.</div>
+
+      <div class="grid">
+        <div class="field"><div class="lbl">Audience</div><div class="val">Cultural omnivores; design-led travelers; third-culture kids; Monocle/Kinfolk tribe.</div></div>
+        <div class="field"><div class="lbl">Form Language</div><div class="val">Vintage tabletop radio / sculpted-relief / nostalgic-modern. Telescoping antenna as ritual prop.</div></div>
+        <div class="field"><div class="lbl">Scroll-Stop</div><div class="val mono">5/5</div></div>
+        <div class="field"><div class="lbl">Pricing (EB / Retail)</div><div class="val mono">$299 / $499</div></div>
+        <div class="field"><div class="lbl">Backers to $250k</div><div class="val mono">~835</div></div>
+        <div class="field"><div class="lbl">Approx Raise</div><div class="val mono">$200k–$400k</div></div>
+      </div>
+
+      <div class="longfield"><div class="lbl">Wins / Novelty</div><div class="val">Strong form+hook integration. Universally shareable narrative. Vintage-radio language differentiates from the design-speaker pack. Fills a clear category gap (hardware embodiment of geographic music curation).</div></div>
+      <div class="longfield"><div class="lbl">Direct Comp / Data Anchor</div><div class="val">No direct comp for "tap a location → hear music from there" HARDWARE — untested KS category. Analog: Putumayo World Music (30+ year sustained business in curated-music-by-region). Spotify "Sounds Of" playlists prove digital behavior. Every Noise at Once has data infrastructure.</div></div>
+      <div class="longfield"><div class="lbl">Challenges</div><div class="val">Curation editorial-intensive (need cultural-music experts per region). Spotify Connect / Apple Music licensing dance. Static embossed map gets old (consider lit/interactive). Positioning vs free "Sounds Of" playlists.</div></div>
+    </div>
+
+    <!-- 04 DONUT BOX -->
+    <div class="concept-card">
+      <div class="head">
+        <div class="left"><span class="rk">04</span><span class="nm">Donut Box / RoniDoni</span></div>
+        <div class="right status-strong">Strong · ~40%</div>
+      </div>
+      <div class="one-liner">Modular party speakers shaped like donuts in a pink donut box — together one system, apart zone speakers.</div>
+
+      <div class="grid">
+        <div class="field"><div class="lbl">Audience</div><div class="val">Party hosts; multi-room renters; young apartment dwellers; gift culture.</div></div>
+        <div class="field"><div class="lbl">Form Language</div><div class="val">Kitsch / pop-art / unbox-moment.</div></div>
+        <div class="field"><div class="lbl">Scroll-Stop</div><div class="val mono">5/5</div></div>
+        <div class="field"><div class="lbl">Pricing (EB / Retail)</div><div class="val mono">$249 / $499</div></div>
+        <div class="field"><div class="lbl">Backers to $250k</div><div class="val mono">~1,005</div></div>
+        <div class="field"><div class="lbl">Approx Raise</div><div class="val mono">$150k–$300k</div></div>
+      </div>
+
+      <div class="longfield"><div class="lbl">Wins / Novelty</div><div class="val">Unboxing IS the campaign in one shot. Product + packaging integrated. Scroll-stop visual unmatched in field. Reels/TikTok-gold.</div></div>
+      <div class="longfield"><div class="lbl">Direct Comp / Data Anchor</div><div class="val">Modular hook validated by Trettitre $1M. No direct party-speaker / multi-room $250k+ KS comp surfaced. BT party-speaker KS campaigns typically $30–80k.</div></div>
+      <div class="longfield"><div class="lbl">Challenges</div><div class="val">6 small donuts ≠ one good speaker (audio physics). Sonos owns multi-room category. BOM cost of 6 speakers + box + Qi dock. Pulls audience hard left from Rondo (party hosts ≠ vinyl romantics).</div></div>
+    </div>
+
+    <!-- 05 CONCRETE CUBE -->
+    <div class="concept-card">
+      <div class="head">
+        <div class="left"><span class="rk">05</span><span class="nm">Concrete Cube</span></div>
+        <div class="right status-strong">Strong · ~32%</div>
+      </div>
+      <div class="one-liner">Brutalist concrete music object with vinyl disc screen, cassette quick-buttons, and a detachable control puck from the top-left corner.</div>
+
+      <div class="grid">
+        <div class="field"><div class="lbl">Audience</div><div class="val">Vinyl romantics + design-object collectors (TE / OB-4 / Vitra lineage); thoughtful-gift givers.</div></div>
+        <div class="field"><div class="lbl">Form Language</div><div class="val">Brutalist concrete cube on warm-orange tubular stand. Vinyl disc display, cassette buttons, removable puck.</div></div>
+        <div class="field"><div class="lbl">Scroll-Stop</div><div class="val mono">3.5/5</div></div>
+        <div class="field"><div class="lbl">Pricing (EB / Retail)</div><div class="val mono">$499 / $899</div></div>
+        <div class="field"><div class="lbl">Backers to $250k</div><div class="val mono">~501</div></div>
+        <div class="field"><div class="lbl">Approx Raise</div><div class="val mono">$100k–$300k</div></div>
+      </div>
+
+      <div class="longfield"><div class="lbl">Wins / Novelty</div><div class="val">Detachable puck = no-phone-needed UX. Cassette quick-buttons. Mashup aesthetic (brutalist + retro + warm). NOT contested by MorningBlues' transparent lane.</div></div>
+      <div class="longfield"><div class="lbl">Direct Comp / Data Anchor</div><div class="val">No direct $250k+ KS comp in concrete-aesthetic audio. Nearest aesthetic relatives: Teenage Engineering OB-4 ($699 retail, design-collector lane, sells direct not KS), Trettitre $1M (modular retro lineage).</div></div>
+      <div class="longfield"><div class="lbl">Challenges</div><div class="val">Concrete fulfillment nightmare (4–6kg, breakage; composite reads as plastic in close-ups). Aesthetic reads as TE/OB-4/Vitra lineage, not invention. Puck UX isn't visible across the room. S18 pretested at 30–40% scroll-stop. <strong>Worth considering: stack with Diorama hook to compound singular form + singular content.</strong></div></div>
+    </div>
+
+    <!-- 06 COUNTER -->
+    <div class="concept-card">
+      <div class="head">
+        <div class="left"><span class="rk">06</span><span class="nm">Counter / Music Wrapped Object</span></div>
+        <div class="right status-mid">Mid · ~30%</div>
+      </div>
+      <div class="one-liner">Physical music-stats journal — your home's listening, narrated and tactile, every day.</div>
+
+      <div class="grid">
+        <div class="field"><div class="lbl">Audience</div><div class="val">Spotify Wrapped-share culture; quantified-self music fans; design-object collectors; gift-giving for music lovers.</div></div>
+        <div class="field"><div class="lbl">Form Language</div><div class="val">Counter-clock / split-flap / Nixie-tube / Vestaboard-adjacent.</div></div>
+        <div class="field"><div class="lbl">Scroll-Stop</div><div class="val mono">4/5</div></div>
+        <div class="field"><div class="lbl">Pricing (EB / Retail)</div><div class="val mono">$349 / $599</div></div>
+        <div class="field"><div class="lbl">Backers to $250k</div><div class="val mono">~715</div></div>
+        <div class="field"><div class="lbl">Approx Raise</div><div class="val mono">$120k–$300k</div></div>
+      </div>
+
+      <div class="longfield"><div class="lbl">Wins / Novelty</div><div class="val">"Music your home heard" reframe is defensible — Spotify can't compete on local-room capture. Narrative stats are editorial product, not metric. AVRCP path = zero Spotify API dependency. Year-round ambient Wrapped moment.</div></div>
+      <div class="longfield"><div class="lbl">Direct Comp / Data Anchor</div><div class="val">No direct $250k+ KS comp surfaced. Vestaboard ($2k+ split-flap, premium-niche success at retail) is closest aesthetic comp. Hardware-wrapper failure pattern empirically confirmed via Humane / Rabbit.</div></div>
+      <div class="longfield"><div class="lbl">Challenges</div><div class="val">Mechanical-display hardware cost (Nixie/split-flap is expensive). "Speaker as afterthought" framing matches wrapper failure pattern. Novelty fades if narrative stats stay shallow. Needs strong editorial design for cards.</div></div>
+    </div>
+
+    <!-- 07 REFINED CUBE -->
+    <div class="concept-card">
+      <div class="head">
+        <div class="left"><span class="rk">07</span><span class="nm">Refined Cube</span></div>
+        <div class="right status-mid">Mid · ~25%</div>
+      </div>
+      <div class="one-liner">Transparent glass cube with metal disc display — vinyl-soul smart speaker in modern crystal.</div>
+
+      <div class="grid">
+        <div class="field"><div class="lbl">Audience</div><div class="val">Vinyl romantics + tech aesthetes; Apple-adjacent design lovers.</div></div>
+        <div class="field"><div class="lbl">Form Language</div><div class="val">Transparent display-case / Nothing-audio adjacent.</div></div>
+        <div class="field"><div class="lbl">Scroll-Stop</div><div class="val mono">3.5/5</div></div>
+        <div class="field"><div class="lbl">Pricing (EB / Retail)</div><div class="val mono">$349 / $599</div></div>
+        <div class="field"><div class="lbl">Backers to $250k</div><div class="val mono">~715</div></div>
+        <div class="field"><div class="lbl">Approx Raise</div><div class="val mono">$80k–$200k</div></div>
+      </div>
+
+      <div class="longfield"><div class="lbl">Wins / Novelty</div><div class="val">Refined CMF execution. Vinyl-soul in transparent material. Premium-photographic.</div></div>
+      <div class="longfield"><div class="lbl">Direct Comp / Data Anchor</div><div class="val">MorningBlues SonicGlass A1 directly owns this aesthetic right now (live KS, June 2026). Transparent (the brand) Flic Button: $143,810 / 533 backers — direct cautionary tale that transparent CMF alone isn't a hook.</div></div>
+      <div class="longfield"><div class="lbl">Challenges</div><div class="val">MorningBlues owns the transparent-glass lane in 2026 — direct head-on competition. Glass-on-glass shipping/breakage risk. "Transparent vinyl-soul" isn't singular alone. <strong>Recommendation: do not pursue as standalone. Fold the transparent CMF into Light Box housing, or drop in favor of Concrete Cube.</strong></div></div>
+    </div>
+
+    <!-- 08 ORIGAMI -->
+    <div class="concept-card">
+      <div class="head">
+        <div class="left"><span class="rk">08</span><span class="nm">Origami Fold</span></div>
+        <div class="right status-weak">Weak · ~20%</div>
+      </div>
+      <div class="one-liner">Modular speaker with pleated fabric on bamboo frames, pairs into stereo or multi-room.</div>
+
+      <div class="grid">
+        <div class="field"><div class="lbl">Audience</div><div class="val">Japandi / wellness / Muji-B&O aesthetes.</div></div>
+        <div class="field"><div class="lbl">Form Language</div><div class="val">Japandi / Muji / B&O-adjacent / natural materials.</div></div>
+        <div class="field"><div class="lbl">Scroll-Stop</div><div class="val mono">2/5</div></div>
+        <div class="field"><div class="lbl">Pricing (EB / Retail)</div><div class="val mono">$349 / $599</div></div>
+        <div class="field"><div class="lbl">Backers to $250k</div><div class="val mono">~715</div></div>
+        <div class="field"><div class="lbl">Approx Raise</div><div class="val mono">$40k–$120k</div></div>
+      </div>
+
+      <div class="longfield"><div class="lbl">Direct Comp / Data Anchor</div><div class="val">No direct comp for Japandi-premium KS speaker — lane dominated by established brands (B&O Beoplay A9, Sonos x IKEA Symfonisk), not KS-native.</div></div>
+      <div class="longfield"><div class="lbl">Challenges</div><div class="val">Category-saturated by B&O at premium tier. No singular scroll-stop hook. Pleated fabric is product-shot win, not across-room win. Modular pairing isn't a hook alone. Would crush at $40–80k, won't clear $250k.</div></div>
+    </div>
+
+    <!-- 09 VORONOI -->
+    <div class="concept-card">
+      <div class="head">
+        <div class="left"><span class="rk">09</span><span class="nm">Voronoi Customizable</span></div>
+        <div class="right status-weak">Weak · ~20%</div>
+      </div>
+      <div class="one-liner">Speaker with a 3D-printed organic mesh grille — users customize pattern and color.</div>
+
+      <div class="grid">
+        <div class="field"><div class="lbl">Audience</div><div class="val">Makers / 3D-print community / customization-driven design fans.</div></div>
+        <div class="field"><div class="lbl">Form Language</div><div class="val">Organic mesh / voronoi / 3D-print aesthetic.</div></div>
+        <div class="field"><div class="lbl">Scroll-Stop</div><div class="val mono">3/5</div></div>
+        <div class="field"><div class="lbl">Pricing (EB / Retail)</div><div class="val mono">$299 / $499</div></div>
+        <div class="field"><div class="lbl">Backers to $250k</div><div class="val mono">~835</div></div>
+        <div class="field"><div class="lbl">Approx Raise</div><div class="val mono">$40k–$120k</div></div>
+      </div>
+
+      <div class="longfield"><div class="lbl">Direct Comp / Data Anchor</div><div class="val">No direct comp for customization-as-hook in KS audio. Voronoi as design language is saturated outside audio (every Etsy 3D-print shop). Current renderings read prototype-tier.</div></div>
+      <div class="longfield"><div class="lbl">Challenges</div><div class="val">Images read prototype-tier (green is jarring, texture reads as Bambu Lab home print). Customization isn't a $250k hook alone. Per-order print supply chain is operationally heavy. Voronoi saturated as design language. <strong>Possible pivot: back-light the mesh per song (combine with Painting/Diorama hook).</strong></div></div>
+    </div>
+
+    <!-- 10 COMPASS -->
+    <div class="concept-card">
+      <div class="head">
+        <div class="left"><span class="rk">10</span><span class="nm">Compass Speaker</span></div>
+        <div class="right status-weak">Weak · ~15%</div>
+      </div>
+      <div class="one-liner">Pocket music-discovery compass — physical rotation = genre exploration. Step out of the algorithm.</div>
+
+      <div class="grid">
+        <div class="field"><div class="lbl">Audience</div><div class="val">Music-discovery enthusiasts; anti-algorithm tribe; gift niche.</div></div>
+        <div class="field"><div class="lbl">Form Language</div><div class="val">Outdoor-gadget / compass / pocket-tool — currently signals adventure-tech, not home music tool.</div></div>
+        <div class="field"><div class="lbl">Scroll-Stop</div><div class="val mono">3/5</div></div>
+        <div class="field"><div class="lbl">Pricing (EB / Retail)</div><div class="val mono">$149 / $279</div></div>
+        <div class="field"><div class="lbl">Backers to $250k</div><div class="val mono">~1,680</div></div>
+        <div class="field"><div class="lbl">Approx Raise</div><div class="val mono">$40k–$120k</div></div>
+      </div>
+
+      <div class="longfield"><div class="lbl">Direct Comp / Data Anchor</div><div class="val">No music-discovery hardware $250k+ KS comp surfaced. Humane AI Pin (90% sales miss, all bricked Feb 2025) and Rabbit R1 (95% abandonment, ~5k DAU from 100k buyers) are the cautionary failure pattern that DIRECTLY matches this concept's shape.</div></div>
+      <div class="longfield"><div class="lbl">Challenges</div><div class="val">Form signals outdoor-gadget when narrative says home music. Hardware-wrapper-for-software pattern. Recommendation engine hard without Spotify. 5W audio is generic. <strong>Pivot path: "augment, don't replace" — sits alongside phone, doesn't compete.</strong></div></div>
+    </div>
+
+    <!-- 11 FLOW FLAT -->
+    <div class="concept-card">
+      <div class="head">
+        <div class="left"><span class="rk">11</span><span class="nm">Flow Flat Block</span></div>
+        <div class="right status-cut">Cut · ~10%</div>
+      </div>
+      <div class="one-liner">Mondrian-CMF flat block speaker with vinyl disc display (sibling to Flow Tubular).</div>
+
+      <div class="longfield"><div class="lbl">Why Cut</div><div class="val">The Flow concept's strength is the tubular sculptural form. Strip that away and you have a flat block with a Mondrian graphic — a decoration applied to a generic shape, not a designed object. Same audience and same competing concepts as Tubular but without the form-level differentiation. Consolidate effort into Flow Tubular instead.</div></div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    NPD Studio · pre-launch internal reference · do not distribute.<br>
+    Companion to the <a href="./index.html">concept-sites index</a>. Source data: Notion Concept Library + deep-research pass (June 2026).<br>
+    KS Success % methodology: structured judgment across hook / form / community / execution / defensibility factors. Directional, not statistical.
+  </footer>
+
+</div>
+</body>
+</html>
