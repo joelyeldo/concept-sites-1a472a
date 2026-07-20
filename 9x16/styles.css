@@ -668,6 +668,22 @@ main { position: relative; z-index: 1; }
   .nav__links a { font-size: 0.72rem; }
 }
 
+/* ---------- mobile: background grid forms TRUE 9:16 cells ----------
+   desktop/tablet keep 44vh rows (locked). on phones a 44vh row is far too tall against the
+   ~16.4vw columns, so the cells read extreme-portrait. row = 16.4vw * 16/9 = 29.2vw makes each
+   central cell a real 9:16 box → many more short rows fit the viewport. */
+@media (max-width: 640px) {
+  .hero__pin::before, .flip__pin::before, .rec__pin::before {
+    background-image: repeating-linear-gradient(to bottom, var(--line) 0, var(--line) 1px, transparent 1px, transparent 29.2vw);
+    background-position: 0 0;
+  }
+  /* white overlays (flip/receipts/founder/pricing): drop the 24/68 rows, repeat 9:16 instead */
+  .grid--white { background-image: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0, rgba(255, 255, 255, 0.5) 1px, transparent 1px, transparent 29.2vw); }
+  .grid--white .grid__h { display: none; }
+  /* apply page grid too */
+  .apply { background-image: repeating-linear-gradient(to bottom, var(--line) 0, var(--line) 1px, transparent 1px, transparent 29.2vw); background-position: 0 0; }
+}
+
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
