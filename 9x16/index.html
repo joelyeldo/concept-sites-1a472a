@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>9x16 Media - trust turned vertical.</title>
+  <meta name="description" content="India's tech-creator agency. We put the trust tech creators earned to work for the brands who need to be believed." />
+
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+</head>
+<body>
+  <!-- global swiss grid: asymmetric vertical columns, absolute so it scrolls WITH the page
+       (no fixed horizontals sweeping across sections). Central 3 columns = the §2 crop region. -->
+  <div class="grid" aria-hidden="true">
+    <span class="grid__v" style="left:9%"></span>
+    <span class="grid__v" style="left:25.5%"></span>
+    <span class="grid__v" style="left:41.8%"></span>
+    <span class="grid__v" style="left:58.2%"></span>
+    <span class="grid__v" style="left:74.5%"></span>
+    <span class="grid__v" style="left:91%"></span>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="nav" data-theme="light">
+    <div class="nav__inner">
+      <a class="nav__brand" href="#top" aria-label="9x16 Media home">
+        <img class="nav__logo nav__logo--light" src="assets/logo.svg" alt="9x16 Media" />
+        <img class="nav__logo nav__logo--dark" src="assets/logo-dark.svg" alt="9x16 Media" />
+      </a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="#flip">our story</a>
+        <a href="#projects">our work</a>
+        <a href="#pricing">pricing</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ============ 1 · HERO ============ -->
+    <section class="hero" data-nav="light" aria-labelledby="hero-h">
+      <div class="hero__pin">
+        <div class="hero__center">
+          <p class="hero__eyebrow">Tech's most-trusted creators, working for your brand.</p>
+          <h1 class="hero__h" id="hero-h">trust turned <span class="hl">vertical.</span></h1>
+          <div class="hero__actions">
+            <a class="rect-cta" href="apply.html">
+              <span class="rect-cta__label">apply to work with us</span>
+              <span class="rect-cta__arw" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </a>
+          </div>
+        </div>
+
+        <div class="hero__cards" aria-hidden="true">
+          <article class="ccard" data-i="0"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-creator-unbox/360/640" /></article>
+          <article class="ccard" data-i="1"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-creator-review/360/640" /></article>
+          <article class="ccard" data-i="2"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-creator-setup/360/640" /></article>
+          <article class="ccard" data-i="3"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-creator-studio/360/640" /></article>
+          <article class="ccard" data-i="4"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-creator-gaming/360/640" /></article>
+          <article class="ccard" data-i="5"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-creator-desk/360/640" /></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 2 · THE FLIP ============ -->
+    <!-- 16:9 crop box (3 grid cells) -> collapses to a single 9:16 cell -> fills orange
+         -> orange expands to the full viewport -> grid turns white on the orange
+         -> centered white copy fades in. -->
+    <section class="flip" id="flip" aria-labelledby="flip-h">
+      <div class="flip__pin">
+        <div class="flip__orange" aria-hidden="true"></div>
+        <!-- white grid, fades in over the orange (matches the global grid) -->
+        <div class="grid grid--white flip__whitegrid" aria-hidden="true">
+          <span class="grid__v" style="left:9%"></span>
+          <span class="grid__v" style="left:25.5%"></span>
+          <span class="grid__v" style="left:41.8%"></span>
+          <span class="grid__v" style="left:58.2%"></span>
+          <span class="grid__v" style="left:74.5%"></span>
+          <span class="grid__v" style="left:91%"></span>
+          <span class="grid__h" style="top:24%"></span>
+          <span class="grid__h" style="top:68%"></span>
+        </div>
+        <div class="crop" aria-hidden="true">
+          <span class="crop__c crop__c--tl"></span>
+          <span class="crop__c crop__c--tr"></span>
+          <span class="crop__c crop__c--bl"></span>
+          <span class="crop__c crop__c--br"></span>
+        </div>
+        <div class="flip__copy">
+          <p class="flip__eyebrow">our story</p>
+          <p class="flip__statement" id="flip-h"><span class="hl">Trust</span> moved off the billboard and onto the creator you actually <span class="hl">believe</span>. We put it to work.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 3 · THE RECEIPTS (viewport-based beats) ============ -->
+    <section class="rec" data-nav="light" aria-labelledby="rec-h">
+      <div class="rec__pin">
+        <!-- beat 1: text block -->
+        <div class="rec__text">
+          <p class="sec-eyebrow">the receipts</p>
+          <h2 class="rec__h" id="rec-h">there's a good chance you've already <span class="hl">watched us work.</span></h2>
+          <p class="rec__sub">Statistically, about 63%. That's 1.8 billion views' worth of people who believed a creator we put to work. Not a number we bought.</p>
+        </div>
+
+        <!-- beat 2: stats fill into boxes on the grid -->
+        <div class="rec__boxes" aria-hidden="true">
+          <div class="statbox" style="--l:9%">
+            <span class="statbox__fill"></span>
+            <span class="statbox__num">1.8B</span>
+            <span class="statbox__label">views earned, not bought</span>
+          </div>
+          <div class="statbox statbox--pop" style="--l:41.8%">
+            <span class="statbox__fill"></span>
+            <span class="statbox__num">350M</span>
+            <span class="statbox__label">engagements</span>
+          </div>
+          <div class="statbox" style="--l:74.5%">
+            <span class="statbox__fill"></span>
+            <span class="statbox__num">50M</span>
+            <span class="statbox__label">reached through trust</span>
+          </div>
+        </div>
+
+        <!-- beat 3: black dashboard; the middle grid row scrolls as filled grid-box cards -->
+        <div class="rec__dash">
+          <div class="grid grid--white rec__dashgrid" aria-hidden="true">
+            <span class="grid__v" style="left:9%"></span>
+            <span class="grid__v" style="left:25.5%"></span>
+            <span class="grid__v" style="left:41.8%"></span>
+            <span class="grid__v" style="left:58.2%"></span>
+            <span class="grid__v" style="left:74.5%"></span>
+            <span class="grid__v" style="left:91%"></span>
+            <span class="grid__h" style="top:24%"></span>
+            <span class="grid__h" style="top:68%"></span>
+          </div>
+          <div class="carousel">
+            <div class="carousel__track">
+              <article class="dcard dcard--title dcard--w2">
+                <span class="dcard__badge"><span class="dcard__dot" aria-hidden="true"></span> updated daily</span>
+                <b>live attention<br>dashboard</b>
+              </article>
+              <article class="dcard dcard--w2"><span class="dcard__acc" aria-hidden="true"></span><b>1.8B</b><span class="dcard__lbl">total views earned, not bought</span></article>
+              <article class="dcard dcard--w2"><span class="dcard__acc" aria-hidden="true"></span><b>513.5M</b><span class="dcard__lbl">monthly views</span></article>
+              <article class="dcard"><span class="dcard__acc" aria-hidden="true"></span><b>350M</b><span class="dcard__lbl">engagements</span></article>
+              <article class="dcard dcard--w2"><span class="dcard__acc" aria-hidden="true"></span><b>5.2M</b><span class="dcard__lbl">earned every single day</span></article>
+              <article class="dcard"><span class="dcard__acc" aria-hidden="true"></span><b>50M</b><span class="dcard__lbl">reached through trust</span></article>
+              <article class="dcard"><span class="dcard__acc" aria-hidden="true"></span><b>63%</b><span class="dcard__lbl">already seen our work</span></article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 4 · TRUST STRIP (auto-scrolling client marquee) ============ -->
+    <section class="trust" data-nav="light" aria-label="Brands who have worked with us">
+      <div class="trust__marquee">
+        <div class="trust__track">
+          <span class="tbox">Netflix</span>
+          <span class="tbox">GigaByte AORUS</span>
+          <span class="tbox">Safe Pro Fire</span>
+          <span class="tbox">Hyderabad Hydras</span>
+          <span class="tbox">Qualcomm</span>
+          <span class="tbox">Razer</span>
+          <span class="tbox" aria-hidden="true">Netflix</span>
+          <span class="tbox" aria-hidden="true">GigaByte AORUS</span>
+          <span class="tbox" aria-hidden="true">Safe Pro Fire</span>
+          <span class="tbox" aria-hidden="true">Hyderabad Hydras</span>
+          <span class="tbox" aria-hidden="true">Qualcomm</span>
+          <span class="tbox" aria-hidden="true">Razer</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 5 · WHAT WE DO (orange section, full rectangular rows, brand-first) ============ -->
+    <!-- each row = [ empty box | number+name box | wide body box ]; partitions appear on hover,
+         where the row fills white and inverts. a black rectangle cursor ("<label> ↗") rides the
+         rows, swaps its label per row, and routes to the Apply page tab. -->
+    <section class="wwd" id="what-we-do" data-nav="light" aria-labelledby="wwd-h">
+      <div class="wwd__intro">
+        <p class="sec-eyebrow">what we do</p>
+        <h2 class="wwd__h" id="wwd-h">trust is <span class="hl">the asset</span>. here's who we put it to work for.</h2>
+      </div>
+
+      <div class="wwd__rows">
+        <a class="wwd-row" href="apply.html?tab=brand" aria-label="Brands — work with us" data-cta="work with us">
+          <div class="wwd-row__pad" aria-hidden="true"></div>
+          <div class="wwd-row__id">
+            <span class="wwd-row__idx"><i class="wwd-sq" aria-hidden="true"></i>01</span>
+            <span class="wwd-row__name">brands</span>
+          </div>
+          <div class="wwd-row__body">
+            <p class="wwd-row__head">Borrow the belief.</p>
+            <p class="wwd-row__copy">It takes a creator years to earn their audience's belief. We let you borrow it — and build the campaign that makes your brand belong in their world. Even a brand with nothing to do with tech.</p>
+            <p class="wwd-row__lines"><span>PR campaigns</span><span>short-form content</span><span>social growth</span><span>creator marketing</span></p>
+          </div>
+        </a>
+        <a class="wwd-row" href="apply.html?tab=creator" aria-label="Creators — join the network" data-cta="join the network">
+          <div class="wwd-row__pad" aria-hidden="true"></div>
+          <div class="wwd-row__id">
+            <span class="wwd-row__idx"><i class="wwd-sq" aria-hidden="true"></i>02</span>
+            <span class="wwd-row__name">creators</span>
+          </div>
+          <div class="wwd-row__body">
+            <p class="wwd-row__head">Build the long game.</p>
+            <p class="wwd-row__copy">You earned the trust. Most managers spend it on one-off deals. We build the trajectory — income beyond tech, the right rooms, altitude you can't reach alone — without ever making you post something your audience wouldn't forgive.</p>
+          </div>
+        </a>
+        <a class="wwd-row" href="apply.html?tab=agency" aria-label="Agencies — partner with us" data-cta="partner with us">
+          <div class="wwd-row__pad" aria-hidden="true"></div>
+          <div class="wwd-row__id">
+            <span class="wwd-row__idx"><i class="wwd-sq" aria-hidden="true"></i>03</span>
+            <span class="wwd-row__name">agencies</span>
+          </div>
+          <div class="wwd-row__body">
+            <p class="wwd-row__head">The wing you don't staff.</p>
+            <p class="wwd-row__copy">We're the tech-creator layer you don't keep in-house — the bench, the relationships, and the bridge between a brief and a creator's world.</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ============ 6 · CREATIVE (white head band + auto-scroll sine band + grid reel) ============ -->
+    <section class="creative" data-nav="light" aria-labelledby="cr-h">
+      <div class="creative__head">
+        <p class="sec-eyebrow">creative</p>
+        <h2 class="creative__h" id="cr-h">we make things people actually <span class="hl">stop for.</span></h2>
+        <p class="creative__sub">Short-form built to earn the watch, not dodge the skip. Drag through a few.</p>
+      </div>
+
+      <div class="creative__stage">
+        <!-- thin black band on a sine curve: white text, orange square separators, auto-scrolls -->
+        <svg class="cband" viewBox="0 0 1440 520" aria-hidden="true">
+          <defs><path id="cbandPath" d="M -80,28 C 110,-85 260,-85 440,150 C 640,335 800,565 1060,565 C 1290,565 1380,470 1520,478" /></defs>
+          <use href="#cbandPath" class="cband__ribbon" />
+          <text class="cband__t" dominant-baseline="central"><textPath class="cband__text" href="#cbandPath" startOffset="0">off the billboard <tspan class="cband__sq">▪</tspan> onto the phone <tspan class="cband__sq">▪</tspan> borrowed the trust <tspan class="cband__sq">▪</tspan> never spent it <tspan class="cband__sq">▪</tspan> off the billboard <tspan class="cband__sq">▪</tspan> onto the phone <tspan class="cband__sq">▪</tspan> borrowed the trust <tspan class="cband__sq">▪</tspan> never spent it <tspan class="cband__sq">▪</tspan> off the billboard <tspan class="cband__sq">▪</tspan> onto the phone <tspan class="cband__sq">▪</tspan> borrowed the trust <tspan class="cband__sq">▪</tspan> never spent it <tspan class="cband__sq">▪</tspan> off the billboard <tspan class="cband__sq">▪</tspan> onto the phone <tspan class="cband__sq">▪</tspan> borrowed the trust <tspan class="cband__sq">▪</tspan> never spent it <tspan class="cband__sq">▪</tspan> </textPath></text>
+        </svg>
+
+        <!-- drag-to-scrub creator reel: 9:16 grid-cell cards, sharp edges -->
+        <div class="reel">
+          <div class="reel__track">
+            <article class="reel__card"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-reel-1/360/640" /></article>
+            <article class="reel__card"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-reel-2/360/640" /></article>
+            <article class="reel__card"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-reel-3/360/640" /></article>
+            <article class="reel__card"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-reel-4/360/640" /></article>
+            <article class="reel__card"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-reel-5/360/640" /></article>
+            <article class="reel__card"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-reel-6/360/640" /></article>
+            <article class="reel__card"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-reel-7/360/640" /></article>
+            <article class="reel__card"><span class="ccard__play"></span><img alt="" src="https://picsum.photos/seed/9x16-reel-8/360/640" /></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 7 · COMPLETELY UNRELATED (whimsical bento — Opraah-style personality) ============ -->
+    <section class="unrel" data-nav="light" aria-labelledby="unrel-h">
+      <div class="unrel__head">
+        <p class="sec-eyebrow">for no reason</p>
+        <h2 class="unrel__h" id="unrel-h">completely <span class="hl">unrelated.</span></h2>
+        <p class="unrel__sub">None of this will help you decide. All of it is true.</p>
+      </div>
+      <div class="unrel__grid">
+        <article class="ucard ucard--wide"><span class="ucard__sq" aria-hidden="true"></span><p>There's an ongoing office bet on whether it's a "reel" or a "short." Nobody is winning.</p></article>
+        <article class="ucard ucard--wide"><span class="ucard__sq" aria-hidden="true"></span><p>Our founder does four-digit multiplication in his head and loses his phone twice a day.</p></article>
+        <article class="ucard"><span class="ucard__sq" aria-hidden="true"></span><p>Someone here has watched every episode of the IT Crowd. Twice. We won't say who. (It's most of us.)</p></article>
+        <article class="ucard"><span class="ucard__sq" aria-hidden="true"></span><p>Peak team meeting: forty minutes on whether a hot dog is a sandwich. Still open.</p></article>
+        <article class="ucard"><span class="ucard__sq" aria-hidden="true"></span><p>We own exactly one office plant. It is plastic. It is thriving.</p></article>
+      </div>
+    </section>
+
+    <!-- ============ 8 · PROJECTS (named case studies — Zoon card language, sharp) ============ -->
+    <!-- window-bar (title + year + angled arrow) over an image; hover darkens/blurs the image,
+         rotates the arrow to →, and reveals the partner logo. netflix = full-width, rest 2-up.
+         wrapped in .proj-freeze so the sticky tail-freeze RELEASES at the wrapper bottom (right as
+         §9 finishes wiping) instead of staying stuck and peeking out below §9. -->
+    <div class="proj-freeze">
+    <section class="projects" id="projects" data-nav="light" aria-labelledby="proj-h">
+      <div class="projects__head">
+        <p class="sec-eyebrow">selected work</p>
+        <h2 class="projects__h" id="proj-h">a year, <span class="hl">redacted.</span></h2>
+        <p class="projects__sub">Some of what we shipped in 2025. The rest we're not allowed to name yet.</p>
+      </div>
+
+      <div class="projects__inner">
+        <article class="pcard pcard--full" data-reveal>
+          <div class="pcard__bar">
+            <span class="pcard__title">Squid Game × Netflix <span class="pcard__year">/2025</span></span>
+            <span class="pcard__arw" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+          <div class="pcard__img pcard__img--wide">
+            <img class="pcard__bg" alt="Squid Game × Netflix" src="https://res.cloudinary.com/dadz5dzth/image/upload/v1780685919/card01_fpjvbn.webp" />
+            <img class="pcard__logo" alt="Netflix" src="https://res.cloudinary.com/dadz5dzth/image/upload/v1780774210/Netflix_logo_uulffs.webp" />
+          </div>
+        </article>
+
+        <article class="pcard" data-reveal>
+          <div class="pcard__bar">
+            <span class="pcard__title">Safe Pro Fire <span class="pcard__year">/2025</span></span>
+            <span class="pcard__arw" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+          <div class="pcard__img">
+            <img class="pcard__bg" alt="Safe Pro Fire" src="https://res.cloudinary.com/dadz5dzth/image/upload/v1780685955/card02_caizxn.webp" />
+            <img class="pcard__logo" alt="Safe Pro Fire" src="https://res.cloudinary.com/dadz5dzth/image/upload/v1780773673/safepro_fire_kx4brg.webp" />
+          </div>
+        </article>
+        <article class="pcard" data-reveal>
+          <div class="pcard__bar">
+            <span class="pcard__title">Tech Content Production <span class="pcard__year">/2025</span></span>
+            <span class="pcard__arw" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+          <div class="pcard__img">
+            <img class="pcard__bg" alt="Tech Content Production" src="https://res.cloudinary.com/dadz5dzth/image/upload/v1780685944/card03_t9pymx.webp" />
+            <img class="pcard__logo" alt="Tech Content Production" src="https://res.cloudinary.com/dadz5dzth/image/upload/v1780688628/mass_me7noz.webp" />
+          </div>
+        </article>
+        <article class="pcard" data-reveal>
+          <div class="pcard__bar">
+            <span class="pcard__title">GigaByte AORUS <span class="pcard__year">/2025</span></span>
+            <span class="pcard__arw" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+          <div class="pcard__img">
+            <img class="pcard__bg" alt="GigaByte AORUS" src="https://res.cloudinary.com/dadz5dzth/image/upload/v1781112089/gigabyte_AUROS_qpp8jd.webp" />
+            <img class="pcard__logo" alt="AORUS" src="https://res.cloudinary.com/dadz5dzth/image/upload/v1780688625/AUROS_jaxwa6.webp" />
+          </div>
+        </article>
+        <article class="pcard" data-reveal>
+          <div class="pcard__bar">
+            <span class="pcard__title">Hyderabad Hydras <span class="pcard__year">/2025</span></span>
+            <span class="pcard__arw" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+          <div class="pcard__img">
+            <img class="pcard__bg" alt="Hyderabad Hydras" src="https://res.cloudinary.com/dadz5dzth/image/upload/v1780685964/card05_amtwtp.webp" />
+            <img class="pcard__logo" alt="Hyderabad Hydras" src="https://res.cloudinary.com/dadz5dzth/image/upload/v1780684891/hyderabadhydras_tjaote.webp" />
+          </div>
+        </article>
+      </div>
+    </section>
+    </div><!-- /.proj-freeze -->
+
+    <!-- ============ 9 · FOUNDER (full-viewport black panel, white 9:16 grid, wipes up from bottom) ============ -->
+    <section class="founder" id="founder" aria-labelledby="founder-h">
+      <div class="founder__pin">
+        <div class="founder__panel">
+          <!-- white 9:16 grid on black, same as the live dashboard -->
+          <div class="grid grid--white founder__grid" aria-hidden="true">
+            <span class="grid__v" style="left:9%"></span>
+            <span class="grid__v" style="left:25.5%"></span>
+            <span class="grid__v" style="left:41.8%"></span>
+            <span class="grid__v" style="left:58.2%"></span>
+            <span class="grid__v" style="left:74.5%"></span>
+            <span class="grid__v" style="left:91%"></span>
+            <span class="grid__h" style="top:24%"></span>
+            <span class="grid__h" style="top:68%"></span>
+          </div>
+
+          <!-- bento content: shared white borders, black fills (grid lines never cross inside a box) -->
+          <div class="founder__inner">
+            <div class="fbox fbox--title">
+              <p class="sec-eyebrow">the founder</p>
+              <h2 class="founder__h" id="founder-h">built by someone who <span class="hl">earned it first.</span></h2>
+              <p class="founder__lede">Arsalan built an audience's trust from zero — so he knows what it costs to protect it.</p>
+            </div>
+
+            <div class="fbox fbox--photo">
+              <img alt="Arsalan, founder of 9x16" src="https://res.cloudinary.com/dadz5dzth/image/upload/v1783961198/Untitled_-_13_July_2026_at_22.02.44_1_jdrjza.webp" />
+              <span class="fbox__name">meet<br />arsalan</span>
+            </div>
+
+            <div class="fbox fstat">
+              <span class="fbox__sq" aria-hidden="true"></span>
+              <span class="fstat__num">8 yrs</span>
+              <span class="fstat__lbl">in social growth</span>
+            </div>
+            <div class="fbox fstat">
+              <span class="fbox__sq" aria-hidden="true"></span>
+              <span class="fstat__num">7B+</span>
+              <span class="fstat__lbl">lifetime views</span>
+            </div>
+            <div class="fbox fstat">
+              <span class="fbox__sq" aria-hidden="true"></span>
+              <span class="fstat__num">4M+</span>
+              <span class="fstat__lbl">followers of his own</span>
+            </div>
+            <div class="fbox fstat fstat--wink">
+              <span class="fbox__sq" aria-hidden="true"></span>
+              <span class="fstat__num">world no. 2</span>
+              <span class="fstat__lbl">in mental maths — he works out your ROI before you've finished the sentence.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 11 · WORK WITH US / PRICING (orange, white 9:16 grid, big copy card) ============ -->
+    <!-- orange section (like the story flip) with the white grid behind; a big snow card holds the
+         copy sectioned into boxes + the apply CTA. card is opaque so the grid never crosses inside it. -->
+    <section class="pricing" id="pricing" data-nav="light" aria-labelledby="pricing-h">
+      <div class="grid grid--white pricing__grid" aria-hidden="true">
+        <span class="grid__v" style="left:9%"></span>
+        <span class="grid__v" style="left:25.5%"></span>
+        <span class="grid__v" style="left:41.8%"></span>
+        <span class="grid__v" style="left:58.2%"></span>
+        <span class="grid__v" style="left:74.5%"></span>
+        <span class="grid__v" style="left:91%"></span>
+        <span class="grid__h" style="top:24%"></span>
+        <span class="grid__h" style="top:68%"></span>
+      </div>
+
+      <div class="pricing__card">
+        <div class="pbox pbox--head">
+          <p class="sec-eyebrow">pricing</p>
+          <h2 class="pricing__h" id="pricing-h">room for a <span class="hl">few.</span></h2>
+        </div>
+        <div class="pbox pbox--body">
+          <p>For four years we worked inside closed networks. Now we open a handful of spots a year, priced to scope — tell us about you and we'll come back with real numbers.</p>
+        </div>
+        <div class="pbox pbox--count">
+          <span class="pcount__sq" aria-hidden="true"></span>
+          <span class="pcount__num" data-count="2847">0</span>
+          <span class="pcount__lbl">applications this year</span>
+        </div>
+        <div class="pbox pbox--cta">
+          <a class="rect-cta rect-cta--lg" href="apply.html">
+            <span class="rect-cta__label">apply to work with us</span>
+            <span class="rect-cta__arw" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </a>
+          <p class="pcta__note">Custom plans — you only pay for what you need. Tell us the scope, we'll send a quote.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ 12 · FOOTER (dark close, asymmetric grid — lines cross & flow to the edges) ============ -->
+  <!-- two verticals (left of 't' @9%, right of the social icons @74.5%) run full height; the row
+       borders run full width — they cross into an asymmetric grid. the 74.5% line is the shared
+       right border of the tagline box and the social icons. -->
+  <footer class="footer" data-nav="light" aria-labelledby="footer-h">
+    <div class="footer__lines" aria-hidden="true">
+      <span class="footer__v" style="left:9%"></span>
+      <span class="footer__v" style="left:91%"></span>
+    </div>
+    <div class="footer__body">
+      <div class="footer__tagbox">
+        <h2 class="footer__tag" id="footer-h">trust turned <span class="hl">vertical.</span></h2>
+        <p class="footer__note">We run on a limited number of applications a year. If it's a fit, you'll hear from us.</p>
+      </div>
+      <div class="footer__meta">
+        <div class="footer__contact">
+          <a class="footer__email" href="mailto:arsalan@zoon.network">arsalan@zoon.network</a>
+          <span class="footer__addr">Mahim West, Mumbai 400016</span>
+        </div>
+        <div class="footer__social" aria-label="Social links">
+          <a class="footer__ic" href="#" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg></a>
+          <a class="footer__ic" href="#" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3.5"/><path d="M10.2 8.7l5 3.3-5 3.3z" fill="currentColor" stroke="none"/></svg></a>
+          <a class="footer__ic" href="#" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2h3.3l-7.2 8.3L23.5 22h-6.6l-5.2-6.8L5.8 22H2.5l7.7-8.8L1.9 2h6.8l4.7 6.2L18.9 2zm-1.2 18h1.8L7.4 3.9H5.5L17.7 20z"/></svg></a>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <span>© 2026 9x16 Media. Native to the flip.</span>
+        <span class="footer__domain">9x16.studio</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- scroll-to-top: fixed bottom-right after the hero; top-right in the footer; orange on dark sections -->
+  <button class="totop" type="button" aria-label="Scroll to top">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 19V6M6 12l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <!-- §7 "join the conversation" chat modal (topic + thread injected on open) -->
+  <div class="chat" hidden>
+    <div class="chat__box" role="dialog" aria-modal="true" aria-labelledby="chat-topic">
+      <div class="chat__head">
+        <span class="chat__badge"><span class="chat__dot" aria-hidden="true"></span> team chat</span>
+        <span class="chat__topic" id="chat-topic"></span>
+        <button class="chat__close" type="button" aria-label="Close chat"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="chat__log" id="chat-log"></div>
+      <form class="chat__bar">
+        <input class="chat__input" type="text" placeholder="join the conversation…" aria-label="Your message" autocomplete="off" maxlength="200" />
+        <button class="chat__send" type="submit">send <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

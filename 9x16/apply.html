@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>9x16 Media — apply to work with us</title>
+  <meta name="description" content="Tell us who you are — brand, creator, or agency — and we'll take it from there. We read every application by hand." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- global swiss grid verticals -->
+  <div class="grid" aria-hidden="true">
+    <span class="grid__v" style="left:9%"></span>
+    <span class="grid__v" style="left:25.5%"></span>
+    <span class="grid__v" style="left:41.8%"></span>
+    <span class="grid__v" style="left:58.2%"></span>
+    <span class="grid__v" style="left:74.5%"></span>
+    <span class="grid__v" style="left:91%"></span>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="nav" data-theme="light">
+    <div class="nav__inner">
+      <a class="nav__brand" href="index.html" aria-label="9x16 Media home">
+        <img class="nav__logo nav__logo--light" src="assets/logo.svg" alt="9x16 Media" />
+        <img class="nav__logo nav__logo--dark" src="assets/logo-dark.svg" alt="9x16 Media" />
+      </a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="index.html#flip">our story</a>
+        <a href="index.html#projects">our work</a>
+        <a href="index.html#pricing">pricing</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="apply">
+    <div class="apply__wrap">
+      <!-- ONE bento card: title + client-type selector + every field/input box -->
+      <form class="acard" id="applyForm" data-active="brand" novalidate>
+        <!-- 1 · title box -->
+        <div class="acard__title" data-full>
+          <p class="sec-eyebrow">apply</p>
+          <h1 class="apply__h" id="apply-h">let's work <span class="hl">together.</span></h1>
+          <p class="apply__intro">Tell us who you are and we'll take it from there. We read every one of these by hand.</p>
+        </div>
+
+        <!-- 2 · client-type selector: one full-width box split into 3 -->
+        <div class="switch" role="tablist" aria-label="I am a…" data-full>
+          <button class="switch__tab is-active" type="button" role="tab" aria-selected="true" data-cat="brand">i'm a brand</button>
+          <button class="switch__tab" type="button" role="tab" aria-selected="false" data-cat="creator">i'm a creator</button>
+          <button class="switch__tab" type="button" role="tab" aria-selected="false" data-cat="agency">i'm an agency</button>
+        </div>
+
+        <!-- 3 · shared fields -->
+        <label class="field"><span class="field__lbl">your name</span><input type="text" name="name" required autocomplete="name" /></label>
+        <label class="field"><span class="field__lbl">email</span><input type="email" name="email" required autocomplete="email" /></label>
+        <label class="field"><span class="field__lbl">phone</span><input type="tel" name="phone" required autocomplete="tel" /></label>
+
+        <!-- brand -->
+        <label class="field" data-cat="brand"><span class="field__lbl">company name</span><input type="text" name="company" data-req="brand" /></label>
+        <label class="field" data-cat="brand" data-full><span class="field__lbl">company website <em>(if any)</em></span><input type="url" name="website" placeholder="https://" /></label>
+        <fieldset class="opt" data-cat="brand" data-full>
+          <legend class="opt__lbl">annual revenue</legend>
+          <div class="opt__row">
+            <label class="opt__box"><input type="radio" name="revenue" value="under-10cr" /><span>under ₹10 Cr</span></label>
+            <label class="opt__box"><input type="radio" name="revenue" value="10-50cr" /><span>₹10–50 Cr</span></label>
+            <label class="opt__box"><input type="radio" name="revenue" value="50-100cr" /><span>₹50–100 Cr</span></label>
+            <label class="opt__box"><input type="radio" name="revenue" value="100cr-plus" /><span>₹100 Cr+</span></label>
+          </div>
+        </fieldset>
+        <label class="field" data-cat="brand" data-full><span class="field__lbl">what are you looking to promote?</span><input type="text" name="promote" placeholder="a product, a category, or a campaign" /></label>
+
+        <!-- creator -->
+        <label class="field" data-cat="creator"><span class="field__lbl">main platform + handle</span><input type="text" name="handle" data-req="creator" placeholder="@yourhandle" /></label>
+        <fieldset class="opt" data-cat="creator" data-full>
+          <legend class="opt__lbl">audience size</legend>
+          <div class="opt__row">
+            <label class="opt__box"><input type="radio" name="audience" value="under-100k" /><span>under 100K</span></label>
+            <label class="opt__box"><input type="radio" name="audience" value="100-500k" /><span>100K–500K</span></label>
+            <label class="opt__box"><input type="radio" name="audience" value="500k-1m" /><span>500K–1M</span></label>
+            <label class="opt__box"><input type="radio" name="audience" value="1m-plus" /><span>1M+</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="opt" data-cat="creator" data-full>
+          <legend class="opt__lbl">your niche</legend>
+          <div class="opt__row">
+            <label class="opt__box"><input type="radio" name="niche" value="tech" /><span>tech</span></label>
+            <label class="opt__box"><input type="radio" name="niche" value="gaming" /><span>gaming</span></label>
+            <label class="opt__box"><input type="radio" name="niche" value="broad" /><span>broad</span></label>
+            <label class="opt__box"><input type="radio" name="niche" value="other" /><span>other</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="opt" data-cat="creator" data-full>
+          <legend class="opt__lbl">what do you need?</legend>
+          <div class="opt__row">
+            <label class="opt__box"><input type="radio" name="need" value="management" /><span>management</span></label>
+            <label class="opt__box"><input type="radio" name="need" value="brand-deals" /><span>brand deals</span></label>
+            <label class="opt__box"><input type="radio" name="need" value="growth" /><span>growth</span></label>
+            <label class="opt__box"><input type="radio" name="need" value="all" /><span>all of it</span></label>
+          </div>
+        </fieldset>
+
+        <!-- agency -->
+        <label class="field" data-cat="agency"><span class="field__lbl">agency name</span><input type="text" name="agency" data-req="agency" /></label>
+        <label class="field" data-cat="agency" data-full><span class="field__lbl">agency website</span><input type="url" name="agencyWeb" placeholder="https://" /></label>
+        <fieldset class="opt" data-cat="agency" data-full>
+          <legend class="opt__lbl">what do you need the tech-creator wing for?</legend>
+          <div class="opt__row">
+            <label class="opt__box"><input type="radio" name="wing" value="campaign" /><span>a specific campaign</span></label>
+            <label class="opt__box"><input type="radio" name="wing" value="roster" /><span>ongoing roster access</span></label>
+            <label class="opt__box"><input type="radio" name="wing" value="brief" /><span>one brief</span></label>
+          </div>
+        </fieldset>
+        <label class="field" data-cat="agency" data-full><span class="field__lbl">client or brand <em>(if you can share)</em></span><input type="text" name="client" /></label>
+      </form>
+
+      <!-- buttons: attached to the bottom-left of the card -->
+      <div class="apply__submit">
+        <a class="rect-cta rect-cta--ghost rect-cta--lg" href="index.html">
+          <span class="rect-cta__label">back to home</span>
+          <span class="rect-cta__arw" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+        <button class="rect-cta rect-cta--lg" type="submit" form="applyForm">
+          <span class="rect-cta__label">submit</span>
+          <span class="rect-cta__arw" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+        <p class="apply__err" role="alert" hidden>We'll need this one to get back to you.</p>
+      </div>
+
+      <!-- success state -->
+      <div class="apply__done" id="applyDone" hidden>
+        <p class="sec-eyebrow">got it</p>
+        <h2 class="apply__h">thanks — we'll be in <span class="hl">touch.</span></h2>
+        <p class="apply__intro">If it's a fit, you'll hear from us within a few days. We read every one by hand.</p>
+        <a class="rect-cta rect-cta--lg" href="index.html">
+          <span class="rect-cta__label">back to home</span>
+          <span class="rect-cta__arw" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- footer (dark variant on the apply page) -->
+  <footer class="footer footer--dark" data-nav="dark" aria-labelledby="footer-h">
+    <div class="footer__lines" aria-hidden="true">
+      <span class="footer__v" style="left:9%"></span>
+      <span class="footer__v" style="left:91%"></span>
+    </div>
+    <div class="footer__body">
+      <div class="footer__tagbox">
+        <h2 class="footer__tag" id="footer-h">trust turned <span class="hl">vertical.</span></h2>
+        <p class="footer__note">We run on a limited number of applications a year. If it's a fit, you'll hear from us.</p>
+      </div>
+      <div class="footer__meta">
+        <div class="footer__contact">
+          <a class="footer__email" href="mailto:arsalan@zoon.network">arsalan@zoon.network</a>
+          <span class="footer__addr">Mahim West, Mumbai 400016</span>
+        </div>
+        <div class="footer__social" aria-label="Social links">
+          <a class="footer__ic" href="#" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg></a>
+          <a class="footer__ic" href="#" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3.5"/><path d="M10.2 8.7l5 3.3-5 3.3z" fill="currentColor" stroke="none"/></svg></a>
+          <a class="footer__ic" href="#" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2h3.3l-7.2 8.3L23.5 22h-6.6l-5.2-6.8L5.8 22H2.5l7.7-8.8L1.9 2h6.8l4.7 6.2L18.9 2zm-1.2 18h1.8L7.4 3.9H5.5L17.7 20z"/></svg></a>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <span>© 2026 9x16 Media. Native to the flip.</span>
+        <span class="footer__domain">9x16.studio</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var form = document.getElementById("applyForm");
+      var tabs = [].slice.call(form.querySelectorAll(".switch__tab"));
+      var err = document.querySelector(".apply__err");
+
+      function setCat(cat) {
+        if (["brand", "creator", "agency"].indexOf(cat) === -1) cat = "brand";
+        form.dataset.active = cat;
+        tabs.forEach(function (t) {
+          var on = t.dataset.cat === cat;
+          t.classList.toggle("is-active", on);
+          t.setAttribute("aria-selected", on ? "true" : "false");
+        });
+      }
+      tabs.forEach(function (t) { t.addEventListener("click", function () { setCat(t.dataset.cat); }); });
+
+      var tab = new URLSearchParams(location.search).get("tab");
+      if (tab) setCat(tab);
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var cat = form.dataset.active;
+        var required = [].slice.call(form.querySelectorAll("[required], [data-req]")).filter(function (el) {
+          if (el.dataset.req && el.dataset.req !== cat) return false;
+          return el.offsetParent !== null;   // visible only
+        });
+        var bad = null;
+        required.forEach(function (el) {
+          var ok = el.value.trim() !== "" && el.checkValidity();
+          el.closest(".field").classList.toggle("is-invalid", !ok);
+          if (!ok && !bad) bad = el;
+        });
+        if (bad) { err.hidden = false; bad.focus(); return; }
+        err.hidden = true;
+        form.hidden = true;
+        document.querySelector(".apply__submit").hidden = true;
+        document.getElementById("applyDone").hidden = false;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      form.addEventListener("input", function (e) {
+        var box = e.target.closest(".field"); if (box) box.classList.remove("is-invalid");
+        err.hidden = true;
+      });
+    })();
+  </script>
+</body>
+</html>
