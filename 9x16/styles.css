@@ -828,6 +828,36 @@ main { position: relative; z-index: 1; }
   .flip__orange { left: calc(50% - 24.6vw); top: calc(50% - 43.8vw); width: 49.2vw; height: 87.6vw; }
 }
 
+/* ============ TABLET GATE (641-1024px: not optimised — send them to desktop or phone) ============ */
+.tabgate { display: none; }
+@media (min-width: 641px) and (max-width: 1024px) {
+  html, body { overflow: hidden; }                 /* no scroll on this screen */
+  .tabgate { display: block; position: fixed; inset: 0; z-index: 45; background: var(--snow); overflow: hidden; }
+
+  /* the mobile 9:16 grid, scaled up: fixed vertical columns + repeating rows.
+     rows are anchored to the card's top so the card's top + bottom borders land on grid lines. */
+  .tabgate__grid { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  .tabgate__grid .grid__v { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line); }
+  .tabgate::before {
+    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background-image: repeating-linear-gradient(to bottom, var(--line) 0, var(--line) 1px, transparent 1px, transparent 29vw);
+    background-position: 0 calc(50dvh - 29vw);
+  }
+
+  /* white card: left/right on the 25.5% & 74.5% verticals, top/bottom 2 rows apart on the row lines.
+     opaque fill covers the interior lines (borders sit ON the grid, never cut through the card). */
+  .tabgate__card {
+    position: absolute; z-index: 1; left: 25.5%; width: 49%;
+    top: calc(50dvh - 29vw); height: 58vw;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: clamp(1.8rem, 4vw, 3.4rem);
+    background: var(--snow); border: 1px solid var(--line);
+    box-shadow: 0 34px 90px -40px rgba(16, 12, 8, 0.32);
+  }
+  .tabgate__h { font-family: "Clash Display", sans-serif; font-weight: 600; text-transform: lowercase; font-size: clamp(1.9rem, 4.2vw, 3rem); line-height: 1.04; letter-spacing: -0.02em; margin: 0.7rem 0 1.2rem; color: var(--pitch); }
+  .tabgate__body { font-size: clamp(1rem, 1.5vw, 1.18rem); line-height: 1.55; color: var(--slate); margin: 0; max-width: 42ch; }
+}
+
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

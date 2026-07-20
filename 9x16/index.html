@@ -59,6 +59,24 @@
     </nav>
   </div>
 
+  <!-- tablet gate: this screen size isn't optimised (shown only 641-1024px). white card on the
+       9:16 grid, borders landing on the grid lines; points the user to desktop or phone. -->
+  <div class="tabgate" role="alertdialog" aria-labelledby="tabgate-h">
+    <div class="tabgate__grid" aria-hidden="true">
+      <span class="grid__v" style="left:9%"></span>
+      <span class="grid__v" style="left:25.5%"></span>
+      <span class="grid__v" style="left:41.8%"></span>
+      <span class="grid__v" style="left:58.2%"></span>
+      <span class="grid__v" style="left:74.5%"></span>
+      <span class="grid__v" style="left:91%"></span>
+    </div>
+    <div class="tabgate__card">
+      <p class="sec-eyebrow">wrong aspect ratio</p>
+      <h1 class="tabgate__h" id="tabgate-h">this screen's the <span class="hl">in-between.</span></h1>
+      <p class="tabgate__body">We built 9x16 for the desktop and the phone — not the space between. Open it on a laptop, or on your phone, and it'll feel right.</p>
+    </div>
+  </div>
+
   <main id="top">
     <!-- ============ 1 · HERO ============ -->
     <section class="hero" data-nav="light" aria-labelledby="hero-h">
