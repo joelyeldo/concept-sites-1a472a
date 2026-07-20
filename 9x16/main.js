@@ -346,8 +346,10 @@ function initScroll() {
   // (the one place the crop is allowed to cut the grid) -> crop fades once filled ->
   // white grid fades in -> copy resolves.
   const COVER = 12;
+  // mobile: crop collapses 9 cols -> 3 cols (49.2vw); desktop unchanged (3 cells -> centre cell, 16.4%)
+  const cropCollapseW = window.matchMedia("(max-width: 640px)").matches ? "49.2vw" : "16.4%";
   gsap.timeline({ scrollTrigger: { trigger: ".flip", start: "top top", end: "bottom bottom", scrub: 1, invalidateOnRefresh: true } })
-    .to(".crop", { width: "16.4%", ease: "power2.inOut", duration: 0.22 }, 0.08)      // collapse 3 cells -> centre cell
+    .to(".crop", { width: cropCollapseW, ease: "power2.inOut", duration: 0.22 }, 0.08)      // collapse -> centre cell(s)
     .fromTo(".flip__orange", { scale: 0 }, { scale: 1, ease: "power1.out", duration: 0.12 }, 0.32)  // fill cell up to the crop border
     .to([".flip__orange", ".crop"], { scale: COVER, ease: "power2.in", duration: 0.28 }, 0.44)      // crop = border, expands with the orange
     .to(".flip__whitegrid", { opacity: 1, duration: 0.14 }, 0.60)

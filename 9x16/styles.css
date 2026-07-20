@@ -315,8 +315,10 @@ main { position: relative; z-index: 1; }
 @media (max-width: 820px) {
   .wwd-row { flex-direction: column; }
   .wwd-row__pad { display: none; }
-  .wwd-row__id { width: 100%; flex-direction: row; align-items: center; gap: 1rem; border-right: none; padding: 1.2rem var(--pad); }
-  .wwd-row__body { padding: 1.2rem var(--pad) 1.6rem; }
+  .wwd-row__id { width: 100%; flex-direction: row; align-items: center; justify-content: flex-start; gap: 1rem; border-right: none; padding: 1.2rem var(--pad); }
+  /* horizontal grid separator between the subtitle (brands/creators/agencies) and its body */
+  .wwd-row__body { padding: 1.2rem var(--pad) 1.6rem; border-top: 1px solid rgba(255, 255, 255, 0.45); align-items: flex-start; }
+  .wwd__intro, .wwd__h, .wwd-row__id, .wwd-row__body, .wwd-row__head, .wwd-row__copy, .wwd-row__lines { text-align: left; justify-content: flex-start; }
 }
 
 /* ============ 6 · CREATIVE (white head band + auto-scroll sine band + grid reel) ============ */
@@ -682,6 +684,23 @@ main { position: relative; z-index: 1; }
   .grid--white .grid__h { display: none; }
   /* apply page grid too */
   .apply { background-image: repeating-linear-gradient(to bottom, var(--line) 0, var(--line) 1px, transparent 1px, transparent 29.2vw); background-position: 0 0; }
+
+  /* --- §3 receipts stat boxes: stack vertically, each 2 cols x 2 rows (9:16), staggered L/R/L,
+         edges on grid lines (9%/41.8% and 58.2%/91%, rows at 29.2vw multiples) --- */
+  .statbox { width: 32.8vw; height: 58.4vw; }
+  .statbox:nth-child(1) { left: 9%; top: 29.2vw; }
+  .statbox:nth-child(2) { left: 58.2%; top: 87.6vw; }
+  .statbox:nth-child(3) { left: 9%; top: 146vw; }
+  .statbox__num { font-size: 2.2rem; }   /* fits the 2-col box, no clip */
+
+  /* --- §2 flip crop box aligned to the 9:16 grid --- */
+  /* centre the flip grid vertically so a 3-row band sits symmetric around centre (crop edges land on lines) */
+  .flip__pin::before, .flip__whitegrid { background-position: 0 calc(50vh - 14.6vw); }
+  /* crop: 3 rows tall (87.6vw), centred; starts 9 cols wide (147.6vw, overflows the sides),
+     JS collapses width to 3 cols (49.2vw). left:50% + translateX keeps it centred through the collapse. */
+  .crop { top: calc(50% - 43.8vw); left: 50%; transform: translateX(-50%); width: 147.6vw; height: 87.6vw; }
+  /* orange = the collapsed 3-col x 3-row cell, centred (positioned via left/top so the base scale(0) stays) */
+  .flip__orange { left: calc(50% - 24.6vw); top: calc(50% - 43.8vw); width: 49.2vw; height: 87.6vw; }
 }
 
 /* ---------- reduced motion ---------- */
