@@ -34,8 +34,30 @@
         <a href="#projects">our work</a>
         <a href="#pricing">pricing</a>
       </nav>
+      <!-- mobile only (<=640): toggles the full-screen menu overlay; morphs to an X when open -->
+      <button class="nav__burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">
+        <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+      </button>
     </div>
   </header>
+
+  <!-- mobile menu: full-viewport orange overlay, white 9:16 grid, one link per grid row.
+       curtain-swipes in from the right; each row fills white / orange text on tap. -->
+  <div class="menu" id="menu" aria-hidden="true">
+    <div class="menu__grid" aria-hidden="true">
+      <span class="grid__v" style="left:9%"></span>
+      <span class="grid__v" style="left:25.5%"></span>
+      <span class="grid__v" style="left:41.8%"></span>
+      <span class="grid__v" style="left:58.2%"></span>
+      <span class="grid__v" style="left:74.5%"></span>
+      <span class="grid__v" style="left:91%"></span>
+    </div>
+    <nav class="menu__links" aria-label="Mobile primary">
+      <a class="menu__row" href="#flip">our story</a>
+      <a class="menu__row" href="#projects">our work</a>
+      <a class="menu__row" href="#pricing">pricing</a>
+    </nav>
+  </div>
 
   <main id="top">
     <!-- ============ 1 · HERO ============ -->
@@ -194,6 +216,7 @@
             <p class="wwd-row__head">Borrow the belief.</p>
             <p class="wwd-row__copy">It takes a creator years to earn their audience's belief. We let you borrow it — and build the campaign that makes your brand belong in their world. Even a brand with nothing to do with tech.</p>
             <p class="wwd-row__lines"><span>PR campaigns</span><span>short-form content</span><span>social growth</span><span>creator marketing</span></p>
+            <span class="wwd-cta" aria-hidden="true"><span class="wwd-cta__label">work with us</span><span class="wwd-cta__arw"><svg viewBox="0 0 24 24" width="15" height="15"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span>
           </div>
         </a>
         <a class="wwd-row" href="apply.html?tab=creator" aria-label="Creators — join the network" data-cta="join the network">
@@ -205,6 +228,7 @@
           <div class="wwd-row__body">
             <p class="wwd-row__head">Build the long game.</p>
             <p class="wwd-row__copy">You earned the trust. Most managers spend it on one-off deals. We build the trajectory — income beyond tech, the right rooms, altitude you can't reach alone — without ever making you post something your audience wouldn't forgive.</p>
+            <span class="wwd-cta" aria-hidden="true"><span class="wwd-cta__label">join the network</span><span class="wwd-cta__arw"><svg viewBox="0 0 24 24" width="15" height="15"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span>
           </div>
         </a>
         <a class="wwd-row" href="apply.html?tab=agency" aria-label="Agencies — partner with us" data-cta="partner with us">
@@ -216,6 +240,7 @@
           <div class="wwd-row__body">
             <p class="wwd-row__head">The wing you don't staff.</p>
             <p class="wwd-row__copy">We're the tech-creator layer you don't keep in-house — the bench, the relationships, and the bridge between a brief and a creator's world.</p>
+            <span class="wwd-cta" aria-hidden="true"><span class="wwd-cta__label">partner with us</span><span class="wwd-cta__arw"><svg viewBox="0 0 24 24" width="15" height="15"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span>
           </div>
         </a>
       </div>
@@ -261,11 +286,11 @@
         <p class="unrel__sub">None of this will help you decide. All of it is true.</p>
       </div>
       <div class="unrel__grid">
-        <article class="ucard ucard--wide"><span class="ucard__sq" aria-hidden="true"></span><p>There's an ongoing office bet on whether it's a "reel" or a "short." Nobody is winning.</p></article>
-        <article class="ucard ucard--wide"><span class="ucard__sq" aria-hidden="true"></span><p>Our founder does four-digit multiplication in his head and loses his phone twice a day.</p></article>
-        <article class="ucard"><span class="ucard__sq" aria-hidden="true"></span><p>Someone here has watched every episode of the IT Crowd. Twice. We won't say who. (It's most of us.)</p></article>
-        <article class="ucard"><span class="ucard__sq" aria-hidden="true"></span><p>Peak team meeting: forty minutes on whether a hot dog is a sandwich. Still open.</p></article>
-        <article class="ucard"><span class="ucard__sq" aria-hidden="true"></span><p>We own exactly one office plant. It is plastic. It is thriving.</p></article>
+        <article class="ucard ucard--wide"><span class="ucard__sq" aria-hidden="true"></span><p>There's an ongoing office bet on whether it's a "reel" or a "short." Nobody is winning.</p><span class="ucard__go" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></article>
+        <article class="ucard ucard--wide"><span class="ucard__sq" aria-hidden="true"></span><p>Our founder does four-digit multiplication in his head and loses his phone twice a day.</p><span class="ucard__go" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></article>
+        <article class="ucard"><span class="ucard__sq" aria-hidden="true"></span><p>Someone here has watched every episode of the IT Crowd. Twice. We won't say who. (It's most of us.)</p><span class="ucard__go" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></article>
+        <article class="ucard"><span class="ucard__sq" aria-hidden="true"></span><p>Peak team meeting: forty minutes on whether a hot dog is a sandwich. Still open.</p><span class="ucard__go" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></article>
+        <article class="ucard"><span class="ucard__sq" aria-hidden="true"></span><p>We own exactly one office plant. It is plastic. It is thriving.</p><span class="ucard__go" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></article>
       </div>
     </section>
 
@@ -425,7 +450,7 @@
             <span class="rect-cta__label">apply to work with us</span>
             <span class="rect-cta__arw" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </a>
-          <p class="pcta__note">Custom plans — you only pay for what you need. Tell us the scope, we'll send a quote.</p>
+          <p class="pcta__note">Custom plans. You only pay for what you need. Tell us the scope, we'll send a quote.</p>
         </div>
       </div>
     </section>

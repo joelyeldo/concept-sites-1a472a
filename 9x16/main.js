@@ -78,7 +78,8 @@ function stickProjectsTail() {
   const proj = document.querySelector(".projects");
   const wrap = document.querySelector(".proj-freeze");
   if (!proj || !wrap) return;
-  const off = window.matchMedia("(max-width: 820px)").matches || reduce;   // only freeze on the desktop scroll model
+  // freeze on desktop AND mobile (both run the pinned founder wipe); skip only tablet (static stacked) + reduce
+  const off = window.matchMedia("(min-width: 641px) and (max-width: 820px)").matches || reduce;
   if (off) { proj.style.top = ""; wrap.style.height = ""; return; }
   const vh = window.innerHeight;
   proj.style.top = Math.min(0, vh - proj.offsetHeight) + "px";   // freeze with the closing viewport at the bottom
@@ -148,6 +149,42 @@ function initToTop() {
       onToggle: (s) => btn.classList.toggle("totop--footer", s.isActive),
     });
   }
+}
+
+/* ---------- mobile menu: full-screen orange overlay, curtain-swipe from the right ---------- */
+function initMenu() {
+  const burger = document.querySelector(".nav__burger");
+  const menu = document.querySelector(".menu");
+  const nav = document.querySelector(".nav");
+  if (!burger || !menu || !nav) return;
+  let prevTheme = nav.dataset.theme || "light";
+
+  const setOpen = (open) => {
+    if (open) prevTheme = nav.dataset.theme || "light";
+    menu.classList.toggle("is-open", open);
+    burger.classList.toggle("is-open", open);
+    nav.classList.toggle("is-menu-open", open);
+    burger.setAttribute("aria-expanded", String(open));
+    menu.setAttribute("aria-hidden", String(!open));
+    document.body.style.overflow = open ? "hidden" : "";
+    nav.dataset.theme = open ? "light" : prevTheme;   // keep the white nav bar + black burger/X while open
+  };
+
+  burger.addEventListener("click", () => setOpen(!menu.classList.contains("is-open")));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && menu.classList.contains("is-open")) setOpen(false); });
+
+  menu.querySelectorAll(".menu__row").forEach((a) => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      a.classList.add("is-active");   // fill white / orange text
+      const target = document.querySelector(a.getAttribute("href"));
+      setTimeout(() => {
+        setOpen(false);
+        a.classList.remove("is-active");
+        if (target) target.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
+      }, 240);
+    });
+  });
 }
 
 /* ---------- shared: rectangle "label ↗" cursor that rides a set of targets ----------
@@ -360,6 +397,7 @@ function initScroll() {
 }
 
 initNav();
+initMenu();
 initScroll();
 initReveals();
 initReceipts();
