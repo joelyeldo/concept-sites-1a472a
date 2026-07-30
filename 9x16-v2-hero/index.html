@@ -571,10 +571,6 @@ function setNav(p){
   /* on the phone the logo matches the burger's 44px box, so the two read as a pair */
   navEl.style.setProperty("--logo-h",  gsap.utils.interpolate(56, 44, p) + "px");
   navEl.classList.toggle("is-phone", p > 0.55);
-  /* glass belongs to the resting 16:9 shot only. The moment the morph starts the bar is
-     travelling toward the phone, so it goes white immediately rather than staying dark
-     until it lands. */
-  navEl.classList.toggle("is-glass", p < 0.02);
   if (p <= 0.55) closeMenu();     /* a wide bar must never keep a phone overlay open */
 
   /* the phone's own chrome fades up with the mockup */
@@ -600,7 +596,14 @@ const tl = gsap.timeline({
   defaults:{ ease:"none" },
   scrollTrigger:{
     trigger:"#hero", start:"top top", end:"bottom bottom", scrub:.6,
-    onUpdate: self => handoff(self.progress)   /* cycle ⇄ phone, both directions */
+    onUpdate: self => {
+      handoff(self.progress);
+      /* Glass is keyed to RAW scroll progress, not the eased morph value. power2.inOut is
+         almost flat for its first stretch, so keying it to the eased p left the bar dark for
+         a visible beat after the screen had already started changing. This flips it on the
+         first few pixels of scroll. */
+      navEl.classList.toggle("is-glass", self.progress < 0.004);
+    }
   }
 });
 
@@ -767,6 +770,9 @@ burgerEl.addEventListener("click", () => {
 addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
 
 setNav(0);   /* park the bar at v1 geometry before any scrolling happens */
+/* glass is only toggled from the scroll handler now, so it needs its resting state set
+   here — otherwise the bar loads white over the dark plate until the first scroll event. */
+if (!reduce) navEl.classList.add("is-glass");
 
 /* ── registration mode ─────────────────────────────────────────────────────────────────
    Press R. Outlines the aperture over the current body so you can align a swapped photo.
