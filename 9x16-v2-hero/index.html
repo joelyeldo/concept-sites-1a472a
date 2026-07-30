@@ -63,7 +63,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
      width:100%; padding:var(--nav-top,16px) var(--nav-pad,clamp(1.25rem,4vw,4rem)) 0; pointer-events:none;}
 .nav__inner{
   width:var(--nav-w, min(1180px,100%)); display:flex; align-items:center; justify-content:space-between;
-  padding:.7rem .9rem .7rem 1.4rem; background:var(--snow); pointer-events:auto;
+  padding:.7rem .9rem .7rem 1.4rem; background:#fff; pointer-events:auto;
   box-shadow:inset 0 0 0 1px rgba(16,12,8,.10), 0 12px 38px rgba(16,12,8,.08);
 }
 /* v1 verbatim, styles.css:125-146 — logo, lowercase Clash links, 44px burger with 25x2 bars */
@@ -305,20 +305,24 @@ body.reg #regout{display:block;}
     <div class="stage">
       <!-- --sw/--sx/--sy are PLACEHOLDER estimates. Press R and correct them per photo. -->
 
-      <figure class="body" data-body="tv" style="--sw:78; --sx:50; --sy:44;">
-        <div class="slot" style="--ar:16/11"><b>tv</b><span>assets/body-tv.png · screen blank · cut-out</span></div>
+      <!-- All four 16:9 bodies use the same plate for now. Registration measured off it, and
+           HEIGHT-fitted: the billboard's screen is 2.05:1, wider than 16:9, so matching widths
+           would push our aperture past the top and bottom of it. Swap in the other plates as
+           they arrive — each just needs its own three numbers. -->
+      <figure class="body" data-body="tv" style="--sw:56.8; --sx:50.0; --sy:50.2;">
+        <img src="assets/body-billboard.jpg" alt="">
       </figure>
 
-      <figure class="body" data-body="cinema" style="--sw:88; --sx:50; --sy:47;">
-        <div class="slot" style="--ar:16/9"><b>cinema screen</b><span>assets/body-cinema.png · auditorium, screen blank</span></div>
+      <figure class="body" data-body="cinema" style="--sw:56.8; --sx:50.0; --sy:50.2;">
+        <img src="assets/body-billboard.jpg" alt="">
       </figure>
 
-      <figure class="body" data-body="billboard" style="--sw:84; --sx:50; --sy:40;">
-        <div class="slot" style="--ar:16/11"><b>billboard</b><span>assets/body-billboard.png · roadside, face blank</span></div>
+      <figure class="body" data-body="billboard" style="--sw:56.8; --sx:50.0; --sy:50.2;">
+        <img src="assets/body-billboard.jpg" alt="">
       </figure>
 
-      <figure class="body" data-body="laptop" style="--sw:72; --sx:50; --sy:38;">
-        <div class="slot" style="--ar:16/12"><b>laptop</b><span>assets/body-laptop.png · open, screen blank</span></div>
+      <figure class="body" data-body="laptop" style="--sw:56.8; --sx:50.0; --sy:50.2;">
+        <img src="assets/body-billboard.jpg" alt="">
       </figure>
 
       <!-- the one that is not on the ground. Registration measured off the cut-out, not guessed:
@@ -423,11 +427,11 @@ const STATUS_F = 0.095;   /* status band height, as a fraction of screen height 
 const NAV_PAD  = 0.075;   /* the nav's own side inset — wider than the frame's, so the bar is
                              visibly narrower than the crop box rather than matching it */
 const NAVBAND_F= 0.058;   /* nav band height — raised so a logo matching the 44px burger fits */
-const NAV_RISE = 2;       /* px the bar sits above its band's top edge */
-const HOME_RISE= 4;       /* px the home indicator sits above its centred position */
+const NAV_RISE = 4;       /* px the bar sits above its band's top edge */
+const HOME_RISE= 3;       /* px the home indicator sits above its centred position */
 const NAVGAP   = 8;       /* px of clear white between the nav and the crop line */
 const HOME_F   = 0.075;   /* home band height,   as a fraction of screen height */
-const SCREEN_PAD = 0.030; /* side inset for on-screen UI, as a fraction of screen width */
+const SCREEN_PAD = 0.020; /* side inset for on-screen UI, as a fraction of screen width */
 const ISLAND_MID = 0.0284;/* island's vertical centre, as a fraction of screen height */
 const CORNER_R   = 0.090; /* screen's corner radius, as a fraction of screen WIDTH */
 
