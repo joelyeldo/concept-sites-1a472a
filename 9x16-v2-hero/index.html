@@ -96,7 +96,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    fixed element escapes the body's containing block. Ours is absolute inside the pin, so a
    real translateX slide is safe — and it is unambiguously a slide, which is what was asked. */
 .menu{position:absolute; left:50%; top:50%; transform:translate(-50%, calc(-50% + var(--apy, 0px)));
-      width:var(--apw); height:var(--aph); z-index:80; overflow:hidden;
+      width:var(--apw); height:var(--aph); z-index:5; overflow:hidden;
       visibility:hidden; transition:visibility 0s linear .5s;}
 .menu.is-open{visibility:visible; transition:visibility 0s linear 0s;}
 .menu__panel{position:absolute; inset:0; background:var(--orange); will-change:transform;
@@ -122,7 +122,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    Both live on the white screen OUTSIDE the crop box, which is what makes the crop line
    readable as a crop line rather than the edge of the screen. */
 .screenui{position:absolute; left:50%; top:var(--scr-top,0px); transform:translateX(-50%);
-  width:var(--scr-w,0px); height:var(--scr-h,0px); z-index:6; pointer-events:none; opacity:0;
+  width:var(--scr-w,0px); height:var(--scr-h,0px); z-index:7; pointer-events:none; opacity:0;
   color:var(--pitch); font-family:"Switzer",sans-serif;}
 .status{position:absolute; left:0; right:0; top:var(--status-top,0px); height:var(--status-h,22px);
   display:flex; align-items:center; justify-content:space-between; padding:0 8.5%;
@@ -187,6 +187,10 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
   transform:translate(calc(var(--sx) * -1%), calc(var(--sy) * -1%));
   will-change:opacity,width;
 }
+/* The phone is the one body whose screen is NOT the aperture: the crop box insets inside it.
+   Sizing it off --apw like the others shrank the whole handset, so the real screen sat ~28px
+   below where the chrome was being placed. It scales off the screen width instead. */
+.body[data-body="phone"]{ width:calc(var(--screenw) * (100 / var(--sw))); }
 .body img{display:block; width:100%; height:auto;}
 
 /* the empty-slot marker. Deliberately NOT an illustration of the object — a labelled hole,
@@ -213,7 +217,9 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    morph between them. Lives above the aperture so overflow:hidden can't clip the marks. */
 .crop{
   position:absolute; left:50%; top:50%; transform:translate(-50%, calc(-50% + var(--apy, 0px)));
-  width:var(--apw); height:var(--aph); z-index:5; pointer-events:none;
+  /* the crop rails sit ABOVE the menu — the crop line is never covered by anything, it is
+     the one constant of the whole piece. Layer order: aperture 4 · menu 5 · crop 6 · chrome 7 */
+  width:var(--apw); height:var(--aph); z-index:6; pointer-events:none;
   border:2px solid var(--pitch);
 }
 .crop__c{position:absolute; width:12px; height:12px; background:var(--snow); border:2px solid var(--pitch);}
@@ -471,6 +477,8 @@ function setAperture(w, h, p = 0){
   root.style.setProperty("--apw", w + "px");
   root.style.setProperty("--aph", h + "px");
   root.style.setProperty("--apy", (apOffset() * p) + "px");
+  /* the phone scales off the SCREEN, not the crop box — see .body[data-body="phone"] */
+  root.style.setProperty("--screenw", gsap.utils.interpolate(G.startW, G.screenW, p) + "px");
   const r = w / h;
   ratioEl.textContent = r >= 1 ? `${r.toFixed(2)} : 1` : `1 : ${(1/r).toFixed(2)}`;
 }
