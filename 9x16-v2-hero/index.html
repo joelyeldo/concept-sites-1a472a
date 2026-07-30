@@ -293,11 +293,10 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
     box-decoration-break:clone; -webkit-box-decoration-break:clone;}
 .headline h1{will-change:opacity, transform, filter;}
 
-/* the orange screen fill — sized to the PHONE SCREEN, so it runs under the status bar and the
-   home indicator as well as the crop box. Sits above the phone photo, below the grid. */
-.screenfill{position:absolute; left:50%; top:var(--scr-top,0px); transform:translateX(-50%);
-  width:var(--scr-w,0px); height:var(--scr-h,0px); background:var(--orange);
-  z-index:4; opacity:0; pointer-events:none;}
+/* No separate fill element. The orange is the CROP BOX's own background — exactly where the
+   white fill used to sit, so its corners and inset match by construction instead of being
+   re-derived and never quite lining up. The status bar and home bar bands sit OUTSIDE the crop
+   box, on the phone's own white screen, so they stay white the way real phone chrome does. */
 .aperture__h{font-family:"Clash Display",sans-serif; font-weight:600; font-size:var(--hl-size,3rem); line-height:.94; margin:0; text-transform:lowercase; letter-spacing:-.025em;}
 .aperture__m{font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); font-weight:600;}
 
@@ -415,8 +414,6 @@ body.reg #regout{display:block;}
 
     <!-- the phone's screen chrome, sitting on the white screen OUTSIDE the crop box.
          The clock reads 9:16, because of course it does. -->
-    <div class="screenfill" id="screenfill" aria-hidden="true"></div>
-
     <div class="screenui" id="screenui" aria-hidden="true">
       <div class="status">
         <span class="status__time">9:16</span>
@@ -473,7 +470,6 @@ const apEl    = document.getElementById("aperture");
 const root    = document.documentElement;
 /* declared up here deliberately: setAperture() touches all of these and runs during init */
 const gridEl  = document.querySelector(".ap-grid");
-const fillEl  = document.getElementById("screenfill");
 const uiEl    = document.getElementById("screenui");
 const hlWide  = document.getElementById("hlWide");
 const hlVert  = document.getElementById("hlVert");
@@ -507,9 +503,10 @@ function setPhase(p){
   hlVert.style.setProperty("--vh-bg", gsap.utils.interpolate("#FF7B00", "#FFFFFF", warm));
   hlVert.style.setProperty("--vh-fg", gsap.utils.interpolate("#FAFAFA", "#FF7B00", warm));
 
-  fillEl.style.opacity = warm;
+  apEl.style.backgroundColor = `rgba(255,123,0,${warm})`;
   gridEl.style.setProperty("--grid-c", gsap.utils.interpolate(GRID_DARK, GRID_LIGHT, warm));
-  uiEl.style.color = gsap.utils.interpolate("#100C08", "#FFFFFF", warm);
+  /* chrome stays dark on white — the status bar and home indicator do not change with whatever
+     the app is doing inside, which is the whole point of them reading as the phone's own UI */
 }
 
 /* aperture geometry. Starts a large fixed 16:9 — the viewport is NOT restricted. Ends on a
@@ -608,8 +605,6 @@ function setAperture(w, h, p = 0){
   const sizeLand  = gsap.utils.clamp(28, 68, (screenH0 || 500) * 0.118);
   const sizePhone = gsap.utils.clamp(22, 46, G.endW * 0.098);
   root.style.setProperty("--hl-size", gsap.utils.interpolate(sizeLand, sizePhone, p) + "px");
-  /* the fill is the phone SCREEN, which has rounded corners — a square rectangle overshot them */
-  fillEl.style.borderRadius = (G.screenW * CORNER_R) + "px";
   const landH = (screenH0 || h) * 0.58, landW = landH * 9 / 16;
   root.style.setProperty("--cell-h", gsap.utils.interpolate(landH, G.endW * 0.292, p) + "px");
   root.style.setProperty("--cell-w", gsap.utils.interpolate(landW, G.endW * 0.163, p) + "px");
@@ -639,8 +634,7 @@ function setNav(p){
   if (p <= 0.55) closeMenu();     /* a wide bar must never keep a phone overlay open */
 
   /* the phone's own chrome fades up with the mockup */
-  /* on :root, not on uiEl — .screenfill is a SIBLING and could not inherit them from there,
-     which left the orange fill at 0x0 */
+  /* on :root so any element can size itself to the phone screen, not just this one */
   root.style.setProperty("--scr-top", G.screenTop + "px");
   root.style.setProperty("--scr-w",   G.screenW + "px");
   root.style.setProperty("--scr-h",   G.screenH + "px");
