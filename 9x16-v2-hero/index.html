@@ -277,8 +277,10 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 
 /* stationary and centred, independent of whatever the aperture is currently doing */
 .headline{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:9;
-  display:grid; place-items:center; text-align:center; padding:1rem; pointer-events:none;
-  width:min(90vw, 1100px);}
+  display:grid; place-items:center; text-align:center; pointer-events:none;
+  /* tracks the frame, so the bigger type still wraps inside whatever screen is showing
+     instead of running over the billboard's edge or out of the phone */
+  width:var(--apw); padding:0 6%;}
 /* both headlines occupy the same cell and cross-fade — the copy changes with the format */
 .headline h1{grid-area:1/1; margin:0;}
 .hl-vert{opacity:0; color:#fff;}
@@ -292,7 +294,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .screenfill{position:absolute; left:50%; top:var(--scr-top,0px); transform:translateX(-50%);
   width:var(--scr-w,0px); height:var(--scr-h,0px); background:var(--orange);
   z-index:4; opacity:0; pointer-events:none;}
-.aperture__h{font-family:"Clash Display",sans-serif; font-weight:600; font-size:clamp(1.4rem,3.4vw,3rem); line-height:.95; margin:0; text-transform:lowercase; letter-spacing:-.02em;}
+.aperture__h{font-family:"Clash Display",sans-serif; font-weight:600; font-size:var(--hl-size,3rem); line-height:.94; margin:0; text-transform:lowercase; letter-spacing:-.025em;}
 .aperture__m{font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); font-weight:600;}
 
 /* registration mode — press R. Shows where the aperture sits so you can align a new photo. */
@@ -576,6 +578,11 @@ function setAperture(w, h, p = 0){
      own 9:16 rhythm across the morph, so the landscape grid and the phone grid are one system
      rather than two. Cells stay 9:16 in both. */
   setPhase(p);
+  /* Display size scales off the CURRENT frame width — a billboard gets billboard type, the
+     phone gets phone type, and neither overflows. The phone takes a larger share of its much
+     narrower frame, so the ratio is interpolated rather than fixed. */
+  const k = gsap.utils.interpolate(0.082, 0.115, p);
+  root.style.setProperty("--hl-size", gsap.utils.clamp(26, 112, w * k) + "px");
   const landH = (screenH0 || h) * 0.58, landW = landH * 9 / 16;
   root.style.setProperty("--cell-h", gsap.utils.interpolate(landH, G.endW * 0.292, p) + "px");
   root.style.setProperty("--cell-w", gsap.utils.interpolate(landW, G.endW * 0.163, p) + "px");
