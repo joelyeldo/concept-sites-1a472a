@@ -566,9 +566,10 @@ function geo(){
      rather than chrome floating above it. */
   const frameTop = screenTop + screenH * ISLAND_END + CROP_GAP;
   const endH     = (screenTop + screenH - homeH) - frameTop;
-  /* the frame insets from the screen edges too — flush, its 12px corner registration marks
-     get clipped by the bezel and the whole thing reads as a layer pasted over the photo. */
-  const endW     = screenW - screenW * SCREEN_PAD * 2;
+  /* Full screen width. The inset existed only to keep the crop outline's 12px corner marks
+     clear of the bezel; with the outline hidden it just left white gutters either side of the
+     orange fill. The nav keeps its own inset (NAV_PAD) and content keeps --screen-pad. */
+  const endW     = screenW;
 
   /* start: as big a 16:9 as fits with room for a body around it */
   const startW = Math.min(vw * 0.62, vh * 0.60 * 16 / 9);
