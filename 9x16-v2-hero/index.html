@@ -166,9 +166,10 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* ───────────────────────────────────────────────────────────── pin shell
    180vh = 80vh of pinned scroll. The morph runs 0.05 → 0.70 of that, so it starts on the
    very first scroll and is finished inside roughly half a screen of scrolling. */
-/* the reel is gesture-driven now, so it needs only enough page to enter and exit,
-   not a viewport per section */
-.hero{position:relative; height:calc(180vh + 70vh);}
+/* 180vh of morph scroll + 100vh consumed by the sticky pin + 80vh for the reel to live in.
+   At 250vh the reel's start (180vh of scroll) sat beyond the maximum scroll and could never
+   be reached — the reel simply never activated. */
+.hero{position:relative; height:360vh;}
 .pin{position:sticky; top:0; height:100dvh; overflow:hidden; background:var(--snow);}
 
 /* ───────────────────────────────────────────────────────────── 0 · THE PAGE GRID
@@ -305,6 +306,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    scroll systems mid-page, which is where this kind of thing usually goes wrong. */
 .reel{position:absolute; inset:0; z-index:2; opacity:0;
   transform:translate3d(0, calc(var(--reel-y,0) * -100%), 0); will-change:transform;}
+.rs--pass{background:none; pointer-events:none;}
 .rs{position:absolute; left:0; right:0; height:100%;
   display:grid; place-content:center; gap:.4rem; text-align:center; padding:0 8%;}
 .rs__n{font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:var(--mute); font-weight:600;}
@@ -476,7 +478,11 @@ body.reg #regout{display:block;}
       <div class="ap-white" id="apWhite" aria-hidden="true"></div>
 
       <div class="reel" id="reel">
-        <section class="rs rs--built" data-s="story" style="top:0%">
+        <!-- slide 0 IS the hero's orange screen: transparent, so the aperture's orange and the
+             "it's a 9x16 world now" headline show straight through. The reel is live here, so
+             the very first gesture off the orange is already a reel step. -->
+        <section class="rs rs--pass" data-s="hero-end" style="top:0%"></section>
+        <section class="rs rs--built" data-s="story" style="top:100%">
           <div class="card"><div class="sec">
             <p class="sec__eyebrow">our story</p>
             <h2 class="sec__h">every screen that ever mattered just got <span class="hl">taller.</span></h2>
@@ -485,13 +491,13 @@ body.reg #regout{display:block;}
             <p class="sec__b">We only build for where they are actually looking.</p>
           </div></div>
         </section>
-        <section class="rs" data-s="trust" style="top:100%"><p class="rs__n">2 / 8</p><h2 class="rs__t">trusted by</h2><p class="rs__todo">3 logo bands, angled and criss-crossed</p></section>
-        <section class="rs" data-s="dashboard" style="top:200%"><p class="rs__n">3 / 8</p><h2 class="rs__t">live dashboard</h2><p class="rs__todo">from live, cut everything after the graph</p></section>
-        <section class="rs" data-s="creative" style="top:300%"><p class="rs__n">4 / 8</p><h2 class="rs__t">the work</h2><p class="rs__todo">main display of what we made</p></section>
-        <section class="rs" data-s="unrelated" style="top:400%"><p class="rs__n">5 / 8</p><h2 class="rs__t">completely unrelated</h2></section>
-        <section class="rs" data-s="founder" style="top:500%"><p class="rs__n">6 / 8</p><h2 class="rs__t">the founder</h2></section>
-        <section class="rs" data-s="together" style="top:600%"><p class="rs__n">7 / 8</p><h2 class="rs__t">work together</h2><p class="rs__todo">no scarcity, no pricing</p></section>
-        <section class="rs" data-s="footer" style="top:700%"><p class="rs__n">8 / 8</p><h2 class="rs__t">footer</h2><p class="rs__todo">24x7 joke on the opening hours</p></section>
+        <section class="rs" data-s="trust" style="top:200%"><p class="rs__n">2 / 8</p><h2 class="rs__t">trusted by</h2><p class="rs__todo">3 logo bands, angled and criss-crossed</p></section>
+        <section class="rs" data-s="dashboard" style="top:300%"><p class="rs__n">3 / 8</p><h2 class="rs__t">live dashboard</h2><p class="rs__todo">from live, cut everything after the graph</p></section>
+        <section class="rs" data-s="creative" style="top:400%"><p class="rs__n">4 / 8</p><h2 class="rs__t">the work</h2><p class="rs__todo">main display of what we made</p></section>
+        <section class="rs" data-s="unrelated" style="top:500%"><p class="rs__n">5 / 8</p><h2 class="rs__t">completely unrelated</h2></section>
+        <section class="rs" data-s="founder" style="top:600%"><p class="rs__n">6 / 8</p><h2 class="rs__t">the founder</h2></section>
+        <section class="rs" data-s="together" style="top:700%"><p class="rs__n">7 / 8</p><h2 class="rs__t">work together</h2><p class="rs__todo">no scarcity, no pricing</p></section>
+        <section class="rs" data-s="footer" style="top:800%"><p class="rs__n">8 / 8</p><h2 class="rs__t">footer</h2><p class="rs__todo">24x7 joke on the opening hours</p></section>
       </div>
     </div>
 
@@ -977,6 +983,7 @@ let reelIdx = 0;
 function reelTo(i){
   if (i === reelIdx) return;
   reelIdx = i;
+  setReelPhase(i);
   gsap.to(reelProxy, {
     y: i, duration: 0.5, ease: "power3.out", overwrite: true,   /* ease-OUT: moves at once */
     onUpdate(){ root.style.setProperty("--reel-y", reelProxy.y.toFixed(4)); }
@@ -993,6 +1000,15 @@ function reelTo(i){
    back into the hero or out of the reel. */
 let reelActive = false, reelLock = false;
 const STEP_LOCK = 620;
+
+/* Slide 0 is the orange hero screen; every slide after it is white with the dark grid. The
+   grid is driven WHITE for the orange, so it has to flip back or it is white-on-white. */
+function setReelPhase(i){
+  const onOrange = i === 0;
+  whiteEl.style.opacity = onOrange ? 0 : 1;
+  gridEl.style.setProperty("--grid-c", onOrange ? GRID_LIGHT : GRID_DARK);
+  hlVert.style.visibility = onOrange ? "visible" : "hidden";
+}
 
 function reelStep(dir){
   const next = reelIdx + dir;
@@ -1045,12 +1061,8 @@ ScrollTrigger.create({
   onToggle: self => {
     reelActive = self.isActive;
     reelEl.style.opacity = self.isActive ? 1 : 0;
-    whiteEl.style.opacity = self.isActive ? 1 : 0;
-    /* the grid was driven WHITE for the orange hero screen. The reel's base is white again,
-       so white-on-white made it disappear — put it back to the dark line colour. */
-    gridEl.style.setProperty("--grid-c", self.isActive ? GRID_DARK : GRID_LIGHT);
-    /* the hero headline belongs to the hero — it must not sit over the sections */
-    hlVert.style.visibility = self.isActive ? "hidden" : "visible";
+    if (!self.isActive) reelTo(0);
+    setReelPhase(reelIdx);
   }
 });
 
