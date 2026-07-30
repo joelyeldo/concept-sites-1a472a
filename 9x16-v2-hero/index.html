@@ -111,7 +111,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    fixed element escapes the body's containing block. Ours is absolute inside the pin, so a
    real translateX slide is safe — and it is unambiguously a slide, which is what was asked. */
 .menu{position:absolute; left:50%; top:50%; transform:translate(-50%, calc(-50% + var(--apy, 0px)));
-      width:var(--apw); height:var(--aph); z-index:5; overflow:hidden;
+      width:var(--apw); height:var(--aph); z-index:6; overflow:hidden;
       visibility:hidden; transition:visibility 0s linear .5s;}
 .menu.is-open{visibility:visible; transition:visibility 0s linear 0s;}
 .menu__panel{position:absolute; inset:0; background:var(--orange); will-change:transform;
@@ -137,7 +137,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    Both live on the white screen OUTSIDE the crop box, which is what makes the crop line
    readable as a crop line rather than the edge of the screen. */
 .screenui{position:absolute; left:50%; top:var(--scr-top,0px); transform:translateX(-50%);
-  width:var(--scr-w,0px); height:var(--scr-h,0px); z-index:7; pointer-events:none; opacity:0;
+  width:var(--scr-w,0px); height:var(--scr-h,0px); z-index:8; pointer-events:none; opacity:0;
   color:var(--pitch); font-family:"Switzer",sans-serif;}
 .status{position:absolute; left:0; right:0; top:var(--status-top,0px); height:var(--status-h,22px);
   display:flex; align-items:center; justify-content:space-between; padding:0 8.5%;
@@ -145,7 +145,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .status__icons{display:flex; align-items:center; gap:5px;}
 .status__icons svg{display:block;}
 .homebar{position:absolute; left:50%; transform:translateX(-50%); bottom:var(--home-b,10px);
-  width:36%; height:5px; border-radius:999px; background:var(--pitch); opacity:.85;}
+  width:36%; height:5px; border-radius:999px; background:currentColor; opacity:.85;}
 
 /* ───────────────────────────────────────────────────────────── pin shell
    180vh = 80vh of pinned scroll. The morph runs 0.05 → 0.70 of that, so it starts on the
@@ -226,7 +226,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    in here — for now just a marker so the geometry is legible. */
 .aperture{
   position:absolute; left:50%; top:50%; transform:translate(-50%, calc(-50% + var(--apy, 0px)));
-  width:var(--apw); height:var(--aph); z-index:4;
+  width:var(--apw); height:var(--aph); z-index:5;
   /* transparent: the plates already have blank white screens, and an opaque fill here spilled
      over the billboard's own border and stopped it reading as a billboard. */
   background:transparent; overflow:hidden;
@@ -243,7 +243,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 
   /* the crop rails sit ABOVE the menu — the crop line is never covered by anything, it is
      the one constant of the whole piece. Layer order: aperture 4 · menu 5 · crop 6 · chrome 7 */
-  width:var(--apw); height:var(--aph); z-index:6; pointer-events:none;
+  width:var(--apw); height:var(--aph); z-index:7; pointer-events:none;
   border:2px solid var(--pitch);
 }
 .crop__c{position:absolute; width:12px; height:12px; background:var(--snow); border:2px solid var(--pitch);}
@@ -266,8 +266,8 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
      exposes more columns either side instead of stretching the whole grid.
      Column phase is offset half a cell so no vertical line runs through the headline. */
   background-image:
-    linear-gradient(to right,  var(--line) 0 1px, transparent 1px),
-    linear-gradient(to bottom, var(--line) 0 1px, transparent 1px);
+    linear-gradient(to right,  var(--grid-c, var(--line)) 0 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-c, var(--line)) 0 1px, transparent 1px);
   background-size: var(--cell-w,160px) 100%, 100% var(--cell-h,290px);
   background-position: calc(50% + var(--cell-w,160px) / 2) 0, 0 calc(50% - 0.5px);
   background-repeat: repeat;
@@ -276,8 +276,22 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .ap-grid span{display:none;}
 
 /* stationary and centred, independent of whatever the aperture is currently doing */
-.headline{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:8;
-  display:grid; place-items:center; gap:.5rem; text-align:center; padding:1rem; pointer-events:none;}
+.headline{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:9;
+  display:grid; place-items:center; text-align:center; padding:1rem; pointer-events:none;
+  width:min(90vw, 1100px);}
+/* both headlines occupy the same cell and cross-fade — the copy changes with the format */
+.headline h1{grid-area:1/1; margin:0;}
+.hl-vert{opacity:0; color:#fff;}
+.hl{background:var(--orange); color:var(--snow); padding:0 .1em;
+    box-decoration-break:clone; -webkit-box-decoration-break:clone;}
+/* inverted on the orange screen: white box, orange word */
+.hl--inv{background:#fff; color:var(--orange);}
+
+/* the orange screen fill — sized to the PHONE SCREEN, so it runs under the status bar and the
+   home indicator as well as the crop box. Sits above the phone photo, below the grid. */
+.screenfill{position:absolute; left:50%; top:var(--scr-top,0px); transform:translateX(-50%);
+  width:var(--scr-w,0px); height:var(--scr-h,0px); background:var(--orange);
+  z-index:4; opacity:0; pointer-events:none;}
 .aperture__h{font-family:"Clash Display",sans-serif; font-weight:600; font-size:clamp(1.4rem,3.4vw,3rem); line-height:.95; margin:0; text-transform:lowercase; letter-spacing:-.02em;}
 .aperture__m{font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); font-weight:600;}
 
@@ -389,12 +403,14 @@ body.reg #regout{display:block;}
     <!-- The headline is NOT inside the aperture. The aperture now resizes to whatever the
          current plate's screen is — the headline has to stay put while that happens. -->
     <div class="headline" id="headline">
-      <p class="aperture__m" id="apRatio">—</p>
-      <h1 class="aperture__h">the content<br>lives here</h1>
+      <h1 class="aperture__h hl-wide" id="hlWide">attention outgrew the <span class="hl">widescreen</span></h1>
+      <h1 class="aperture__h hl-vert" id="hlVert">it&rsquo;s a <span class="hl hl--inv">9x16</span> world now</h1>
     </div>
 
     <!-- the phone's screen chrome, sitting on the white screen OUTSIDE the crop box.
          The clock reads 9:16, because of course it does. -->
+    <div class="screenfill" id="screenfill" aria-hidden="true"></div>
+
     <div class="screenui" id="screenui" aria-hidden="true">
       <div class="status">
         <span class="status__time">9:16</span>
@@ -448,8 +464,26 @@ let screenH0 = 0;
 const bodies  = [...document.querySelectorAll(".body")];
 const props   = [...document.querySelectorAll(".prop")];
 const apEl    = document.getElementById("aperture");
-const ratioEl = document.getElementById("apRatio");
 const root    = document.documentElement;
+/* declared up here deliberately: setAperture() touches all of these and runs during init */
+const gridEl  = document.querySelector(".ap-grid");
+const fillEl  = document.getElementById("screenfill");
+const uiEl    = document.getElementById("screenui");
+const hlWide  = document.getElementById("hlWide");
+const hlVert  = document.getElementById("hlVert");
+
+/* How far into the phone state we are: 0 = the landscape shot, 1 = fully the orange screen.
+   Deliberately lags the morph (starts at 0.45) so the colour flip lands as the frame settles
+   into the phone rather than while it is still travelling. */
+const GRID_DARK = "rgba(16,12,8,0.09)", GRID_LIGHT = "rgba(255,255,255,0.55)";
+function setPhase(p){
+  const t = gsap.utils.clamp(0, 1, (p - 0.45) / 0.40);
+  fillEl.style.opacity = t;                                   /* orange fills the whole screen */
+  gridEl.style.setProperty("--grid-c", gsap.utils.interpolate(GRID_DARK, GRID_LIGHT, t));
+  uiEl.style.color = gsap.utils.interpolate("#100C08", "#FFFFFF", t);  /* status + home bar */
+  hlWide.style.opacity = 1 - t;
+  hlVert.style.opacity = t;
+}
 
 /* aperture geometry. Starts a large fixed 16:9 — the viewport is NOT restricted. Ends on a
    9:16 frame inset inside the phone's screen.
@@ -541,20 +575,17 @@ function setAperture(w, h, p = 0){
   /* cell size is absolute so it cannot drift between plates. It interpolates to the phone's
      own 9:16 rhythm across the morph, so the landscape grid and the phone grid are one system
      rather than two. Cells stay 9:16 in both. */
+  setPhase(p);
   const landH = (screenH0 || h) * 0.58, landW = landH * 9 / 16;
   root.style.setProperty("--cell-h", gsap.utils.interpolate(landH, G.endW * 0.292, p) + "px");
   root.style.setProperty("--cell-w", gsap.utils.interpolate(landW, G.endW * 0.163, p) + "px");
   /* the phone scales off the SCREEN, not the crop box — see .body[data-body="phone"] */
   root.style.setProperty("--screenw", gsap.utils.interpolate(G.startW, G.screenW, p) + "px");
-  const r = w / h;
-  ratioEl.textContent = r >= 1 ? `${r.toFixed(2)} : 1` : `1 : ${(1/r).toFixed(2)}`;
 }
 
 /* THE NAV MORPH — v1's bar shrinks onto the phone and parks below the dynamic island.
    p = 0 → fixed 16px from the top, capped at 1180px (v1 geometry, styles.css:116).
    p = 1 → exactly the screen's width, sitting just under the island, hamburger only. */
-const uiEl = document.getElementById("screenui");
-
 function setNav(p){
   const pad    = 20;
   const startW = Math.min(1180, G.vw - pad * 2);
