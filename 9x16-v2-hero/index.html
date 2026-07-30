@@ -998,8 +998,19 @@ function reelTo(i){
    step, with a lockout for the length of the slide. At the first section scrolling up, and the
    last scrolling down, we do NOT preventDefault — the page takes over again so you can get
    back into the hero or out of the reel. */
-let reelActive = false, reelLock = false;
-const STEP_LOCK = 620;
+let reelActive = false, reelLock = false, idleT = null;
+const QUIET_MS = 320;   /* how long the wheel must be silent before a NEW gesture is allowed */
+
+/* A trackpad flick is not one event, it is a stream that keeps firing for 1-2s as the inertia
+   decays. A fixed lockout expires part-way through that stream and the tail of the SAME flick
+   advances a second time — which is the two-sections-per-scroll. So instead of a timer that
+   starts when the step fires, the lock is released only once the wheel has been QUIET: every
+   incoming event pushes the release further out, so one continuous flick can only ever be one
+   step no matter how long its tail runs. */
+function holdUntilQuiet(){
+  clearTimeout(idleT);
+  idleT = setTimeout(() => { reelLock = false; }, QUIET_MS);
+}
 
 /* Slide 0 is the orange hero screen; every slide after it is white with the dark grid. The
    grid is driven WHITE for the orange, so it has to flip back or it is white-on-white. */
@@ -1020,13 +1031,14 @@ function atEdge(dir){
 }
 addEventListener("wheel", e => {
   if (!reelActive) return;
+  if (Math.abs(e.deltaY) < 2) return;          /* ignore wheel noise */
   const dir = e.deltaY > 0 ? 1 : -1;
-  if (atEdge(dir)) return;              /* release to the page at both ends */
+  if (atEdge(dir)) return;                     /* release to the page at both ends */
   e.preventDefault();
-  if (reelLock) return;
+  const wasLocked = reelLock;
   reelLock = true;
-  reelStep(dir);
-  setTimeout(() => { reelLock = false; }, STEP_LOCK);
+  holdUntilQuiet();                            /* the whole inertia tail keeps it held */
+  if (!wasLocked) reelStep(dir);
 }, { passive: false });
 
 addEventListener("keydown", e => {
@@ -1034,9 +1046,9 @@ addEventListener("keydown", e => {
   const dir = /Down|Right|PageDown| /.test(e.key) ? 1 : /Up|Left|PageUp/.test(e.key) ? -1 : 0;
   if (!dir || atEdge(dir)) return;
   e.preventDefault();
-  if (reelLock) return;
-  reelLock = true; reelStep(dir);
-  setTimeout(() => { reelLock = false; }, STEP_LOCK);
+  const wasLocked = reelLock;
+  reelLock = true; holdUntilQuiet();
+  if (!wasLocked) reelStep(dir);
 });
 
 let touchY = null;
@@ -1049,9 +1061,9 @@ addEventListener("touchmove", e => {
   if (atEdge(dir)) return;
   e.preventDefault();
   touchY = null;
-  if (reelLock) return;
-  reelLock = true; reelStep(dir);
-  setTimeout(() => { reelLock = false; }, STEP_LOCK);
+  const wasLocked = reelLock;
+  reelLock = true; holdUntilQuiet();
+  if (!wasLocked) reelStep(dir);
 }, { passive: false });
 
 ScrollTrigger.create({
