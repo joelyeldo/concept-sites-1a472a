@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>9x16 — display face test · six candidates in the real column</title>
+
+<!-- Fontshare: Clash (the control) + Tanker + Switzer (body, unchanged) -->
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600&f[]=tanker@1&f[]=switzer@400,600,700&display=swap">
+<!-- Google: the four other candidates. All free for commercial use. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wdth,wght@62..125,100..900&family=Big+Shoulders+Display:wght@100..900&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&display=swap">
+
+<style>
+:root{
+  --snow:#FAFAFA; --paper:#F1EEE9; --pitch:#100C08; --orange:#FF7B00;
+  --brick:#8A100C; --mute:#6B6560; --line:rgba(16,12,8,.09);
+  /* the real column this site lives in — every headline below is tested at this width */
+  --col:555px;
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{
+  margin:0; background:var(--snow); color:var(--pitch);
+  font-family:"Switzer",system-ui,sans-serif; font-size:17px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1280px; margin:0 auto; padding:clamp(2rem,5vw,4.5rem) clamp(1.2rem,4vw,3rem) 8rem;}
+
+.lede{max-width:60ch; margin-bottom:3.5rem;}
+.lede h1{font-family:"Switzer",sans-serif; font-weight:700; font-size:1.5rem; margin:0 0 .8rem; letter-spacing:-.01em;}
+.lede p{color:var(--mute); margin:.5rem 0;}
+.lede code{background:var(--paper); padding:.1em .35em; font-size:.9em;}
+
+.eyebrow{font-weight:600; font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--mute);}
+
+/* ---- one candidate block ---- */
+.cand{border-top:2px solid var(--pitch); padding:2rem 0 3.5rem; margin-bottom:1rem;}
+.cand__head{display:flex; flex-wrap:wrap; align-items:baseline; gap:.9rem; margin-bottom:.4rem;}
+.cand__name{font-family:"Switzer",sans-serif; font-weight:700; font-size:1.05rem;}
+.cand__meta{font-size:.8rem; color:var(--mute);}
+.cand__note{font-size:.92rem; color:var(--mute); max-width:62ch; margin:.5rem 0 1.8rem;}
+.cand__note b{color:var(--brick); font-weight:600;}
+.cand__note i{color:var(--pitch); font-style:normal; font-weight:600;}
+
+/* the column: the ONLY honest place to judge these, since it is where they will live */
+.cols{display:flex; flex-wrap:wrap; gap:2.5rem;}
+.col{
+  width:var(--col); max-width:100%; flex:0 0 auto;
+  border-left:1px solid var(--line); border-right:1px solid var(--line);
+  padding:1.4rem 1.6rem 1.8rem; background:var(--paper);
+}
+.col__tag{font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); margin-bottom:1rem;}
+
+/* real strings at real sizes, matching the live site's scale */
+.hero-h{font-size:3.6rem; line-height:.9; letter-spacing:-.02em; margin:0 0 1.6rem;}
+.sec-h {font-size:1.85rem; line-height:1.05; letter-spacing:-.01em; margin:0 0 1.1rem;}
+.stat  {font-size:2.9rem; line-height:1; letter-spacing:-.02em; margin:0;}
+.stat span{font-size:.8rem; letter-spacing:.14em; text-transform:uppercase; color:var(--mute); display:block; margin-top:.3rem; font-family:"Switzer",sans-serif; font-weight:600;}
+.hl{background:var(--orange); color:var(--snow); padding:0 .1em; box-decoration-break:clone; -webkit-box-decoration-break:clone;}
+.up{text-transform:uppercase;}
+.lo{text-transform:lowercase;}
+
+/* per-candidate display face — body copy stays Switzer everywhere, as on the live site */
+.f-clash   .hero-h,.f-clash   .sec-h,.f-clash   .stat{font-family:"Clash Display",sans-serif; font-weight:600;}
+.f-bigsh   .hero-h,.f-bigsh   .sec-h,.f-bigsh   .stat{font-family:"Big Shoulders Display",sans-serif; font-weight:700;}
+.f-bric    .hero-h,.f-bric    .sec-h,.f-bric    .stat{font-family:"Bricolage Grotesque",sans-serif; font-weight:700; font-variation-settings:"wdth" 78;}
+.f-archivo .hero-h,.f-archivo .sec-h,.f-archivo .stat{font-family:"Archivo",sans-serif; font-weight:700; font-variation-settings:"wdth" 68;}
+.f-anton   .hero-h,.f-anton   .sec-h,.f-anton   .stat{font-family:"Anton",sans-serif; font-weight:400;}
+.f-tanker  .hero-h,.f-tanker  .sec-h,.f-tanker  .stat{font-family:"Tanker",sans-serif; font-weight:400;}
+
+#report{margin-top:3rem; padding:1.2rem 1.4rem; border:2px solid var(--pitch); background:var(--paper); font-size:.88rem; white-space:pre-wrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="lede">
+  <p class="eyebrow">9x16 · v2 · display face</p>
+  <h1>Six candidates, judged where they actually have to work.</h1>
+  <p>A specimen sheet flatters everything. These are your <b>real strings at real sizes inside the 555px column</b> — the narrow measure is exactly where Clash starts breaking, so it's the only honest test.</p>
+  <p>Each candidate is shown <i>lowercase</i> (your current system) and <i>uppercase</i>, because condensed faces mostly earn their keep in caps — that's the trade I flagged and it's the thing to look at.</p>
+  <p>All six are <b>free for commercial use</b>. Fontshare and Google only.</p>
+</div>
+
+<!-- ═══ 1 · CLASH DISPLAY — the control ═══ -->
+<section class="cand f-clash">
+  <div class="cand__head"><span class="cand__name">Clash Display</span><span class="cand__meta">Fontshare · free · <i>what you're on now</i></span></div>
+  <p class="cand__note"><b>The control.</b> Wide, geometric, pleasant — and the default display face of every startup portfolio since 2021. Note how much horizontal room it eats in the column: the hero headline barely fits and the section heads run to two lines. <b>It is a wide face and you are selling narrow.</b></p>
+  <div class="cols">
+    <div class="col"><p class="col__tag">lowercase — current system</p>
+      <p class="hero-h lo">everything fits <span class="hl">vertical.</span></p>
+      <p class="sec-h lo">9x16 work people actually stopped for</p>
+      <p class="stat">190.1M<span>total views</span></p></div>
+    <div class="col"><p class="col__tag">uppercase</p>
+      <p class="hero-h up">everything fits <span class="hl">vertical.</span></p>
+      <p class="sec-h up">9x16 work people actually stopped for</p>
+      <p class="stat up">190.1M<span>total views</span></p></div>
+  </div>
+</section>
+
+<!-- ═══ 2 · BIG SHOULDERS DISPLAY ═══ -->
+<section class="cand f-bigsh">
+  <div class="cand__head"><span class="cand__name">Big Shoulders Display</span><span class="cand__meta">Google · free · variable 100–900</span></div>
+  <p class="cand__note"><b>My pick.</b> Genuinely condensed with American industrial-signage character — drawn for Chicago wayfinding, so it has actual heritage rather than trend. Tall and narrow: <i>the letterforms themselves argue 9:16</i>. Barely used compared to Clash or Anton. Holds up lowercase better than most condensed faces, which is the rare bit.</p>
+  <div class="cols">
+    <div class="col"><p class="col__tag">lowercase — current system</p>
+      <p class="hero-h lo">everything fits <span class="hl">vertical.</span></p>
+      <p class="sec-h lo">9x16 work people actually stopped for</p>
+      <p class="stat">190.1M<span>total views</span></p></div>
+    <div class="col"><p class="col__tag">uppercase</p>
+      <p class="hero-h up">everything fits <span class="hl">vertical.</span></p>
+      <p class="sec-h up">9x16 work people actually stopped for</p>
+      <p class="stat up">190.1M<span>total views</span></p></div>
+  </div>
+</section>
+
+<!-- ═══ 3 · BRICOLAGE GROTESQUE ═══ -->
+<section class="cand f-bric">
+  <div class="cand__head"><span class="cand__name">Bricolage Grotesque</span><span class="cand__meta">Google · free · variable wdth + opsz</span></div>
+  <p class="cand__note"><b>The chaos pick.</b> Deliberately imperfect — irregular joints and slightly-wrong curves, drawn to feel handmade rather than optimised. If "soulless" was the complaint, this is the most direct answer on the list. Width axis set to 78 here so it runs narrow. <b>Risk:</b> the quirk is load-bearing — if the rest of the site stays strictly Swiss it may read as a mismatch rather than a choice.</p>
+  <div class="cols">
+    <div class="col"><p class="col__tag">lowercase — current system</p>
+      <p class="hero-h lo">everything fits <span class="hl">vertical.</span></p>
+      <p class="sec-h lo">9x16 work people actually stopped for</p>
+      <p class="stat">190.1M<span>total views</span></p></div>
+    <div class="col"><p class="col__tag">uppercase</p>
+      <p class="hero-h up">everything fits <span class="hl">vertical.</span></p>
+      <p class="sec-h up">9x16 work people actually stopped for</p>
+      <p class="stat up">190.1M<span>total views</span></p></div>
+  </div>
+</section>
+
+<!-- ═══ 4 · ARCHIVO (condensed) ═══ -->
+<section class="cand f-archivo">
+  <div class="cand__head"><span class="cand__name">Archivo</span><span class="cand__meta">Google · free · variable wdth 62–125 · shown at 68</span></div>
+  <p class="cand__note"><b>The professional pick.</b> Exceptionally well drawn, huge width and weight range from one file — you can run condensed headlines and normal-width UI from the same family. Doesn't have the "free font look" at all. <b>Trade:</b> it's a workhorse, not a character actor. Solves the width problem cleanly, contributes less personality than 2 or 3.</p>
+  <div class="cols">
+    <div class="col"><p class="col__tag">lowercase — current system</p>
+      <p class="hero-h lo">everything fits <span class="hl">vertical.</span></p>
+      <p class="sec-h lo">9x16 work people actually stopped for</p>
+      <p class="stat">190.1M<span>total views</span></p></div>
+    <div class="col"><p class="col__tag">uppercase</p>
+      <p class="hero-h up">everything fits <span class="hl">vertical.</span></p>
+      <p class="sec-h up">9x16 work people actually stopped for</p>
+      <p class="stat up">190.1M<span>total views</span></p></div>
+  </div>
+</section>
+
+<!-- ═══ 5 · TANKER ═══ -->
+<section class="cand f-tanker">
+  <div class="cand__head"><span class="cand__name">Tanker</span><span class="cand__meta">Fontshare · free · single weight</span></div>
+  <p class="cand__note"><b>Maximum volume.</b> Very heavy, very condensed — this is the loud-marketing-agency face. Enormous impact at hero size. <b>Risk, and it's real:</b> one weight only, so it cannot carry a whole type system. Use it for hero moments and pair it with something else for section heads, or it becomes shouting.</p>
+  <div class="cols">
+    <div class="col"><p class="col__tag">lowercase — current system</p>
+      <p class="hero-h lo">everything fits <span class="hl">vertical.</span></p>
+      <p class="sec-h lo">9x16 work people actually stopped for</p>
+      <p class="stat">190.1M<span>total views</span></p></div>
+    <div class="col"><p class="col__tag">uppercase</p>
+      <p class="hero-h up">everything fits <span class="hl">vertical.</span></p>
+      <p class="sec-h up">9x16 work people actually stopped for</p>
+      <p class="stat up">190.1M<span>total views</span></p></div>
+  </div>
+</section>
+
+<!-- ═══ 6 · ANTON ═══ -->
+<section class="cand f-anton">
+  <div class="cand__head"><span class="cand__name">Anton</span><span class="cand__meta">Google · free · single weight · <i>benchmark</i></span></div>
+  <p class="cand__note"><b>The benchmark, not a recommendation.</b> The most-used condensed display face on the free web — included so you can see what "obvious condensed" looks like and measure the others against it. Powerful, and everywhere. Swapping Clash for Anton trades one over-used face for another.</p>
+  <div class="cols">
+    <div class="col"><p class="col__tag">lowercase — current system</p>
+      <p class="hero-h lo">everything fits <span class="hl">vertical.</span></p>
+      <p class="sec-h lo">9x16 work people actually stopped for</p>
+      <p class="stat">190.1M<span>total views</span></p></div>
+    <div class="col"><p class="col__tag">uppercase</p>
+      <p class="hero-h up">everything fits <span class="hl">vertical.</span></p>
+      <p class="sec-h up">9x16 work people actually stopped for</p>
+      <p class="stat up">190.1M<span>total views</span></p></div>
+  </div>
+</section>
+
+<div id="report">running font checks…</div>
+
+</div>
+
+<script>
+/* SELF-CHECK — a font test is worthless if a face silently falls back to a system font and
+   you end up judging Helvetica six times. Verify every candidate actually loaded, and
+   measure how much column width each one eats on the same string (the whole argument). */
+const FACES = [
+  ["Clash Display", 600], ["Big Shoulders Display", 700], ["Bricolage Grotesque", 700],
+  ["Archivo", 700], ["Tanker", 400], ["Anton", 400]
+];
+const STR = "everything fits vertical.";
+
+function measure(family, weight, variation){
+  const s = document.createElement("span");
+  s.style.cssText = `position:absolute;visibility:hidden;white-space:nowrap;font-size:3.6rem;letter-spacing:-.02em;font-family:"${family}",sans-serif;font-weight:${weight};`;
+  if (variation) s.style.fontVariationSettings = variation;
+  s.textContent = STR;
+  document.body.appendChild(s);
+  const w = s.offsetWidth;
+  s.remove();
+  return w;
+}
+
+document.fonts.ready.then(() => {
+  const COL = 555, lines = [], missing = [];
+  const varset = {"Bricolage Grotesque":'"wdth" 78', "Archivo":'"wdth" 68'};
+
+  FACES.forEach(([f, wt]) => {
+    const loaded = document.fonts.check(`${wt} 48px "${f}"`);
+    if (!loaded) missing.push(f);
+    const w = measure(f, wt, varset[f]);
+    lines.push([f, loaded, w]);
+  });
+
+  const base = lines.find(l => l[0] === "Clash Display")[2];
+  const body = lines.map(([f, ok, w]) => {
+    const pct = Math.round((w / base) * 100);
+    const fits = w <= COL - 52;   /* minus the column's 26px side padding */
+    return `${ok ? "✓" : "✗ NOT LOADED"}  ${f.padEnd(24)} ${String(Math.round(w)).padStart(5)}px  ${String(pct).padStart(4)}% of Clash  ${fits ? "fits the column" : "OVERFLOWS — wraps to 2 lines"}`;
+  }).join("\n");
+
+  document.getElementById("report").textContent =
+    `FONT LOAD + WIDTH CHECK — "${STR}" at 3.6rem, column ${COL}px\n` +
+    `${"─".repeat(78)}\n${body}\n${"─".repeat(78)}\n` +
+    (missing.length
+      ? `✗ FAIL — ${missing.length} face(s) did not load (${missing.join(", ")}). You are looking at a fallback, not the real thing. Check your connection and reload before judging.`
+      : `✓ PASS — all 6 faces loaded. Narrower % = more headline per line = more argument for 9:16.`);
+
+  console.log(document.getElementById("report").textContent);
+});
+</script>
+</body>
+</html>
