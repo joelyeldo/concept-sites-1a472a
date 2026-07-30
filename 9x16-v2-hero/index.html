@@ -198,7 +198,9 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .stage{position:absolute; inset:0; z-index:3;}
 .body{
   position:absolute; left:50%; top:50%; margin:0; opacity:0;
-  width:calc(var(--apw) * (100 / var(--sw)));
+  /* landscape plates are sized by JS to COVER the viewport (--plate-w); the phone still
+     scales off the screen width. Either way the plate's own screen centre lands dead centre. */
+  width:var(--plate-w, 100%);
   transform:translate(calc(var(--sx) * -1%), calc(var(--sy) * -1%));
   will-change:opacity,width;
 }
@@ -259,7 +261,9 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 }
 .ap-grid span{position:absolute; top:0; bottom:0; width:1px; background:var(--line);}
 
-.aperture__inner{position:absolute; inset:0; z-index:1; display:grid; place-content:center; gap:.5rem; text-align:center; padding:1rem;}
+/* stationary and centred, independent of whatever the aperture is currently doing */
+.headline{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:8;
+  display:grid; place-items:center; gap:.5rem; text-align:center; padding:1rem; pointer-events:none;}
 .aperture__h{font-family:"Clash Display",sans-serif; font-weight:600; font-size:clamp(1.4rem,3.4vw,3rem); line-height:.95; margin:0; text-transform:lowercase; letter-spacing:-.02em;}
 .aperture__m{font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); font-weight:600;}
 
@@ -330,16 +334,20 @@ body.reg #regout{display:block;}
            fourth is markup only. Every screen measured off the plate and HEIGHT-fitted —
            all three are wider than 16:9 (2.05, 2.10, 2.38), so matching widths would push
            our aperture past the top and bottom of the board. -->
-      <figure class="body" data-body="frame-01" style="--sw:56.8; --sx:50.0; --sy:50.2;">
-        <img src="assets/body-16x9-01.jpg" alt="">
+      <figure class="body" data-body="frame-01" style="--sw:53.29; --sh:39.15; --sx:49.87; --sy:58.95;">
+        <img src="assets/hero-01.jpg" alt="">
       </figure>
 
-      <figure class="body" data-body="frame-02" style="--sw:44.9; --sx:49.9; --sy:47.7;">
-        <img src="assets/body-16x9-02.jpg" alt="">
+      <figure class="body" data-body="frame-02" style="--sw:52.86; --sh:33.57; --sx:49.89; --sy:47.70;">
+        <img src="assets/hero-02.jpg" alt="">
       </figure>
 
-      <figure class="body" data-body="frame-03" style="--sw:39.8; --sx:49.9; --sy:59.0;">
-        <img src="assets/body-16x9-03.jpg" alt="">
+      <figure class="body" data-body="frame-03" style="--sw:65.45; --sh:44.66; --sx:49.89; --sy:51.17;">
+        <img src="assets/hero-03.jpg" alt="">
+      </figure>
+
+      <figure class="body" data-body="frame-04" style="--sw:64.48; --sh:42.90; --sx:49.87; --sy:48.69;">
+        <img src="assets/hero-04.jpg" alt="">
       </figure>
 
       <!-- the one that is not on the ground. Registration measured off the cut-out, not guessed:
@@ -362,10 +370,13 @@ body.reg #regout{display:block;}
         <span style="left:9%"></span><span style="left:25.5%"></span><span style="left:41.8%"></span>
         <span style="left:58.2%"></span><span style="left:74.5%"></span><span style="left:91%"></span>
       </div>
-      <div class="aperture__inner">
-        <p class="aperture__m" id="apRatio">16 : 9</p>
-        <h1 class="aperture__h">the content<br>lives here</h1>
-      </div>
+    </div>
+
+    <!-- The headline is NOT inside the aperture. The aperture now resizes to whatever the
+         current plate's screen is — the headline has to stay put while that happens. -->
+    <div class="headline" id="headline">
+      <p class="aperture__m" id="apRatio">—</p>
+      <h1 class="aperture__h">the content<br>lives here</h1>
     </div>
 
     <!-- the phone's screen chrome, sitting on the white screen OUTSIDE the crop box.
@@ -576,6 +587,31 @@ let cyc = 0, timer = null, onPhone = false;
    outgoing plate is held fully opaque underneath and only the incoming one fades up on top;
    the others are hidden after it has fully covered them. Every plate is larger than the
    viewport (checked in the self-check), so the one on top always covers what it replaces. */
+/* ── each plate's own screen, in viewport pixels ──────────────────────────────────────
+   The plates are NOT all 16:9 (2.38 / 2.10 / 1.95 / 2.00) — they are the landscape formats
+   the marketing world actually runs on, which is the point. So the aperture stops being a
+   fixed 16:9 box and becomes whatever the current plate's screen is, edge to edge, and the
+   grid fills it with no gutters. Each plate is scaled to cover the viewport; its screen
+   centre sits dead centre, so the rect is just centred on the middle of the screen. */
+function plateGeom(b){
+  const img = b.querySelector("img");
+  const ar  = img && img.naturalWidth ? img.naturalWidth / img.naturalHeight : 16 / 9;
+  const n   = k => +b.style.getPropertyValue("--" + k);
+  const w   = Math.max(G.vw, G.vh * ar);      /* cover */
+  const h   = w / ar;
+  return { plateW:w, w: w * n("sw") / 100, h: h * n("sh") / 100 };
+}
+function sizePlates(){
+  LANDSCAPE.forEach(b => b.style.setProperty("--plate-w", plateGeom(b).plateW + "px"));
+}
+
+let curPlate = null;                 /* the screen rect currently on show — the morph's start */
+const apProxy = { w:0, h:0 };
+function tweenAperture(w, h, dur){
+  gsap.to(apProxy, { w, h, duration:dur, ease:"power1.inOut", overwrite:"auto",
+    onUpdate(){ setAperture(apProxy.w, apProxy.h, 0); } });
+}
+
 function showLandscape(i){
   const incoming = LANDSCAPE[i];
   LANDSCAPE.forEach((b, j) => { b.style.zIndex = j === i ? 2 : 1; });
@@ -584,6 +620,10 @@ function showLandscape(i){
     opacity:1, duration:FADE_S, ease:"power1.inOut",
     onComplete(){ LANDSCAPE.forEach((b, j) => { if (j !== i) gsap.set(b, { opacity:0 }); }); }
   });
+  /* the grid follows the plate's screen on the same curve as the cross-fade */
+  const g = plateGeom(incoming);
+  curPlate = g;
+  if (lastP < MORPH_AT) tweenAperture(g.w, g.h, FADE_S);
 }
 function startCycle(){
   if (timer || reduce) return;
@@ -608,6 +648,7 @@ function handoff(progress){
     startCycle();
   }
 }
+sizePlates();
 startCycle();
 if (reduce) showLandscape(0);
 
@@ -625,8 +666,11 @@ tl.to(morph, {
   p:1, duration:.65,
   onUpdate(){
     const p = lastP = gsap.parseEase("power2.inOut")(morph.p);
-    setAperture(gsap.utils.interpolate(G.startW, G.endW, p),
-                gsap.utils.interpolate(G.startH, G.endH, p), p);
+    /* the morph starts from whichever plate's screen is on show, not a notional 16:9 box */
+    const from = curPlate || { w:G.startW, h:G.startH };
+    gsap.killTweensOf(apProxy);
+    setAperture(gsap.utils.interpolate(from.w, G.endW, p),
+                gsap.utils.interpolate(from.h, G.endH, p), p);
     setNav(p);   /* the bar shrinks onto the phone on the same curve */
   }
 }, 0.05);
@@ -717,8 +761,11 @@ addEventListener("keydown", e => {
 /* re-place everything from the CURRENT geometry at the CURRENT progress */
 function reflow(){
   G = geo(); publishCol();
-  setAperture(gsap.utils.interpolate(G.startW, G.endW, lastP),
-              gsap.utils.interpolate(G.startH, G.endH, lastP), lastP);
+  sizePlates();
+  if (curPlate) curPlate = plateGeom(LANDSCAPE[cyc]);   /* re-measure at the new viewport */
+  const from = curPlate || { w:G.startW, h:G.startH };
+  setAperture(gsap.utils.interpolate(from.w, G.endW, lastP),
+              gsap.utils.interpolate(from.h, G.endH, lastP), lastP);
   setNav(lastP);
   ScrollTrigger.refresh();
 }
@@ -731,8 +778,14 @@ function check(){
   const g = geo();
   if (!g.ready) return;
 
-  const startR = g.startW / g.startH, endR = g.endH / g.endW;
-  const is16x9 = Math.abs(startR - 16/9) < 0.02;
+  const endR = g.endH / g.endW;
+  /* the aperture no longer starts at a fixed 16:9 — it IS the current plate's screen. The
+     thing that now matters is that it matches that screen exactly, so the grid has no gutters. */
+  const apW = parseFloat(root.style.getPropertyValue('--apw')) || 0;
+  const apH = parseFloat(root.style.getPropertyValue('--aph')) || 0;
+  const plateRects = LANDSCAPE.map(b => ({ id:b.dataset.body, ...plateGeom(b) }));
+  const shown = curPlate || plateRects[0];
+  const fillsScreen = !!curPlate && Math.abs(apW - shown.w) < 2 && Math.abs(apH - shown.h) < 2;
   /* the frame no longer has to be exactly 9:16 — it has to READ vertical. 9:16 is 1.78. */
   const isVertical = endR > 1.55 && endR < 2.05;
   const fits   = g.startW < g.vw && g.startH < g.vh;   /* body needs room around it */
@@ -760,7 +813,7 @@ function check(){
     return !(n("sw") > 0 && n("sw") <= 100 && n("sx") >= 0 && n("sx") <= 100 && n("sy") >= 0 && n("sy") <= 100);
   });
 
-  console.assert(is16x9, "FAIL: aperture does not start at 16:9 —", startR.toFixed(3));
+  console.assert(fillsScreen, "FAIL: aperture does not fill the plate screen — grid will gutter");
   console.assert(isVertical, "FAIL: landed frame does not read vertical — 1:", endR.toFixed(3));
   console.assert(fits,   "FAIL: aperture fills the viewport — no room for a body around it");
   console.assert(phoneFits, "FAIL: phone mockup does not fit the viewport — island would clip");
@@ -778,10 +831,12 @@ function check(){
   });
   console.assert(platesCover, "FAIL: a 16:9 plate is smaller than the viewport — cross-fade will flash");
 
-  const pass = is16x9 && isVertical && fits && phoneFits && clearsIsland && navInside && homeRoom && clearsCurve && !badReg.length;
+  const pass = fillsScreen && isVertical && fits && phoneFits && clearsIsland && navInside && homeRoom && clearsCurve && !badReg.length;
   console.log(
 `9x16 hero rig — self-check
-  mechanic : ${Math.round(g.startW)}×${Math.round(g.startH)} (${startR.toFixed(2)}:1, FIXED)  →  ${Math.round(g.endW)}×${Math.round(g.endH)} (1:${endR.toFixed(2)} — reads vertical, 9:16 = 1.78)
+  mechanic : plate screen ${Math.round(shown.w)}×${Math.round(shown.h)} (${(shown.w/shown.h).toFixed(2)}:1)  →  ${Math.round(g.endW)}×${Math.round(g.endH)} (1:${endR.toFixed(2)} — vertical)
+  plates   : ${plateRects.map(r=>r.id.replace('frame-','')+' '+(r.w/r.h).toFixed(2)+':1').join(' · ')}   none is 16:9, by design
+  grid fill: aperture ${Math.round(apW)}×${Math.round(apH)} vs screen ${Math.round(shown.w)}×${Math.round(shown.h)} — ${fillsScreen?'exact, no gutters':'MISMATCH'}
   phone    : ${Math.round(g.photoW)}×${Math.round(g.photoH)} mockup, top at ${PHONE_TOP}px — fully visible
   screen   : ${Math.round(g.screenW)}×${Math.round(g.screenH)} — bands: status ${Math.round(g.statusH)} · nav ${Math.round(g.navH)} · CROP ${Math.round(g.endH)} · home ${Math.round(g.homeH)}
   island   : ends y=${Math.round(islandBot)} · CROP LINE y=${Math.round(g.frameTop)} (clears island by ${Math.round(g.frameTop - islandBot)}px) · nav ${Math.round(navTop)}–${Math.round(navBot)}, inside the box
