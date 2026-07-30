@@ -3,27 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>9x16 — hero prototype v2 · everything fits vertical</title>
+<title>9x16 — hero rig v2 · fixed aperture, swapping bodies</title>
 
 <style>
 /* ==========================================================================================
-   9x16 · HERO v2 — "everything fits vertical"
-   Standalone scroll prototype. Tokens, fonts and registration-mark language lifted from the
-   live build so this drops into the dev's site without translation.
+   9x16 · HERO RIG v2
+   This is the RIG, not the art. Every photograph is an empty labelled slot. Nothing here
+   fakes an object with CSS shapes — that is what killed v1.
 
-   THE BEAT
-   1. A 16:9 frame is the default world. It is what everything is built for.
-   2. Scroll. The frame starts contracting toward 9:16 and does not stop.
-   3. Four landscape formats arrive at full width, hit the narrowing frame, and are CRUSHED
-      to fit. Each gets a deadpan obituary stamp. Each is then ejected into a side gutter.
-   4. The phone arrives last and simply fits. No force. No crush. That is the punchline.
-   5. Frame settles at column width. The wreckage stays in the gutters for the whole site.
+   THE MECHANIC
+   · A 16:9 aperture sits FIXED and STATIONARY in the middle of the viewport. It does not
+     move while you scroll through the first half. The viewport is NOT restricted.
+   · What changes is the BODY holding it: tv → cinema → billboard → laptop, cross-fading.
+   · On scroll the aperture contracts 16:9 → 9:16 and the body becomes an iPhone.
+   · The ground underneath is a pavement, shot top-down — the viewport is the POV of someone
+     stood still, looking down at the phone in their hand.
+   · The gutters either side of the phone are that pavement. Never content.
 
-   TONE RULE (load-bearing — do not soften):
-   The joke is 100% in the premise, 0% in the craft. Linear easing, no bounce, no squash,
-   no overshoot, no wink. A billboard being crushed into a phone frame is funny on its own.
-   The moment the motion gets bouncy this reads as slapstick and dies. Deadpan or nothing.
-   ========================================================================================== */
+   ───────────────────────────────────────────────────────────────────────────────────────
+   HOW TO DROP A PHOTO IN  (the whole point of the rig)
+
+   Each body photo has its screen in a different place. So a photo carries three numbers:
+
+       --sw : the screen's WIDTH,    as a % of the whole photo
+       --sx : the screen's CENTRE X, as a % of the whole photo
+       --sy : the screen's CENTRE Y, as a % of the whole photo
+
+   The rig scales and offsets the photo so its screen lands exactly on the aperture. Swapping
+   a photo = drop the file in assets/ and correct three numbers. No layout work.
+
+   To measure them: press  R  to toggle registration mode. It outlines the aperture over the
+   photo and prints the current numbers. Nudge until the outline sits on the screen.
+   ────────────────────────────────────────────────────────────────────────────────────── */
 
 @font-face { font-family:"Clash Display"; src:url("assets/fonts/clash-display-600.woff2") format("woff2"); font-weight:600; font-display:swap; }
 @font-face { font-family:"Switzer"; src:url("assets/fonts/switzer-400.woff2") format("woff2"); font-weight:400; font-display:swap; }
@@ -31,379 +42,319 @@
 @font-face { font-family:"Switzer"; src:url("assets/fonts/switzer-700.woff2") format("woff2"); font-weight:700; font-display:swap; }
 
 :root{
-  /* tokens — identical to live styles.css :root */
   --snow:#FAFAFA; --paper:#F1EEE9; --pitch:#100C08; --orange:#FF7B00;
-  --brick:#8A100C; --slate:#3E3E3E; --mute:#6B6560; --line:rgba(16,12,8,.09);
-  --ease-out:cubic-bezier(.23,1,.32,1);
-
-  /* the column the frame lands on — same formula the live site uses for --col */
-  --col:clamp(360px, calc(100dvh * 9 / 16), 620px);
+  --brick:#8A100C; --mute:#6B6560; --line:rgba(16,12,8,.09);
+  --col:clamp(360px, calc(100dvh * 9 / 16), 620px);   /* where the aperture ends up */
+  --apw:62vw;                                          /* live aperture width, driven by JS */
+  --aph:calc(62vw * 9 / 16);                           /* live aperture height, driven by JS */
 }
-
 *,*::before,*::after{box-sizing:border-box;}
-html{scroll-behavior:auto;}
-body{
-  margin:0; background:var(--snow); color:var(--pitch);
-  font-family:"Switzer",system-ui,sans-serif; font-size:17px; line-height:1.55;
-  -webkit-font-smoothing:antialiased;
+body{margin:0; background:#1a1a1c; color:var(--pitch); font-family:"Switzer",system-ui,sans-serif; font-size:17px; -webkit-font-smoothing:antialiased;}
+
+/* ───────────────────────────────────────────────────────────── pin shell */
+.hero{position:relative; height:600vh;}
+.pin{position:sticky; top:0; height:100dvh; overflow:hidden;}
+
+/* ───────────────────────────────────────────────────────────── 1 · THE GROUND
+   PHOTO SLOT — pavement, shot straight down, filling the viewport.
+   Drop in: assets/ground-pavement.jpg
+   The fill below is TEMPORARY SCAFFOLDING, not the design. It is an exact 9:16 herringbone
+   so the geometry is right to build against — herringbone alternates 90°, so half the pavers
+   read 9:16 and half read 16:9. The two formats, interlocked, under the whole site. */
+.ground{position:absolute; inset:0; overflow:hidden; background:#26262a;}
+.ground img{width:100%; height:100%; object-fit:cover; display:block;}
+.ground--placeholder{
+  /* 9:16 paver cell: 45px x 80px. Marked TEMP — delete this rule when the photo lands. */
+  background-color:#2c2c30;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.055) 0 1px, transparent 1px 45px),
+    repeating-linear-gradient(0deg,  rgba(255,255,255,.055) 0 1px, transparent 1px 80px),
+    repeating-linear-gradient(0deg,  rgba(255,255,255,.03)  0 1px, transparent 1px 45px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.03)  0 1px, transparent 1px 80px);
+}
+.ground__tag{
+  position:absolute; left:1.2rem; bottom:1.1rem; z-index:2;
+  font-size:.62rem; letter-spacing:.16em; text-transform:uppercase;
+  color:rgba(255,255,255,.4); font-weight:600;
 }
 
-/* the page grid the whole site sits on — visible, Swiss, unchanged from our build */
-.pagegrid{position:fixed; inset:0; z-index:0; pointer-events:none;}
-.pagegrid span{position:absolute; top:0; bottom:0; width:1px; background:var(--line);}
+/* PROP SLOTS — flyers, small products, paper planes carrying client branding.
+   Each is an <img> with a transparent cut-out. Position is % of the viewport.
+   These are the campaign teasers, so they are separate layers and meant to be swapped. */
+.props{position:absolute; inset:0; z-index:2; pointer-events:none;}
+.prop{position:absolute; opacity:0; will-change:transform,opacity;}
+.prop img{display:block; width:100%; height:auto;}
 
-/* ---------------------------------------------------------------- pin shell */
-.hero{position:relative; z-index:1; height:520vh;}   /* scroll distance for the whole beat */
-.hero__pin{position:sticky; top:0; height:100dvh; overflow:hidden;}
-.hero__stage{position:absolute; inset:0;}
+/* ───────────────────────────────────────────────────────────── 2 · THE BODIES
+   PHOTO SLOTS — the object holding the frame. Real photography, screens blank/black.
+   Sized and offset from --sw/--sx/--sy so every screen registers on the same aperture. */
+.stage{position:absolute; inset:0; z-index:3;}
+.body{
+  position:absolute; left:50%; top:50%; margin:0; opacity:0;
+  width:calc(var(--apw) * (100 / var(--sw)));
+  transform:translate(calc(var(--sx) * -1%), calc(var(--sy) * -1%));
+  will-change:opacity,width;
+}
+.body img{display:block; width:100%; height:auto;}
 
-/* ---------------------------------------------------------------- the gutters
-   These are NOT content. They are the 16:9 world that got left behind. Crushed formats
-   land here and stay for the entire scroll of the site. Everything in here is dead. */
-.gutter{
-  position:absolute; top:0; bottom:0; width:calc((100% - var(--fw,var(--col))) / 2);
-  overflow:hidden; pointer-events:none; opacity:0;
+/* the empty-slot marker. Deliberately NOT an illustration of the object — a labelled hole,
+   so nobody mistakes scaffolding for design. Delete .slot when the photo goes in. */
+.slot{
+  position:relative; width:100%; aspect-ratio:var(--ar,16/10);
+  border:2px dashed rgba(255,255,255,.28); border-radius:2px;
+  display:grid; place-content:center; gap:.35rem; text-align:center;
+  background:rgba(255,255,255,.03);
 }
-.gutter--l{left:0;} .gutter--r{right:0;}
+.slot b{font-size:.82rem; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.75);}
+.slot span{font-size:.7rem; color:rgba(255,255,255,.42);}
 
-/* dead-format furniture: a frozen timecode and a spec line, sitting in the empty air */
-.gutter__meta{
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-90deg);
-  font-family:"Switzer",sans-serif; font-weight:600; font-size:.72rem;
-  letter-spacing:.16em; text-transform:uppercase; color:var(--mute);
-  white-space:nowrap; opacity:.5;
+/* ───────────────────────────────────────────────────────────── 3 · THE APERTURE
+   Fixed 16:9. Contracts to 9:16 on the second half of the scroll. The site's content lives
+   in here — for now just a marker so the geometry is legible. */
+.aperture{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:var(--apw); height:var(--aph); z-index:4;
+  background:var(--snow); overflow:hidden;
 }
+.aperture__inner{position:absolute; inset:0; display:grid; place-content:center; gap:.5rem; text-align:center; padding:1rem;}
+.aperture__h{font-family:"Clash Display",sans-serif; font-weight:600; font-size:clamp(1.4rem,3.4vw,3rem); line-height:.95; margin:0; text-transform:lowercase; letter-spacing:-.02em;}
+.aperture__m{font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); font-weight:600;}
 
-/* ---------------------------------------------------------------- the frame
-   Starts as a landscape 16:9 box floating centre. Ends as a full-height 9:16 column.
-   Width and height are driven from JS as --fw / --fh so the gutters can size off the
-   same number and stay glued to its edges. */
-.frame{
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  width:var(--fw); height:var(--fh);
-  border:2px solid var(--pitch); background:var(--paper);
-  overflow:hidden;
+/* registration mode — press R. Shows where the aperture sits so you can align a new photo. */
+body.reg .aperture{background:rgba(255,123,0,.14); outline:2px solid var(--orange); outline-offset:0;}
+body.reg .body{opacity:1 !important;}
+body.reg .body:not(.is-live){opacity:.18 !important;}
+#regout{
+  position:fixed; left:0; bottom:0; z-index:99; display:none;
+  background:var(--pitch); color:#8f8; font:12px/1.6 ui-monospace,monospace;
+  padding:.7rem 1rem; white-space:pre; max-width:100%; overflow:auto;
 }
-/* registration marks — same 12px construction as .crop__c in the live build */
-.rmark{position:absolute; width:12px; height:12px; background:var(--snow); border:2px solid var(--pitch); z-index:6;}
-.rmark--tl{top:-7px;left:-7px;} .rmark--tr{top:-7px;right:-7px;}
-.rmark--bl{bottom:-7px;left:-7px;} .rmark--br{bottom:-7px;right:-7px;}
+body.reg #regout{display:block;}
 
-/* live spec readout on the frame — ticks 1920x1080 down to 1080x1920 as it narrows */
-.frame__spec{
-  position:absolute; left:0; top:-1.6rem; z-index:6;
-  font-family:"Switzer",sans-serif; font-weight:600; font-size:.68rem;
-  letter-spacing:.16em; text-transform:uppercase; color:var(--mute); white-space:nowrap;
-}
+.cue{position:absolute; left:50%; bottom:1.8rem; transform:translateX(-50%); z-index:6; font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.55); font-weight:600;}
 
-/* ---------------------------------------------------------------- the objects
-   Each is a thin line drawing. Wide by nature. Enters at full size, is crushed on scaleX
-   as the frame closes on it, gets stamped, and is ejected to a gutter. */
-.objs{position:absolute; inset:0; z-index:2;}
-.obj{
-  position:absolute; top:50%; left:50%; margin:0;
-  transform:translate(-50%,-50%); opacity:0; will-change:transform,opacity;
-}
-.obj svg{display:block; overflow:visible;}
-.obj svg *{vector-effect:non-scaling-stroke;}   /* strokes stay 2px however hard we crush it */
-
-/* the obituary stamp. Deadpan. It is a spec label that happens to be a death notice. */
-.stamp{
-  position:absolute; left:50%; top:calc(100% + .7rem); transform:translateX(-50%);
-  font-family:"Switzer",sans-serif; font-weight:700; font-size:.66rem;
-  letter-spacing:.18em; text-transform:uppercase; white-space:nowrap;
-  color:var(--brick); opacity:0;
-}
-.stamp--alive{color:var(--orange);}
-
-/* ---------------------------------------------------------------- headline */
-.hero__copy{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:5; text-align:center; width:min(90vw,1100px); pointer-events:none;}
-.hero__h{
-  font-family:"Clash Display",sans-serif; font-weight:600; margin:0;
-  font-size:clamp(2.6rem,8.2vw,7.4rem); line-height:.92; letter-spacing:-.02em;
-  text-transform:lowercase;
-}
-.hl{background:var(--orange); color:var(--snow); padding:0 .12em; box-decoration-break:clone; -webkit-box-decoration-break:clone;}
-.hero__sub{
-  margin:1.4rem 0 0; font-size:clamp(.95rem,1.5vw,1.1rem); color:var(--mute);
-  opacity:0;
-}
-.hero__cue{
-  position:absolute; left:50%; bottom:2.2rem; transform:translateX(-50%); z-index:6;
-  font-family:"Switzer",sans-serif; font-weight:600; font-size:.72rem;
-  letter-spacing:.16em; text-transform:uppercase; color:var(--mute); white-space:nowrap;
-}
-
-/* ---------------------------------------------------------------- nav
-   Commits to the bit: constricts into the column width along with the frame. */
-.nav{
-  position:fixed; top:0; left:50%; transform:translateX(-50%); z-index:30;
-  width:var(--navw,100%); max-width:100%;
-  display:flex; align-items:center; justify-content:space-between; gap:1rem;
-  padding:1rem clamp(1rem,3vw,2.5rem);
-  border-bottom:1px solid var(--line); background:rgba(250,250,250,.82);
-  backdrop-filter:blur(8px);
-  font-family:"Switzer",sans-serif; font-weight:600; font-size:.9rem;
-}
-.nav__mark{font-family:"Clash Display",sans-serif; font-weight:600; letter-spacing:-.02em;}
-.nav__links{display:flex; gap:clamp(.9rem,2.4vw,2rem); white-space:nowrap;}
-.nav__links a{color:var(--pitch); text-decoration:none;}
-.nav__burger{display:none; width:22px; height:12px; position:relative; flex:0 0 auto;}
-.nav__burger::before,.nav__burger::after{content:""; position:absolute; left:0; right:0; height:2px; background:var(--pitch);}
-.nav__burger::before{top:0;} .nav__burger::after{bottom:0;}
-/* once the column has landed there is no room for inline links — same rule a phone follows */
-.nav.is-narrow .nav__links{display:none;}
-.nav.is-narrow .nav__burger{display:block;}
-
-/* ---------------------------------------------------------------- after-hero proof block */
-.after{position:relative; z-index:1; width:var(--col); margin:0 auto; padding:6rem 1.4rem 10rem; border-left:1px solid var(--line); border-right:1px solid var(--line); background:var(--snow);}
-.after h2{font-family:"Clash Display",sans-serif; font-weight:600; font-size:1.6rem; margin:0 0 .8rem; text-transform:lowercase;}
-.after p{color:var(--mute); font-size:.95rem;}
-
-@media (max-width:640px){
-  /* MOBILE — the inverse gesture. The phone viewport IS 9:16, so there is nothing to crop
-     into. Instead the 16:9 frame arrives TOO WIDE for the screen: it bleeds off both edges,
-     the headline is sliced by the bezel, and only then does it contract to fit. The reader
-     physically cannot see all of 16:9 on their device. Same argument, opposite motion. */
-  :root{ --col:100vw; }
-  .after{border-left:0; border-right:0;}
-  .gutter{display:none;}          /* no gutters — the phone is the frame */
-  .hero__h{font-size:clamp(2.2rem,13vw,4rem);}
-}
-
-@media (prefers-reduced-motion:reduce){
-  .hero{height:auto;}
-  .hero__pin{position:relative; height:auto; min-height:100dvh;}
-  .obj{opacity:1 !important;}
-}
+@media (prefers-reduced-motion:reduce){ .hero{height:auto;} .pin{position:relative;} }
 </style>
 </head>
 <body>
 
-<div class="pagegrid" aria-hidden="true">
-  <span style="left:9%"></span><span style="left:25.5%"></span><span style="left:41.8%"></span>
-  <span style="left:58.2%"></span><span style="left:74.5%"></span><span style="left:91%"></span>
-</div>
+<section class="hero" id="hero">
+  <div class="pin">
 
-<header class="nav" id="nav">
-  <span class="nav__mark">9x16</span>
-  <nav class="nav__links"><a href="#">our work</a><a href="#">the studio</a><a href="#">work with us</a></nav>
-  <span class="nav__burger" aria-hidden="true"></span>
-</header>
+    <!-- 1 · GROUND ────────────────────────────────────────────────────────────────────── -->
+    <div class="ground ground--placeholder" id="ground">
+      <!-- <img src="assets/ground-pavement.jpg" alt=""> ← drop the pavement plate here -->
+      <span class="ground__tag">slot · ground-pavement.jpg — top-down, 9:16 pavers</span>
 
-<section class="hero" id="hero" aria-labelledby="hero-h">
-  <div class="hero__pin">
-    <div class="hero__stage">
-
-      <div class="gutter gutter--l" id="gutL" aria-hidden="true"><span class="gutter__meta">16:9 · no signal</span></div>
-      <div class="gutter gutter--r" id="gutR" aria-hidden="true"><span class="gutter__meta">1920×1080 · discontinued</span></div>
-
-      <div class="frame" id="frame">
-        <span class="frame__spec" id="spec">1920 × 1080</span>
-        <span class="rmark rmark--tl"></span><span class="rmark rmark--tr"></span>
-        <span class="rmark rmark--bl"></span><span class="rmark rmark--br"></span>
-
-        <div class="objs" id="objs" aria-hidden="true">
-
-          <!-- 1 · BILLBOARD — the widest thing we ever asked people to look at -->
-          <figure class="obj" data-obj="billboard" data-w="760" data-eject="-1">
-            <svg width="760" height="300" viewBox="0 0 760 300" fill="none" stroke="var(--pitch)" stroke-width="2">
-              <rect x="1" y="1" width="758" height="210"/>
-              <path d="M40 211v88M720 211v88M1 60h758M1 150h758"/>
-              <path d="M0 300h760" stroke-width="3"/>
-            </svg>
-            <figcaption class="stamp">billboard · 1835–2019</figcaption>
-          </figure>
-
-          <!-- 2 · CINEMA -->
-          <figure class="obj" data-obj="cinema" data-w="820" data-eject="1">
-            <svg width="820" height="300" viewBox="0 0 820 300" fill="none" stroke="var(--pitch)" stroke-width="2">
-              <rect x="1" y="30" width="818" height="240"/>
-              <path d="M60 30v240M760 30v240"/>
-              <path d="M60 60h700M60 240h700" opacity=".35"/>
-              <path d="M1 30h818M1 270h818" stroke-width="3"/>
-            </svg>
-            <figcaption class="stamp">cinema · 1927–2021</figcaption>
-          </figure>
-
-          <!-- 3 · TELEVISION -->
-          <figure class="obj" data-obj="tv" data-w="560" data-eject="-1">
-            <svg width="560" height="380" viewBox="0 0 560 380" fill="none" stroke="var(--pitch)" stroke-width="2">
-              <rect x="1" y="1" width="558" height="300" rx="14"/>
-              <rect x="30" y="30" width="440" height="242" rx="4"/>
-              <circle cx="516" cy="90" r="14"/><circle cx="516" cy="140" r="14"/>
-              <path d="M230 301v46M330 301v46M180 348h200"/>
-            </svg>
-            <figcaption class="stamp">television · 1928–2022</figcaption>
-          </figure>
-
-          <!-- 4 · DESKTOP — the last format that pretended horizontal was normal -->
-          <figure class="obj" data-obj="desktop" data-w="520" data-eject="1">
-            <svg width="520" height="380" viewBox="0 0 520 380" fill="none" stroke="var(--pitch)" stroke-width="2">
-              <rect x="1" y="1" width="518" height="292" rx="8"/>
-              <rect x="26" y="26" width="468" height="242"/>
-              <path d="M226 293v50M294 293v50M170 344h180" />
-            </svg>
-            <figcaption class="stamp">desktop · 1991–2023</figcaption>
-          </figure>
-
-          <!-- 5 · PHONE — the punchline. It is not crushed. It simply fits. -->
-          <figure class="obj" data-obj="phone" data-w="200" data-eject="0">
-            <svg width="200" height="400" viewBox="0 0 200 400" fill="none" stroke="var(--pitch)" stroke-width="2">
-              <rect x="1" y="1" width="198" height="398" rx="24"/>
-              <rect x="16" y="16" width="168" height="368" rx="12" fill="var(--orange)" stroke="none"/>
-              <path d="M74 12h52" stroke-width="4"/>
-            </svg>
-            <figcaption class="stamp stamp--alive">phone · 2010–</figcaption>
-          </figure>
-
-        </div>
+      <div class="props" id="props">
+        <!-- PROP SLOTS · cut-out PNGs, campaign teasers. left/top are % of viewport. -->
+        <figure class="prop" data-prop="flyer-a"  style="left:11%; top:64%; width:9vw;  --rot:-14deg;"></figure>
+        <figure class="prop" data-prop="plane-a"  style="left:20%; top:28%; width:7vw;  --rot:22deg;"></figure>
+        <figure class="prop" data-prop="can"      style="left:83%; top:71%; width:5vw;  --rot:8deg;"></figure>
+        <figure class="prop" data-prop="flyer-b"  style="left:78%; top:34%; width:8.5vw;--rot:31deg;"></figure>
+        <figure class="prop" data-prop="plane-b"  style="left:88%; top:52%; width:6.5vw;--rot:-9deg;"></figure>
+        <figure class="prop" data-prop="leaf"     style="left:14%; top:44%; width:4vw;  --rot:-40deg;"></figure>
       </div>
-
-      <div class="hero__copy">
-        <h1 class="hero__h" id="hero-h">everything fits <span class="hl">vertical.</span></h1>
-        <p class="hero__sub" id="sub">some of it needed convincing.</p>
-      </div>
-
-      <p class="hero__cue" id="cue">keep scrolling ↓</p>
     </div>
+
+    <!-- 2 · BODIES ────────────────────────────────────────────────────────────────────── -->
+    <div class="stage">
+      <!-- --sw/--sx/--sy are PLACEHOLDER estimates. Press R and correct them per photo. -->
+
+      <figure class="body" data-body="tv" style="--sw:78; --sx:50; --sy:44;">
+        <div class="slot" style="--ar:16/11"><b>tv</b><span>assets/body-tv.png · screen blank · cut-out</span></div>
+      </figure>
+
+      <figure class="body" data-body="cinema" style="--sw:88; --sx:50; --sy:47;">
+        <div class="slot" style="--ar:16/9"><b>cinema screen</b><span>assets/body-cinema.png · auditorium, screen blank</span></div>
+      </figure>
+
+      <figure class="body" data-body="billboard" style="--sw:84; --sx:50; --sy:40;">
+        <div class="slot" style="--ar:16/11"><b>billboard</b><span>assets/body-billboard.png · roadside, face blank</span></div>
+      </figure>
+
+      <figure class="body" data-body="laptop" style="--sw:72; --sx:50; --sy:38;">
+        <div class="slot" style="--ar:16/12"><b>laptop</b><span>assets/body-laptop.png · open, screen blank</span></div>
+      </figure>
+
+      <!-- the one that is not on the ground -->
+      <figure class="body" data-body="phone" style="--sw:88; --sx:50; --sy:50;">
+        <div class="slot" style="--ar:9/17.5"><b>iphone</b><span>assets/body-phone.png · in hand, screen blank</span></div>
+      </figure>
+    </div>
+
+    <!-- 3 · APERTURE ──────────────────────────────────────────────────────────────────── -->
+    <div class="aperture" id="aperture">
+      <div class="aperture__inner">
+        <p class="aperture__m" id="apRatio">16 : 9</p>
+        <h1 class="aperture__h">the content<br>lives here</h1>
+      </div>
+    </div>
+
+    <p class="cue" id="cue">scroll ↓ &nbsp;·&nbsp; press R for registration mode</p>
   </div>
 </section>
 
-<section class="after">
-  <h2>the column starts here</h2>
-  <p>Everything below runs inside the frame the hero just built. The wreckage stays in the gutters — that is the 16:9 world, and it does not come back.</p>
-</section>
+<pre id="regout"></pre>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script>
 gsap.registerPlugin(ScrollTrigger);
 
-const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const frame  = document.getElementById("frame");
-const spec   = document.getElementById("spec");
-const nav    = document.getElementById("nav");
-const objs   = [...document.querySelectorAll(".obj")];
+const bodies  = [...document.querySelectorAll(".body")];
+const props   = [...document.querySelectorAll(".prop")];
+const apEl    = document.getElementById("aperture");
+const ratioEl = document.getElementById("apRatio");
+const root    = document.documentElement;
 
-/* --col is a clamp()/vw token, so getPropertyValue returns it UNRESOLVED — parseFloat on
-   "100vw" silently yields 100px. Measure it off a real element instead; the browser does
-   the resolving and we read a true pixel value. */
+/* aperture geometry. Starts a large fixed 16:9 — the viewport is NOT restricted. Ends on
+   the 9:16 column. Measured off a probe so clamp()/vw tokens resolve to real pixels. */
 const probe = document.createElement("div");
-probe.style.cssText = "position:absolute;top:0;left:0;visibility:hidden;pointer-events:none;height:0;width:var(--col);";
+probe.style.cssText = "position:absolute;visibility:hidden;height:0;width:var(--col);";
 document.body.appendChild(probe);
 
-/* Frame geometry. Start = a landscape 16:9 box floating centre. End = a full-height 9:16
-   column. Recomputed on resize so the numbers stay honest at any viewport. */
 function geo(){
   const vw = innerWidth, vh = innerHeight;
-  const mobile = vw <= 640;
-  const endW = probe.offsetWidth || Math.min(620, Math.max(360, vh * 9 / 16));
-  /* MOBILE INVERSION: 16:9 arrives WIDER than the screen and bleeds off both edges.
-     DESKTOP: 16:9 sits comfortably inside the viewport and closes inward. */
-  const startW = mobile ? vw * 1.42 : Math.min(vw * 0.78, vh * 0.86 * 16 / 9);
-  return { startW, startH: startW * 9 / 16, endW, endH: vh, mobile, ready: vw > 0 && vh > 0 };
+  const endW   = probe.offsetWidth || Math.min(620, Math.max(360, vh * 9 / 16));
+  /* start: as big a 16:9 as fits with room for a body around it */
+  const startW = Math.min(vw * 0.62, vh * 0.60 * 16 / 9);
+  return { startW, startH: startW * 9 / 16, endW, endH: endW * 16 / 9, vw, vh,
+           ready: vw > 0 && vh > 0 };
 }
 let G = geo();
 
-/* set the frame + gutters + nav from one width, so nothing can drift out of sync */
-function setFrame(w, h){
-  frame.style.setProperty("--fw", w + "px");
-  frame.style.setProperty("--fh", h + "px");
-  document.querySelectorAll(".gutter").forEach(g => g.style.width = `calc((100% - ${w}px) / 2)`);
-  nav.style.setProperty("--navw", Math.max(w, 320) + "px");
-  nav.classList.toggle("is-narrow", w < 560);
-  spec.textContent = `${Math.round(w / h * 1080)} × 1080`.replace("× 1080", `× ${Math.round(1080)}`);
+function setAperture(w, h){
+  root.style.setProperty("--apw", w + "px");
+  root.style.setProperty("--aph", h + "px");
+  const r = w / h;
+  ratioEl.textContent = r >= 1 ? `${r.toFixed(2)} : 1` : `1 : ${(1/r).toFixed(2)}`;
 }
-setFrame(G.startW, G.startH);
+setAperture(G.startW, G.startH);
 
-if (!reduce) {
-  const tl = gsap.timeline({
-    defaults:{ ease:"none" },                     /* LINEAR. deadpan. no bounce, ever. */
-    scrollTrigger:{ trigger:"#hero", start:"top top", end:"bottom bottom", scrub:0.6 }
-  });
+/* ── the timeline ───────────────────────────────────────────────────────────────────────
+   FIRST HALF  (0 → .52): aperture is FIXED. Only the body swaps. This is the correction —
+                          nothing contracts, nothing restricts, the 16:9 world just IS.
+   SECOND HALF (.52 → 1):  aperture contracts to 9:16, phone takes over, ground reveals. */
+const tl = gsap.timeline({
+  defaults:{ ease:"none" },
+  scrollTrigger:{ trigger:"#hero", start:"top top", end:"bottom bottom", scrub:.6 }
+});
 
-  /* --- the frame closes, continuously, start to finish --- */
-  tl.fromTo({p:0},{p:1},{
-    p:1, duration:1,
-    onUpdate(){
-      const p = this.targets()[0].p;
-      const w = gsap.utils.interpolate(G.startW, G.endW, gsap.parseEase("power1.inOut")(p));
-      const h = gsap.utils.interpolate(G.startH, G.endH, gsap.parseEase("power1.inOut")(p));
-      setFrame(w, h);
-      /* spec readout counts the ratio down as the frame turns over */
-      const ratio = w / h;
-      spec.textContent = ratio > 1
-        ? `${(ratio).toFixed(2)} : 1 — landscape`
-        : `1 : ${(1/ratio).toFixed(2)} — vertical`;
-    }
-  }, 0);
+/* --- bodies cross-fade over a stationary aperture --- */
+const swap = [0.02, 0.15, 0.28, 0.41];       /* tv, cinema, billboard, laptop */
+bodies.slice(0, 4).forEach((b, i) => {
+  tl.to(b, { opacity:1, duration:.05 }, swap[i]);
+  if (i < 3) tl.to(b, { opacity:0, duration:.05 }, swap[i + 1]);
+});
+tl.to(bodies[3], { opacity:0, duration:.06 }, 0.56);          /* laptop out */
 
-  /* --- headline + chrome hand off --- */
-  tl.to("#cue", { opacity:0, duration:.06 }, 0.04)
-    .to("#hero-h", { scale:.42, y:"-24vh", duration:.5 }, 0.06)
-    .to("#sub",    { opacity:1, duration:.08 }, 0.72)
-    .to(["#gutL","#gutR"], { opacity:1, duration:.12 }, 0.60);
+/* --- the contraction: 16:9 → 9:16 --- */
+tl.fromTo({p:0}, {p:1}, {
+  p:1, duration:.34,
+  onUpdate(){
+    const p = gsap.parseEase("power2.inOut")(this.targets()[0].p);
+    setAperture(gsap.utils.interpolate(G.startW, G.endW, p),
+                gsap.utils.interpolate(G.startH, G.endH, p));
+  }
+}, 0.52);
 
-  /* --- the four landscape formats: arrive, get crushed, get stamped, get ejected --- */
-  const beats = [0.10, 0.26, 0.40, 0.54];
-  objs.slice(0, 4).forEach((o, i) => {
-    const at    = beats[i];
-    const natW  = +o.dataset.w;
-    const eject = +o.dataset.eject;
-    const stamp = o.querySelector(".stamp");
+/* --- the phone arrives, and the ground it is standing over reveals in the gutters --- */
+tl.to(bodies[4], { opacity:1, duration:.10 }, 0.60)
+  .fromTo("#ground", { filter:"brightness(.35)" }, { filter:"brightness(1)", duration:.20 }, 0.58)
+  .to("#cue", { opacity:0, duration:.04 }, 0.06);
 
-    tl.fromTo(o,
-      { opacity:0, xPercent:-50 + eject * -110, yPercent:-50, scaleX:1 },
-      { opacity:1, xPercent:-50, duration:.05 }, at)
-      /* the crush. scaleX only — the frame is squeezing it horizontally, nothing else. */
-      .to(o, { scaleX:0.30, duration:.10 }, at + .05)
-      .to(stamp, { opacity:1, duration:.02 }, at + .13)
-      /* ejected into a gutter, where it stays as wreckage */
-      .to(o, { xPercent:-50 + eject * 190, opacity:.28, duration:.08 }, at + .16);
-  });
+/* props settle onto the pavement once the ground is lit */
+props.forEach((p, i) => {
+  const rot = p.style.getPropertyValue("--rot") || "0deg";
+  tl.fromTo(p, { opacity:0, scale:.9, rotate:rot },
+               { opacity:1, scale:1, rotate:rot, duration:.10 }, 0.66 + i * 0.02);
+});
 
-  /* --- the punchline: the phone is not crushed. It fits. --- */
-  const phone = objs[4];
-  tl.fromTo(phone,
-    { opacity:0, yPercent:-20 },
-    { opacity:1, yPercent:-50, duration:.10 }, 0.70)
-    .to(phone.querySelector(".stamp"), { opacity:1, duration:.03 }, 0.82);
+/* ── registration mode ─────────────────────────────────────────────────────────────────
+   Press R. Outlines the aperture over the current body so you can align a swapped photo.
+   Arrow keys nudge --sx/--sy, [ and ] resize --sw. Numbers print live — copy them into
+   the style attribute and the photo is registered for good. */
+const out = document.getElementById("regout");
+let regOn = false, sel = 0;
+
+function live(){ /* whichever body is most visible right now */
+  return bodies.reduce((a, b) =>
+    (+getComputedStyle(b).opacity > +getComputedStyle(a).opacity ? b : a));
 }
+function paint(){
+  bodies.forEach(b => b.classList.remove("is-live"));
+  const b = bodies[sel]; b.classList.add("is-live");
+  const g = n => +b.style.getPropertyValue("--" + n);
+  out.textContent =
+    `REGISTRATION — ${bodies.map((x,i)=>(i===sel?"[":" ")+x.dataset.body+(i===sel?"]":" ")).join(" ")}\n` +
+    `TAB switch · ARROWS move screen centre · [ ] resize screen · R exit\n\n` +
+    `  style="--sw:${g("sw")}; --sx:${g("sx")}; --sy:${g("sy")};"\n\n` +
+    `paste that onto <figure class="body" data-body="${b.dataset.body}">`;
+}
+addEventListener("keydown", e => {
+  if (e.key === "r" || e.key === "R"){
+    regOn = !regOn; document.body.classList.toggle("reg", regOn);
+    if (regOn){ sel = bodies.indexOf(live()); paint(); }
+    return;
+  }
+  if (!regOn) return;
+  const b = bodies[sel], set = (n, d) =>
+    b.style.setProperty("--" + n, (+b.style.getPropertyValue("--" + n) + d).toFixed(1));
+  const k = e.key;
+  if (k === "Tab"){ e.preventDefault(); sel = (sel + 1) % bodies.length; }
+  else if (k === "ArrowLeft")  set("sx", -0.5);
+  else if (k === "ArrowRight") set("sx",  0.5);
+  else if (k === "ArrowUp")    set("sy", -0.5);
+  else if (k === "ArrowDown")  set("sy",  0.5);
+  else if (k === "[")          set("sw", -1);
+  else if (k === "]")          set("sw",  1);
+  else return;
+  e.preventDefault(); paint();
+});
 
-/* recompute on resize — geometry only, no timeline rebuild needed */
-addEventListener("resize", () => { G = geo(); ScrollTrigger.refresh(); }, { passive:true });
+addEventListener("resize", () => { G = geo(); setAperture(G.startW, G.startH); ScrollTrigger.refresh(); }, {passive:true});
 
-/* ---------------------------------------------------------------------------------
-   SELF-CHECK — open the console. Verifies the two claims the whole concept rests on:
-   the frame really does end at 9:16, and the phone really is the only thing not crushed. */
+/* ── SELF-CHECK ────────────────────────────────────────────────────────────────────────
+   Verifies the mechanic AND reports exactly which photographs are still missing, so the
+   rig tells you what it needs instead of you hunting for it. */
 function check(){
   const g = geo();
-  if (!g.ready) { console.warn("9x16 hero self-check — viewport not laid out yet, deferring"); return; }
+  if (!g.ready) return;
 
-  const endRatio   = g.endW / g.endH;
-  const startRatio = g.startW / g.startH;
-  const sane       = [g.startW, g.startH, g.endW, g.endH].every(n => n > 1 && isFinite(n));
-  /* desktop must land on a real 9:16 column; mobile lands on the full screen, so its own
-     rule is that the frame STARTS wider than the viewport — that is the whole inversion. */
-  const lands      = g.mobile ? g.startW > innerWidth * 1.05
-                              : Math.abs(endRatio - 9/16) < 0.08;
-  const starts16x9 = Math.abs(startRatio - 16/9) < 0.02;
-  const crushed    = objs.slice(0,4).every(o => +o.dataset.eject !== 0);
-  const phoneOK    = +objs[4].dataset.eject === 0;
+  const startR = g.startW / g.startH, endR = g.endW / g.endH;
+  const is16x9 = Math.abs(startR - 16/9) < 0.02;
+  const is9x16 = Math.abs(endR - 9/16) < 0.02;
+  const fits   = g.startW < g.vw && g.startH < g.vh;   /* body needs room around it */
 
-  console.assert(sane,       "FAIL: geometry is zero/non-finite —", g);
-  console.assert(starts16x9, "FAIL: frame does not start at 16:9 —", startRatio.toFixed(3));
-  console.assert(lands,      g.mobile ? "FAIL: mobile frame must start wider than the screen"
-                                      : "FAIL: desktop frame does not land on 9:16 —", endRatio.toFixed(3));
-  console.assert(crushed,    "FAIL: a landscape format was not marked for ejection");
-  console.assert(phoneOK,    "FAIL: the phone must not be ejected — it is the punchline");
+  const missingBody = bodies.filter(b => !b.querySelector("img"));
+  const missingProp = props.filter(p => !p.querySelector("img"));
+  const noGround    = !document.querySelector("#ground img");
+  const badReg      = bodies.filter(b => {
+    const n = k => +b.style.getPropertyValue("--" + k);
+    return !(n("sw") > 0 && n("sw") <= 100 && n("sx") >= 0 && n("sx") <= 100 && n("sy") >= 0 && n("sy") <= 100);
+  });
 
-  const pass = sane && starts16x9 && lands && crushed && phoneOK;
-  console.log(`9x16 hero self-check — start ${Math.round(g.startW)}×${Math.round(g.startH)} (${startRatio.toFixed(2)}:1) → end ${Math.round(g.endW)}×${Math.round(g.endH)} (1:${(1/endRatio).toFixed(2)}) · ${g.mobile ? `MOBILE: frame starts ${Math.round(g.startW - innerWidth)}px wider than the screen` : "DESKTOP: frame closes inward to the column"} · ${pass ? "PASS" : "FAIL"}`);
+  console.assert(is16x9, "FAIL: aperture does not start at 16:9 —", startR.toFixed(3));
+  console.assert(is9x16, "FAIL: aperture does not land on 9:16 —", endR.toFixed(3));
+  console.assert(fits,   "FAIL: aperture fills the viewport — no room for a body around it");
+  console.assert(!badReg.length, "FAIL: bad registration data on", badReg.map(b=>b.dataset.body));
+
+  const pass = is16x9 && is9x16 && fits && !badReg.length;
+  console.log(
+`9x16 hero rig — self-check
+  mechanic : ${Math.round(g.startW)}×${Math.round(g.startH)} (${startR.toFixed(2)}:1, FIXED)  →  ${Math.round(g.endW)}×${Math.round(g.endH)} (1:${(1/endR).toFixed(2)})
+  gutters  : ${Math.round((g.vw - g.endW) / 2)}px each side — pavement, never content
+  ${pass ? "✓ RIG PASS" : "✗ RIG FAIL"}
+
+photos still needed (${missingBody.length + missingProp.length + (noGround?1:0)}):
+  ${noGround ? "· ground-pavement.jpg  — top-down, 9:16 pavers, filling frame" : "✓ ground in"}
+${missingBody.map(b => `  · body-${b.dataset.body}.png    — screen blank, cut-out`).join("\n")}
+${missingProp.map(p => `  · prop-${p.dataset.prop}.png    — cut-out, client branding`).join("\n")}
+
+registration : press R over any body to align a swapped photo.`);
 }
-/* run once layout is real, and again after any resize settles */
-addEventListener("load", () => { G = geo(); ScrollTrigger.refresh(); check(); });
+addEventListener("load", () => { G = geo(); setAperture(G.startW, G.startH); ScrollTrigger.refresh(); check(); });
 check();
 </script>
 </body>
