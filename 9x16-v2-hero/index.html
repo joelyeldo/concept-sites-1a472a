@@ -166,7 +166,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* ───────────────────────────────────────────────────────────── pin shell
    180vh = 80vh of pinned scroll. The morph runs 0.05 → 0.70 of that, so it starts on the
    very first scroll and is finished inside roughly half a screen of scrolling. */
-.hero{position:relative; height:180vh;}
+.hero{position:relative; height:calc(180vh + var(--reel-n,8) * 100vh);}
 .pin{position:sticky; top:0; height:100dvh; overflow:hidden; background:var(--snow);}
 
 /* ───────────────────────────────────────────────────────────── 0 · THE PAGE GRID
@@ -290,6 +290,21 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 }
 /* the old percentage verticals would re-space with every plate — the gradient owns columns now */
 .ap-grid span{display:none;}
+
+/* ── THE REEL ─────────────────────────────────────────────────────────────────────────
+   Once the hero lands, the whole site plays inside the phone screen: each section is one
+   screenful and the scroll goes section-to-section, snapping, the way a reels feed does.
+   The stack is TRANSLATED rather than natively scrolled so it shares the hero's single
+   scroll context — a second scroller inside a pinned element means handing off between two
+   scroll systems mid-page, which is where this kind of thing usually goes wrong. */
+.reel{position:absolute; inset:0; z-index:2; opacity:0;
+  transform:translate3d(0, calc(var(--reel-y,0) * -100%), 0); will-change:transform;}
+.rs{position:absolute; left:0; right:0; height:100%; background:var(--snow);
+  display:grid; place-content:center; gap:.4rem; text-align:center; padding:0 8%;}
+.rs__n{font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:var(--mute); font-weight:600;}
+.rs__t{font-family:"Clash Display",sans-serif; font-weight:600; font-size:1.6rem;
+  text-transform:lowercase; letter-spacing:-.02em; margin:0;}
+.rs__todo{font-size:.72rem; color:var(--mute); max-width:26ch; margin:.2rem auto 0;}
 
 /* stationary and centred, independent of whatever the aperture is currently doing */
 /* --apy is the crop box's offset from viewport centre. The headline rides it, otherwise it
@@ -423,6 +438,17 @@ body.reg #regout{display:block;}
         <span style="left:9%"></span><span style="left:25.5%"></span><span style="left:41.8%"></span>
         <span style="left:58.2%"></span><span style="left:74.5%"></span><span style="left:91%"></span>
       </div>
+
+      <div class="reel" id="reel">
+        <section class="rs" data-s="story" style="top:0%"><p class="rs__n">1 / 8</p><h2 class="rs__t">our story</h2><p class="rs__todo">white — not the orange; that is the hero's end state</p></section>
+        <section class="rs" data-s="trust" style="top:100%"><p class="rs__n">2 / 8</p><h2 class="rs__t">trusted by</h2><p class="rs__todo">3 logo bands, angled and criss-crossed</p></section>
+        <section class="rs" data-s="dashboard" style="top:200%"><p class="rs__n">3 / 8</p><h2 class="rs__t">live dashboard</h2><p class="rs__todo">from live, cut everything after the graph</p></section>
+        <section class="rs" data-s="creative" style="top:300%"><p class="rs__n">4 / 8</p><h2 class="rs__t">the work</h2><p class="rs__todo">main display of what we made</p></section>
+        <section class="rs" data-s="unrelated" style="top:400%"><p class="rs__n">5 / 8</p><h2 class="rs__t">completely unrelated</h2></section>
+        <section class="rs" data-s="founder" style="top:500%"><p class="rs__n">6 / 8</p><h2 class="rs__t">the founder</h2></section>
+        <section class="rs" data-s="together" style="top:600%"><p class="rs__n">7 / 8</p><h2 class="rs__t">work together</h2><p class="rs__todo">no scarcity, no pricing</p></section>
+        <section class="rs" data-s="footer" style="top:700%"><p class="rs__n">8 / 8</p><h2 class="rs__t">footer</h2><p class="rs__todo">24x7 joke on the opening hours</p></section>
+      </div>
     </div>
 
     <!-- The headline is NOT inside the aperture. The aperture now resizes to whatever the
@@ -496,6 +522,8 @@ const gridEl  = document.querySelector(".ap-grid");
 const uiEl    = document.getElementById("screenui");
 const hlWide  = document.getElementById("hlWide");
 const hlVert  = document.getElementById("hlVert");
+const reelEl  = document.getElementById("reel");
+const REEL    = [...document.querySelectorAll(".rs")];
 
 /* How far into the phone state we are: 0 = the landscape shot, 1 = fully the orange screen.
    Deliberately lags the morph (starts at 0.45) so the colour flip lands as the frame settles
@@ -693,7 +721,7 @@ setAperture(G.startW, G.startH);
 const tl = gsap.timeline({
   defaults:{ ease:"none" },
   scrollTrigger:{
-    trigger:"#hero", start:"top top", end:"bottom bottom", scrub:.6,
+    trigger:"#hero", start:"top top", end:() => "+=" + (innerHeight * 1.8), scrub:.6,
     onUpdate: self => {
       handoff(self.progress);
       /* Glass is keyed to RAW scroll progress, not the eased morph value. power2.inOut is
@@ -875,6 +903,25 @@ burgerEl.addEventListener("click", () => {
   menuEl.setAttribute("aria-hidden", String(!open));
 });
 addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
+
+/* ── REEL SCROLL ──────────────────────────────────────────────────────────────────────
+   Starts where the morph ends. One section per viewport of scroll, snapped, so a flick lands
+   on a section rather than between two — the reels/shorts behaviour. Snap duration is kept
+   short: a long settle reads as the page fighting you. */
+root.style.setProperty("--reel-n", REEL.length);
+ScrollTrigger.create({
+  trigger: "#hero",
+  start: () => "top top-=" + (innerHeight * 1.8),
+  end: "bottom bottom",
+  scrub: 0.4,
+  snap: { snapTo: 1 / (REEL.length - 1), duration: { min: 0.12, max: 0.3 }, ease: "power2.inOut", delay: 0.02 },
+  onUpdate: self => root.style.setProperty("--reel-y", (self.progress * (REEL.length - 1)).toFixed(4)),
+  onToggle: self => {
+    reelEl.style.opacity = self.isActive ? 1 : 0;
+    /* the hero headline belongs to the hero — it must not sit over the sections */
+    hlVert.style.visibility = self.isActive ? "hidden" : "visible";
+  }
+});
 
 setNav(0);   /* park the bar at v1 geometry before any scrolling happens */
 /* glass is only toggled from the scroll handler now, so it needs its resting state set
