@@ -62,27 +62,66 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
   padding:.7rem .9rem .7rem 1.4rem; background:var(--snow); pointer-events:auto;
   box-shadow:inset 0 0 0 1px rgba(16,12,8,.10), 0 12px 38px rgba(16,12,8,.08);
 }
-.nav__brand{font-family:"Clash Display",sans-serif; font-weight:600; font-size:1.15rem; letter-spacing:-.02em; text-decoration:none; color:var(--pitch);}
-.nav__links{display:flex; gap:clamp(.9rem,2.2vw,2rem); white-space:nowrap;}
-.nav__links a{color:var(--pitch); text-decoration:none; font-weight:600; font-size:.92rem;}
-.nav__burger{display:none; width:22px; height:14px; position:relative; background:none; border:0; padding:0; cursor:pointer; flex:0 0 auto;}
-.nav__burger span{position:absolute; left:0; right:0; height:2px; background:var(--pitch); transition:transform .3s var(--ease-out), opacity .2s;}
-.nav__burger span:nth-child(1){top:0;} .nav__burger span:nth-child(2){top:6px;} .nav__burger span:nth-child(3){top:12px;}
-/* once it has constricted onto the phone there is no room for inline links — same rule a phone follows */
+/* v1 verbatim, styles.css:125-146 — logo, lowercase Clash links, 44px burger with 25x2 bars */
+.nav__brand{display:inline-flex; align-items:center;}
+.nav__logo{height:var(--logo-h,56px); width:auto; display:block;}
+.nav__links{display:flex; align-items:center; gap:clamp(1.1rem,2.4vw,2.1rem); padding-right:.7rem;}
+.nav__links a{
+  font-family:"Clash Display",sans-serif; font-weight:500; text-transform:lowercase;
+  color:var(--pitch); text-decoration:none; font-size:1.12rem; opacity:.9;
+  transition:opacity .2s var(--ease-out);
+}
+.nav__links a:hover{opacity:1;}
+.nav__burger{display:none; flex-direction:column; justify-content:center; align-items:center; gap:7px;
+  width:44px; height:44px; padding:0; background:none; border:none; cursor:pointer; color:var(--pitch);}
+.nav__burger span{display:block; width:25px; height:2px; background:currentColor;
+  transition:transform .32s var(--ease-out), opacity .2s var(--ease-out);}
+.nav__burger.is-open span:nth-child(1){transform:translateY(9px) rotate(45deg);}
+.nav__burger.is-open span:nth-child(2){opacity:0;}
+.nav__burger.is-open span:nth-child(3){transform:translateY(-9px) rotate(-45deg);}
+/* once it has constricted onto the phone there is no room for inline links — a phone's rule */
 .nav.is-phone .nav__links{display:none;}
-.nav.is-phone .nav__burger{display:block;}
-.nav.is-phone .nav__inner{padding:.55rem .8rem .55rem 1rem; box-shadow:inset 0 0 0 1px rgba(16,12,8,.10);}
-.nav.is-open .nav__burger span:nth-child(1){transform:translateY(6px) rotate(45deg);}
-.nav.is-open .nav__burger span:nth-child(2){opacity:0;}
-.nav.is-open .nav__burger span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+.nav.is-phone .nav__burger{display:flex;}
+.nav.is-phone .nav__inner{padding:.35rem .5rem .35rem .8rem; box-shadow:inset 0 0 0 1px rgba(16,12,8,.10);}
+.nav.is-open{z-index:90;}
 
-/* the phone's full-screen menu overlay — clipped to the screen, exactly as a phone does it */
-.menu{position:absolute; left:50%; top:50%; transform:translate(-50%, calc(-50% + var(--apy, 0px))); width:var(--apw); height:var(--aph);
-      z-index:45; background:var(--pitch); clip-path:inset(0 0 100% 0); visibility:hidden;
-      transition:clip-path .45s var(--ease-out), visibility 0s linear .45s;
-      display:grid; align-content:center; gap:1rem; padding:2rem;}
-.menu.is-open{clip-path:inset(0 0 0 0); visibility:visible; transition:clip-path .45s var(--ease-out);}
-.menu a{color:var(--snow); text-decoration:none; font-family:"Clash Display",sans-serif; font-weight:600; font-size:1.8rem; text-transform:lowercase;}
+/* v1's mobile overlay, styles.css:157-182 — orange, wipes in from the RIGHT, one link per
+   9:16 grid row, tap fills the row white. Clipped to the phone screen instead of the viewport,
+   and its row height is measured against the frame rather than 29.2vw. */
+.menu{position:absolute; left:50%; top:50%; transform:translate(-50%, calc(-50% + var(--apy, 0px)));
+      width:var(--apw); height:var(--aph); z-index:80; background:var(--orange); overflow:hidden;
+      clip-path:inset(0 0 0 100%); visibility:hidden;
+      transition:clip-path .5s var(--ease-out), visibility 0s linear .5s;}
+.menu.is-open{clip-path:inset(0 0 0 0); visibility:visible; transition:clip-path .5s var(--ease-out);}
+.menu__grid{position:absolute; inset:0; z-index:0;}
+.menu__grid span{position:absolute; top:0; bottom:0; width:1px; background:rgba(255,255,255,.45);}
+.menu__grid::before{content:""; position:absolute; inset:0;
+  background-image:repeating-linear-gradient(to bottom, rgba(255,255,255,.45) 0, rgba(255,255,255,.45) 1px, transparent 1px, transparent calc(var(--apw) * 0.292));}
+.menu__links{position:absolute; inset:0; z-index:1; display:flex; flex-direction:column; justify-content:center;}
+.menu__row{
+  position:relative; display:flex; align-items:center; height:calc(var(--apw) * 0.292);
+  padding:0 9%; margin-top:-1px;
+  background:var(--orange); color:#fff; text-decoration:none;
+  font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  font-size:clamp(1.6rem, calc(var(--apw) * 0.09), 3.1rem); letter-spacing:-.02em; line-height:1;
+  border-top:1px solid rgba(255,255,255,.45); border-bottom:1px solid rgba(255,255,255,.45);
+  transition:background-color .2s var(--ease-out), color .2s var(--ease-out);
+}
+.menu__row:active, .menu__row.is-active{background:#fff; color:var(--orange);}
+
+/* ── the phone's own screen chrome: status bar above the frame, home bar below it ───────
+   Both live on the white screen OUTSIDE the crop box, which is what makes the crop line
+   readable as a crop line rather than the edge of the screen. */
+.screenui{position:absolute; left:50%; top:var(--scr-top,0px); transform:translateX(-50%);
+  width:var(--scr-w,0px); height:var(--scr-h,0px); z-index:6; pointer-events:none; opacity:0;
+  color:var(--pitch); font-family:"Switzer",sans-serif;}
+.status{position:absolute; left:0; right:0; top:0; height:var(--status-h,44px);
+  display:flex; align-items:center; justify-content:space-between; padding:0 8.5%;
+  font-weight:700; font-size:.82rem; letter-spacing:.01em;}
+.status__icons{display:flex; align-items:center; gap:5px;}
+.status__icons svg{display:block;}
+.homebar{position:absolute; left:50%; transform:translateX(-50%); bottom:var(--home-b,10px);
+  width:36%; height:5px; border-radius:999px; background:var(--pitch); opacity:.85;}
 
 /* ───────────────────────────────────────────────────────────── pin shell
    180vh = 80vh of pinned scroll. The morph runs 0.05 → 0.70 of that, so it starts on the
@@ -209,7 +248,9 @@ body.reg #regout{display:block;}
 
 <header class="nav" id="nav">
   <div class="nav__inner">
-    <a class="nav__brand" href="#top">9x16</a>
+    <a class="nav__brand" href="#top" aria-label="9x16 Media home">
+      <img class="nav__logo" src="assets/logo.svg" alt="9x16 Media">
+    </a>
     <nav class="nav__links" aria-label="Primary">
       <a href="#">what we do</a><a href="#">our work</a><a href="#">work with us</a>
     </nav>
@@ -291,9 +332,31 @@ body.reg #regout{display:block;}
       </div>
     </div>
 
-    <!-- the phone's own menu overlay — clipped to the screen, wipes down like a phone's -->
+    <!-- the phone's screen chrome, sitting on the white screen OUTSIDE the crop box.
+         The clock reads 9:16, because of course it does. -->
+    <div class="screenui" id="screenui" aria-hidden="true">
+      <div class="status">
+        <span class="status__time">9:16</span>
+        <span class="status__icons">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7.5" width="3" height="3.5" rx="1"/><rect x="4.6" y="5.5" width="3" height="5.5" rx="1"/><rect x="9.2" y="3" width="3" height="8" rx="1"/><rect x="13.8" y="0" width="3" height="11" rx="1"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M1 4.1a10 10 0 0 1 14 0"/><path d="M3.7 6.8a6.2 6.2 0 0 1 8.6 0"/><circle cx="8" cy="10" r="1.1" fill="currentColor" stroke="none"/></svg>
+          <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x=".7" y=".7" width="21.6" height="10.6" rx="3" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2"/><rect x="2.3" y="2.3" width="15" height="7.4" rx="1.6" fill="currentColor"/><path d="M24 4.2v3.6a2.2 2.2 0 0 0 0-3.6Z" fill="currentColor" fill-opacity=".45"/></svg>
+        </span>
+      </div>
+      <div class="homebar"></div>
+    </div>
+
+    <!-- v1's mobile overlay: orange, wipes in from the right, one link per 9:16 row -->
     <div class="menu" id="menu" aria-hidden="true">
-      <a href="#">what we do</a><a href="#">our work</a><a href="#">work with us</a>
+      <div class="menu__grid" aria-hidden="true">
+        <span style="left:9%"></span><span style="left:25.5%"></span><span style="left:41.8%"></span>
+        <span style="left:58.2%"></span><span style="left:74.5%"></span><span style="left:91%"></span>
+      </div>
+      <nav class="menu__links" aria-label="Mobile primary">
+        <a class="menu__row" href="#">what we do</a>
+        <a class="menu__row" href="#">our work</a>
+        <a class="menu__row" href="#">work with us</a>
+      </nav>
     </div>
 
     <p class="cue" id="cue">scroll ↓ &nbsp;·&nbsp; press R for registration mode</p>
@@ -326,22 +389,42 @@ const SCREEN_TOP  = 0.010;         /* screen top, as a fraction of photo height 
 const SCREEN_HGT  = 0.979;         /* screen height, as a fraction of photo height */
 const ISLAND_END  = 0.046;         /* dynamic island's bottom, as a fraction of screen height */
 
+/* The screen is divided into three bands. The crop box is NOT the screen — the status bar
+   and the home bar sit on white screen outside it, which is what lets the crop LINE read as
+   a crop line instead of the edge of the display.
+     [ status band — island, clock, wifi/battery ]
+     [ nav band    — the bar, once it has constricted ]
+     [ CROP BOX    — the site                        ]
+     [ home band   — home indicator, clears the corner curvature ]
+   The frame no longer has to be exactly 9:16 — it only has to read vertical — so it grows
+   up toward the island and down to where the corner radius starts. It lands near 1:1.82. */
+const STATUS_F = 0.052;   /* status band height, as a fraction of screen height */
+const NAVBAND_F= 0.048;   /* nav band height,    as a fraction of screen height */
+const NAVGAP   = 6;       /* px of clear white between the nav and the crop line */
+const HOME_F   = 0.042;   /* home band height,   as a fraction of screen height */
+
 function geo(){
   const vw = innerWidth, vh = innerHeight;
-  /* The whole phone has to be visible — the island is what the nav hangs off, so it cannot
-     bleed off the top. Work backwards: photo fits the viewport height with PHONE_TOP either
-     side, the screen is a known fraction of the photo, and the 9:16 frame is the screen's
-     width. NOTE the frame is NOT the screen: a real iPhone is 19.5:9, so a true 9:16 frame
-     sits inside the screen and leaves a band above and below. That band is the nav. */
+  /* The whole phone has to be visible — the island is what the nav hangs off, so it can never
+     bleed off the top. Work backwards from the mockup: the photo fits the viewport height
+     with PHONE_TOP either side, and the screen is a known fraction of the photo. */
   const photoH = vh - PHONE_TOP * 2;
   const photoW = photoH / PHOTO_AR;
-  const endW   = photoW * SCREEN_W;
-  const endH   = endW * 16 / 9;
+  const screenW   = photoW * SCREEN_W;
   const screenTop = PHONE_TOP + photoH * SCREEN_TOP;
   const screenH   = photoH * SCREEN_HGT;
+
+  const statusH = screenH * STATUS_F;
+  const navH    = screenH * NAVBAND_F;
+  const homeH   = screenH * HOME_F;
+  const frameTop = screenTop + statusH + navH + NAVGAP;
+  const endH     = (screenTop + screenH - homeH) - frameTop;
+  const endW     = screenW;
+
   /* start: as big a 16:9 as fits with room for a body around it */
   const startW = Math.min(vw * 0.62, vh * 0.60 * 16 / 9);
-  return { startW, startH: startW * 9 / 16, endW, endH, photoW, photoH, screenTop, screenH,
+  return { startW, startH: startW * 9 / 16, endW, endH, photoW, photoH, screenW,
+           screenTop, screenH, statusH, navH, homeH, frameTop,
            vw, vh, ready: vw > 0 && vh > 0 };
 }
 let G = geo();
@@ -357,7 +440,7 @@ const navEl = document.getElementById("nav");
    real phone content runs from under the nav down to the bottom of the screen — so anchor the
    frame's bottom to the screen's bottom, and the whole spare band collects above it. */
 function apOffset(){
-  return (G.screenTop + G.screenH - G.endH) - (G.vh - G.endH) / 2;
+  return G.frameTop - (G.vh - G.endH) / 2;
 }
 
 function setAperture(w, h, p = 0){
@@ -371,15 +454,27 @@ function setAperture(w, h, p = 0){
 /* THE NAV MORPH — v1's bar shrinks onto the phone and parks below the dynamic island.
    p = 0 → fixed 16px from the top, capped at 1180px (v1 geometry, styles.css:116).
    p = 1 → exactly the screen's width, sitting just under the island, hamburger only. */
+const uiEl = document.getElementById("screenui");
+
 function setNav(p){
-  const pad     = parseFloat(getComputedStyle(navEl).paddingLeft) || 0;
-  const startW  = Math.min(1180, G.vw - pad * 2);
-  const endTop  = G.screenTop + G.screenH * ISLAND_END + 10;   /* clear of the island */
+  const pad    = 20;
+  const startW = Math.min(1180, G.vw - pad * 2);
+  /* the nav parks in its own band: below the status bar, above the crop line, touching neither */
+  const endTop = G.screenTop + G.statusH;
   navEl.style.setProperty("--nav-w",   gsap.utils.interpolate(startW, G.endW, p) + "px");
   navEl.style.setProperty("--nav-top", gsap.utils.interpolate(PHONE_TOP, endTop, p) + "px");
-  navEl.style.setProperty("--nav-pad", gsap.utils.interpolate(pad || 20, 0, p) + "px");
+  navEl.style.setProperty("--nav-pad", gsap.utils.interpolate(pad, 0, p) + "px");
+  navEl.style.setProperty("--logo-h",  gsap.utils.interpolate(56, G.navH * 0.62, p) + "px");
   navEl.classList.toggle("is-phone", p > 0.55);
   if (p <= 0.55) closeMenu();     /* a wide bar must never keep a phone overlay open */
+
+  /* the phone's own chrome fades up with the mockup */
+  uiEl.style.setProperty("--scr-top", G.screenTop + "px");
+  uiEl.style.setProperty("--scr-w",   G.screenW + "px");
+  uiEl.style.setProperty("--scr-h",   G.screenH + "px");
+  uiEl.style.setProperty("--status-h", G.statusH + "px");
+  uiEl.style.setProperty("--home-b",  (G.homeH / 2 - 2.5) + "px");
+  uiEl.style.opacity = p > 0.6 ? String((p - 0.6) / 0.4) : "0";
 }
 setAperture(G.startW, G.startH);
 
@@ -539,18 +634,23 @@ function check(){
   const g = geo();
   if (!g.ready) return;
 
-  const startR = g.startW / g.startH, endR = g.endW / g.endH;
+  const startR = g.startW / g.startH, endR = g.endH / g.endW;
   const is16x9 = Math.abs(startR - 16/9) < 0.02;
-  const is9x16 = Math.abs(endR - 9/16) < 0.02;
+  /* the frame no longer has to be exactly 9:16 — it has to READ vertical. 9:16 is 1.78. */
+  const isVertical = endR > 1.55 && endR < 2.05;
   const fits   = g.startW < g.vw && g.startH < g.vh;   /* body needs room around it */
-  /* the screen must NOT reach the top and bottom of the viewport, or there is nowhere for
-     the phone's bezel and chin to be and it stops reading as a phone. */
   /* the whole phone must be visible — the nav hangs off the dynamic island, so the top of
      the mockup can never bleed off screen. */
   const phoneFits = g.photoH + PHONE_TOP * 2 <= g.vh + 1;
-  const navTop    = g.screenTop + g.screenH * ISLAND_END + 10;
-  const frameTop  = (g.vh - g.endH) / 2 + apOffset();   /* frame is anchored to the screen bottom */
-  const navClears = navTop + 44 <= frameTop + 1;   /* nav must fit between island and frame */
+  const navTop    = g.screenTop + g.statusH;
+  const navBot    = navTop + g.navH;
+  const islandBot = g.screenTop + g.screenH * ISLAND_END;
+  /* the three that make the crop LINE readable as a crop line: the nav sits below the
+     island, it stops short of the crop line instead of covering it, and the frame leaves
+     the home band clear of the corner curvature. */
+  const clearsIsland = navTop >= islandBot - 1;
+  const noOverlap    = navBot <= g.frameTop - NAVGAP + 1;
+  const homeRoom     = (g.screenTop + g.screenH) - (g.frameTop + g.endH) >= g.homeH - 1;
 
   const missingBody = bodies.filter(b => !b.querySelector("img"));
   const missingProp = props.filter(p => !p.querySelector("img"));
@@ -561,19 +661,21 @@ function check(){
   });
 
   console.assert(is16x9, "FAIL: aperture does not start at 16:9 —", startR.toFixed(3));
-  console.assert(is9x16, "FAIL: aperture does not land on 9:16 —", endR.toFixed(3));
+  console.assert(isVertical, "FAIL: landed frame does not read vertical — 1:", endR.toFixed(3));
   console.assert(fits,   "FAIL: aperture fills the viewport — no room for a body around it");
   console.assert(phoneFits, "FAIL: phone mockup does not fit the viewport — island would clip");
-  console.assert(navClears, "FAIL: nav does not fit between the dynamic island and the frame");
+  console.assert(clearsIsland, "FAIL: nav overlaps the dynamic island");
+  console.assert(noOverlap, "FAIL: nav covers the crop line — it must sit above it, clear");
+  console.assert(homeRoom, "FAIL: frame runs into the home band / corner curvature");
   console.assert(!badReg.length, "FAIL: bad registration data on", badReg.map(b=>b.dataset.body));
 
-  const pass = is16x9 && is9x16 && fits && phoneFits && navClears && !badReg.length;
+  const pass = is16x9 && isVertical && fits && phoneFits && clearsIsland && noOverlap && homeRoom && !badReg.length;
   console.log(
 `9x16 hero rig — self-check
-  mechanic : ${Math.round(g.startW)}×${Math.round(g.startH)} (${startR.toFixed(2)}:1, FIXED)  →  ${Math.round(g.endW)}×${Math.round(g.endH)} (1:${(1/endR).toFixed(2)})
+  mechanic : ${Math.round(g.startW)}×${Math.round(g.startH)} (${startR.toFixed(2)}:1, FIXED)  →  ${Math.round(g.endW)}×${Math.round(g.endH)} (1:${endR.toFixed(2)} — reads vertical, 9:16 = 1.78)
   phone    : ${Math.round(g.photoW)}×${Math.round(g.photoH)} mockup, top at ${PHONE_TOP}px — fully visible
-  screen   : ${Math.round(g.endW)}×${Math.round(g.screenH)} (1:${(g.screenH/g.endW).toFixed(2)}) — an iPhone is 19.5:9, so the 9:16 frame insets by ${Math.round(g.screenH - g.endH)}px
-  nav      : v1 (16px top, ≤1180px) → ${Math.round(g.endW)}px at y=${Math.round(navTop)}, ${Math.round(frameTop - navTop)}px of clear band under the island
+  screen   : ${Math.round(g.screenW)}×${Math.round(g.screenH)} — bands: status ${Math.round(g.statusH)} · nav ${Math.round(g.navH)} · CROP ${Math.round(g.endH)} · home ${Math.round(g.homeH)}
+  island   : ends y=${Math.round(islandBot)} · nav ${Math.round(navTop)}–${Math.round(navBot)} · crop line y=${Math.round(g.frameTop)}  (gap ${Math.round(g.frameTop - navBot)}px, no overlap)
   gutters  : ${Math.round((g.vw - g.photoW) / 2)}px each side — pavement, never content
   --col    : ${Math.round(g.endW)}px (screen width = site column)
   timing   : morph 0.05→0.70 of an 80vh pin — starts on the first scroll
