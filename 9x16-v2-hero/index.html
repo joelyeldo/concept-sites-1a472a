@@ -409,11 +409,17 @@ const ISLAND_END  = 0.046;         /* dynamic island's bottom, as a fraction of 
      [ home band   — home indicator, clears the corner curvature ]
    The frame no longer has to be exactly 9:16 — it only has to read vertical — so it grows
    up toward the island and down to where the corner radius starts. It lands near 1:1.82. */
-const STATUS_F = 0.052;   /* status band height, as a fraction of screen height */
+/* These were far too thin. At 0.052 the status band ended only ~5px below the island, so the
+   nav sat on top of it and buried the clock; at 0.042 the home band was thinner than the
+   screen's own corner radius, so the crop's bottom line and its registration marks ran out
+   past the curvature. Both bands now clear their obstacle with real margin. */
+const STATUS_F = 0.075;   /* status band height, as a fraction of screen height */
 const NAVBAND_F= 0.048;   /* nav band height,    as a fraction of screen height */
-const NAVGAP   = 6;       /* px of clear white between the nav and the crop line */
-const HOME_F   = 0.042;   /* home band height,   as a fraction of screen height */
+const NAVGAP   = 8;       /* px of clear white between the nav and the crop line */
+const HOME_F   = 0.075;   /* home band height,   as a fraction of screen height */
 const SCREEN_PAD = 0.030; /* side inset for on-screen UI, as a fraction of screen width */
+const ISLAND_MID = 0.0284;/* island's vertical centre, as a fraction of screen height */
+const CORNER_R   = 0.090; /* screen's corner radius, as a fraction of screen WIDTH */
 
 function geo(){
   const vw = innerWidth, vh = innerHeight;
@@ -490,7 +496,9 @@ function setNav(p){
   uiEl.style.setProperty("--scr-top", G.screenTop + "px");
   uiEl.style.setProperty("--scr-w",   G.screenW + "px");
   uiEl.style.setProperty("--scr-h",   G.screenH + "px");
-  uiEl.style.setProperty("--status-h", G.statusH + "px");
+  /* the status ROW is not the status BAND: its height is twice the island's centre offset, so
+     align-items:center lands the clock and icons exactly on the island's centreline. */
+  uiEl.style.setProperty("--status-h", (G.screenH * ISLAND_MID * 2) + "px");
   uiEl.style.setProperty("--home-b",  (G.homeH / 2 - 2.5) + "px");
   uiEl.style.opacity = p > 0.6 ? String((p - 0.6) / 0.4) : "0";
 }
@@ -672,6 +680,11 @@ function check(){
   const clearsIsland = navTop >= islandBot - 1;
   const noOverlap    = navBot <= g.frameTop - NAVGAP + 1;
   const homeRoom     = (g.screenTop + g.screenH) - (g.frameTop + g.endH) >= g.homeH - 1;
+  /* the crop's bottom line and its 12px marks must stop ABOVE where the screen's corner
+     radius begins, or they run out over the curvature and off the phone. */
+  const cornerR      = g.screenW * CORNER_R;
+  const bottomGap    = (g.screenTop + g.screenH) - (g.frameTop + g.endH);
+  const clearsCurve  = bottomGap >= cornerR + 12;
 
   const missingBody = bodies.filter(b => !b.querySelector("img"));
   const missingProp = props.filter(p => !p.querySelector("img"));
@@ -687,16 +700,19 @@ function check(){
   console.assert(phoneFits, "FAIL: phone mockup does not fit the viewport — island would clip");
   console.assert(clearsIsland, "FAIL: nav overlaps the dynamic island");
   console.assert(noOverlap, "FAIL: nav covers the crop line — it must sit above it, clear");
-  console.assert(homeRoom, "FAIL: frame runs into the home band / corner curvature");
+  console.assert(homeRoom, "FAIL: frame runs into the home band");
+  console.assert(clearsCurve, "FAIL: crop's bottom line runs past the corner curvature —",
+                 `${Math.round(bottomGap)}px gap, needs ${Math.round(cornerR + 12)}px`);
   console.assert(!badReg.length, "FAIL: bad registration data on", badReg.map(b=>b.dataset.body));
 
-  const pass = is16x9 && isVertical && fits && phoneFits && clearsIsland && noOverlap && homeRoom && !badReg.length;
+  const pass = is16x9 && isVertical && fits && phoneFits && clearsIsland && noOverlap && homeRoom && clearsCurve && !badReg.length;
   console.log(
 `9x16 hero rig — self-check
   mechanic : ${Math.round(g.startW)}×${Math.round(g.startH)} (${startR.toFixed(2)}:1, FIXED)  →  ${Math.round(g.endW)}×${Math.round(g.endH)} (1:${endR.toFixed(2)} — reads vertical, 9:16 = 1.78)
   phone    : ${Math.round(g.photoW)}×${Math.round(g.photoH)} mockup, top at ${PHONE_TOP}px — fully visible
   screen   : ${Math.round(g.screenW)}×${Math.round(g.screenH)} — bands: status ${Math.round(g.statusH)} · nav ${Math.round(g.navH)} · CROP ${Math.round(g.endH)} · home ${Math.round(g.homeH)}
-  island   : ends y=${Math.round(islandBot)} · nav ${Math.round(navTop)}–${Math.round(navBot)} · crop line y=${Math.round(g.frameTop)}  (gap ${Math.round(g.frameTop - navBot)}px, no overlap)
+  island   : ends y=${Math.round(islandBot)} · nav ${Math.round(navTop)}–${Math.round(navBot)} (clears island by ${Math.round(navTop - islandBot)}px) · crop line y=${Math.round(g.frameTop)} (gap ${Math.round(g.frameTop - navBot)}px)
+  bottom   : crop line y=${Math.round(g.frameTop + g.endH)} · screen ends ${Math.round(g.screenTop + g.screenH)} · gap ${Math.round(bottomGap)}px vs ${Math.round(cornerR + 12)}px needed to clear the curvature
   gutters  : ${Math.round((g.vw - g.photoW) / 2)}px each side — pavement, never content
   --col    : ${Math.round(g.endW)}px (screen width = site column)
   timing   : morph 0.05→0.70 of an 80vh pin — starts on the first scroll
