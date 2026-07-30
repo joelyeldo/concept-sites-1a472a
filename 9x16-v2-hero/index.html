@@ -227,7 +227,9 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .aperture{
   position:absolute; left:50%; top:50%; transform:translate(-50%, calc(-50% + var(--apy, 0px)));
   width:var(--apw); height:var(--aph); z-index:4;
-  background:var(--snow); overflow:hidden;
+  /* transparent: the plates already have blank white screens, and an opaque fill here spilled
+     over the billboard's own border and stopped it reading as a billboard. */
+  background:transparent; overflow:hidden;
 }
 /* THE CROP — always on, in both states. Rails + registration marks, the site's own language.
    Tracks --apw/--aph so it sits on the aperture at 16:9 and 9:16 alike, and through the
@@ -420,6 +422,12 @@ body.reg #regout{display:block;}
 gsap.registerPlugin(ScrollTrigger);
 
 const reduce  = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Last eased morph progress. Declared UP HERE on purpose: showLandscape() reads it, and the
+   cycle starts before the morph section further down. With `let lastP` declared down there,
+   the first showLandscape() hit the temporal dead zone and threw — which killed setInterval
+   before it was ever registered, so the plates never cycled and the aperture never moved. */
+let lastP = 0;
 const bodies  = [...document.querySelectorAll(".body")];
 const props   = [...document.querySelectorAll(".prop")];
 const apEl    = document.getElementById("aperture");
@@ -597,7 +605,12 @@ function plateGeom(b){
   const img = b.querySelector("img");
   const ar  = img && img.naturalWidth ? img.naturalWidth / img.naturalHeight : 16 / 9;
   const n   = k => +b.style.getPropertyValue("--" + k);
-  const w   = Math.max(G.vw, G.vh * ar);      /* cover */
+  /* Plain "cover" is not enough. The plate is positioned by its SCREEN centre, not its own
+     centre, so a screen sitting low in the photo (frame-01 at 58.95%) leaves a band at the
+     bottom. Size it so BOTH halves still reach the viewport edges from that anchor point. */
+  const sx=n("sx"), sy=n("sy");
+  const w   = Math.max(G.vw * 50 / Math.min(sx, 100-sx),
+                       (G.vh * 50 / Math.min(sy, 100-sy)) * ar);
   const h   = w / ar;
   return { plateW:w, w: w * n("sw") / 100, h: h * n("sh") / 100 };
 }
@@ -656,10 +669,6 @@ if (reduce) showLandscape(0);
    NOTE: this was `fromTo({p:0},{p:1},{p:1,…})`, which GSAP reads as from p=1 to p=1 — the
    proxy never moved, so onUpdate read a constant and nothing reversed on scroll-up. A
    single proxy object tweened with .to() animates and scrubs backwards correctly. */
-/* last eased progress, so a resize or a late load can re-place everything from the CURRENT
-   geometry. Without this, G is recomputed on load/resize but the screen chrome keeps the
-   --scr-top it was given at parse time — which is how the status bar ended up off the phone. */
-let lastP = 0;
 
 const morph = { p: 0 };
 tl.to(morph, {
@@ -668,6 +677,9 @@ tl.to(morph, {
     const p = lastP = gsap.parseEase("power2.inOut")(morph.p);
     /* the morph starts from whichever plate's screen is on show, not a notional 16:9 box */
     const from = curPlate || { w:G.startW, h:G.startH };
+    /* at rest the plate cycle owns the aperture — otherwise every ScrollTrigger tick at
+       progress 0 snapped it back and undid the cross-fade's resize */
+    if (p < 0.001) return;
     gsap.killTweensOf(apProxy);
     setAperture(gsap.utils.interpolate(from.w, G.endW, p),
                 gsap.utils.interpolate(from.h, G.endH, p), p);
