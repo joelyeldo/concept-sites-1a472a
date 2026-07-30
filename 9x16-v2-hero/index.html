@@ -44,6 +44,10 @@
 :root{
   --snow:#FAFAFA; --paper:#F1EEE9; --pitch:#100C08; --orange:#FF7B00;
   --brick:#8A100C; --mute:#6B6560; --line:rgba(16,12,8,.09);
+  /* v1's easing token. It was referenced by the nav, burger and menu transitions but never
+     defined here — an undefined var makes the whole transition declaration invalid, so the
+     browser threw it away and everything snapped instead of animating. */
+  --ease-out:cubic-bezier(.23,1,.32,1);
   --col:clamp(360px, calc(100dvh * 9 / 16), 620px);   /* where the aperture ends up */
   --apw:62vw;                                          /* live aperture width, driven by JS */
   --aph:calc(62vw * 9 / 16);                           /* live aperture height, driven by JS */
@@ -88,11 +92,16 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* v1's mobile overlay, styles.css:157-182 — orange, wipes in from the RIGHT, one link per
    9:16 grid row, tap fills the row white. Clipped to the phone screen instead of the viewport,
    and its row height is measured against the frame rather than 29.2vw. */
+/* v1 had to use a clip-path curtain because its menu was position:fixed and a translated
+   fixed element escapes the body's containing block. Ours is absolute inside the pin, so a
+   real translateX slide is safe — and it is unambiguously a slide, which is what was asked. */
 .menu{position:absolute; left:50%; top:50%; transform:translate(-50%, calc(-50% + var(--apy, 0px)));
-      width:var(--apw); height:var(--aph); z-index:80; background:var(--orange); overflow:hidden;
-      clip-path:inset(0 0 0 100%); visibility:hidden;
-      transition:clip-path .5s var(--ease-out), visibility 0s linear .5s;}
-.menu.is-open{clip-path:inset(0 0 0 0); visibility:visible; transition:clip-path .5s var(--ease-out);}
+      width:var(--apw); height:var(--aph); z-index:80; overflow:hidden;
+      visibility:hidden; transition:visibility 0s linear .5s;}
+.menu.is-open{visibility:visible; transition:visibility 0s linear 0s;}
+.menu__panel{position:absolute; inset:0; background:var(--orange); will-change:transform;
+      transform:translateX(100%); transition:transform .5s var(--ease-out);}
+.menu.is-open .menu__panel{transform:translateX(0);}
 .menu__grid{position:absolute; inset:0; z-index:0;}
 .menu__grid span{position:absolute; top:0; bottom:0; width:1px; background:rgba(255,255,255,.45);}
 .menu__grid::before{content:""; position:absolute; inset:0;
@@ -348,15 +357,17 @@ body.reg #regout{display:block;}
 
     <!-- v1's mobile overlay: orange, wipes in from the right, one link per 9:16 row -->
     <div class="menu" id="menu" aria-hidden="true">
-      <div class="menu__grid" aria-hidden="true">
-        <span style="left:9%"></span><span style="left:25.5%"></span><span style="left:41.8%"></span>
-        <span style="left:58.2%"></span><span style="left:74.5%"></span><span style="left:91%"></span>
+      <div class="menu__panel">
+        <div class="menu__grid" aria-hidden="true">
+          <span style="left:9%"></span><span style="left:25.5%"></span><span style="left:41.8%"></span>
+          <span style="left:58.2%"></span><span style="left:74.5%"></span><span style="left:91%"></span>
+        </div>
+        <nav class="menu__links" aria-label="Mobile primary">
+          <a class="menu__row" href="#">what we do</a>
+          <a class="menu__row" href="#">our work</a>
+          <a class="menu__row" href="#">work with us</a>
+        </nav>
       </div>
-      <nav class="menu__links" aria-label="Mobile primary">
-        <a class="menu__row" href="#">what we do</a>
-        <a class="menu__row" href="#">our work</a>
-        <a class="menu__row" href="#">work with us</a>
-      </nav>
     </div>
 
     <p class="cue" id="cue">scroll ↓ &nbsp;·&nbsp; press R for registration mode</p>
@@ -402,6 +413,7 @@ const STATUS_F = 0.052;   /* status band height, as a fraction of screen height 
 const NAVBAND_F= 0.048;   /* nav band height,    as a fraction of screen height */
 const NAVGAP   = 6;       /* px of clear white between the nav and the crop line */
 const HOME_F   = 0.042;   /* home band height,   as a fraction of screen height */
+const SCREEN_PAD = 0.030; /* side inset for on-screen UI, as a fraction of screen width */
 
 function geo(){
   const vw = innerWidth, vh = innerHeight;
@@ -419,7 +431,9 @@ function geo(){
   const homeH   = screenH * HOME_F;
   const frameTop = screenTop + statusH + navH + NAVGAP;
   const endH     = (screenTop + screenH - homeH) - frameTop;
-  const endW     = screenW;
+  /* the frame insets from the screen edges too — flush, its 12px corner registration marks
+     get clipped by the bezel and the whole thing reads as a layer pasted over the photo. */
+  const endW     = screenW - screenW * SCREEN_PAD * 2;
 
   /* start: as big a 16:9 as fits with room for a body around it */
   const startW = Math.min(vw * 0.62, vh * 0.60 * 16 / 9);
@@ -459,9 +473,13 @@ const uiEl = document.getElementById("screenui");
 function setNav(p){
   const pad    = 20;
   const startW = Math.min(1180, G.vw - pad * 2);
-  /* the nav parks in its own band: below the status bar, above the crop line, touching neither */
+  /* the nav parks in its own band: below the status bar, above the crop line, touching neither.
+     It also insets from the screen's left and right edges — flush to the bezel reads as a
+     layer pasted over the photo; inset reads as UI running ON the screen. */
   const endTop = G.screenTop + G.statusH;
   navEl.style.setProperty("--nav-w",   gsap.utils.interpolate(startW, G.endW, p) + "px");
+  /* published so every section we add inside the frame shares one gutter with the nav */
+  root.style.setProperty("--screen-pad", (G.screenW * SCREEN_PAD) + "px");
   navEl.style.setProperty("--nav-top", gsap.utils.interpolate(PHONE_TOP, endTop, p) + "px");
   navEl.style.setProperty("--nav-pad", gsap.utils.interpolate(pad, 0, p) + "px");
   navEl.style.setProperty("--logo-h",  gsap.utils.interpolate(56, G.navH * 0.62, p) + "px");
@@ -571,11 +589,14 @@ function closeMenu(){
   if (!navEl.classList.contains("is-open")) return;
   const m = document.getElementById("menu"), b = document.getElementById("burger");
   navEl.classList.remove("is-open"); m.classList.remove("is-open");
+  b.classList.remove("is-open");          /* v1 puts is-open on the BUTTON — that's the X selector */
   b.setAttribute("aria-expanded", "false"); m.setAttribute("aria-hidden", "true");
 }
 burgerEl.addEventListener("click", () => {
   const open = !navEl.classList.contains("is-open");
-  navEl.classList.toggle("is-open", open); menuEl.classList.toggle("is-open", open);
+  navEl.classList.toggle("is-open", open);
+  menuEl.classList.toggle("is-open", open);
+  burgerEl.classList.toggle("is-open", open);
   burgerEl.setAttribute("aria-expanded", String(open));
   menuEl.setAttribute("aria-hidden", String(!open));
 });
