@@ -166,7 +166,9 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* ───────────────────────────────────────────────────────────── pin shell
    180vh = 80vh of pinned scroll. The morph runs 0.05 → 0.70 of that, so it starts on the
    very first scroll and is finished inside roughly half a screen of scrolling. */
-.hero{position:relative; height:calc(180vh + var(--reel-n,8) * 80vh);}
+/* the reel is gesture-driven now, so it needs only enough page to enter and exit,
+   not a viewport per section */
+.hero{position:relative; height:calc(180vh + 70vh);}
 .pin{position:sticky; top:0; height:100dvh; overflow:hidden; background:var(--snow);}
 
 /* ───────────────────────────────────────────────────────────── 0 · THE PAGE GRID
@@ -981,15 +983,67 @@ function reelTo(i){
   });
 }
 
+/* ONE GESTURE = ONE SECTION.
+   Deriving the index from scroll POSITION cannot do this: a trackpad flick carries 600-1500px
+   of momentum against ~760px per section, so a single flick would land on one section and then
+   drift on to the next as the momentum and the snap resolved. That is exactly what happened.
+   So the wheel is taken over while the reel is active and each gesture advances exactly one
+   step, with a lockout for the length of the slide. At the first section scrolling up, and the
+   last scrolling down, we do NOT preventDefault — the page takes over again so you can get
+   back into the hero or out of the reel. */
+let reelActive = false, reelLock = false;
+const STEP_LOCK = 620;
+
+function reelStep(dir){
+  const next = reelIdx + dir;
+  if (next < 0 || next > REEL.length - 1) return;
+  reelTo(next);
+}
+function atEdge(dir){
+  return (reelIdx === 0 && dir < 0) || (reelIdx === REEL.length - 1 && dir > 0);
+}
+addEventListener("wheel", e => {
+  if (!reelActive) return;
+  const dir = e.deltaY > 0 ? 1 : -1;
+  if (atEdge(dir)) return;              /* release to the page at both ends */
+  e.preventDefault();
+  if (reelLock) return;
+  reelLock = true;
+  reelStep(dir);
+  setTimeout(() => { reelLock = false; }, STEP_LOCK);
+}, { passive: false });
+
+addEventListener("keydown", e => {
+  if (!reelActive) return;
+  const dir = /Down|Right|PageDown| /.test(e.key) ? 1 : /Up|Left|PageUp/.test(e.key) ? -1 : 0;
+  if (!dir || atEdge(dir)) return;
+  e.preventDefault();
+  if (reelLock) return;
+  reelLock = true; reelStep(dir);
+  setTimeout(() => { reelLock = false; }, STEP_LOCK);
+});
+
+let touchY = null;
+addEventListener("touchstart", e => { touchY = e.touches[0].clientY; }, { passive: true });
+addEventListener("touchmove", e => {
+  if (!reelActive || touchY === null) return;
+  const dy = touchY - e.touches[0].clientY;
+  if (Math.abs(dy) < 40) return;
+  const dir = dy > 0 ? 1 : -1;
+  if (atEdge(dir)) return;
+  e.preventDefault();
+  touchY = null;
+  if (reelLock) return;
+  reelLock = true; reelStep(dir);
+  setTimeout(() => { reelLock = false; }, STEP_LOCK);
+}, { passive: false });
+
 ScrollTrigger.create({
   trigger: "#hero",
   start: () => "top top-=" + (innerHeight * 1.8),
   end: "bottom bottom",
-  /* snap holds the scrollbar on a section so progress rounds cleanly and a flick cannot
-     leave you parked between two */
-  snap: { snapTo: 1 / (REEL.length - 1), duration: { min: 0.12, max: 0.3 }, ease: "power2.inOut", delay: 0.02 },
-  onUpdate: self => reelTo(Math.round(self.progress * (REEL.length - 1))),
   onToggle: self => {
+    reelActive = self.isActive;
     reelEl.style.opacity = self.isActive ? 1 : 0;
     whiteEl.style.opacity = self.isActive ? 1 : 0;
     /* the grid was driven WHITE for the orange hero screen. The reel's base is white again,
