@@ -605,9 +605,11 @@ function setNav(p){
   if (p <= 0.55) closeMenu();     /* a wide bar must never keep a phone overlay open */
 
   /* the phone's own chrome fades up with the mockup */
-  uiEl.style.setProperty("--scr-top", G.screenTop + "px");
-  uiEl.style.setProperty("--scr-w",   G.screenW + "px");
-  uiEl.style.setProperty("--scr-h",   G.screenH + "px");
+  /* on :root, not on uiEl — .screenfill is a SIBLING and could not inherit them from there,
+     which left the orange fill at 0x0 */
+  root.style.setProperty("--scr-top", G.screenTop + "px");
+  root.style.setProperty("--scr-w",   G.screenW + "px");
+  root.style.setProperty("--scr-h",   G.screenH + "px");
   /* the status ROW is not the status BAND. Position it explicitly so its centre lands on the
      island's centreline — deriving it from the band height and align-items left it floating
      high above the island. */
