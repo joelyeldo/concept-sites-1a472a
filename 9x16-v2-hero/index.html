@@ -258,10 +258,22 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    where it becomes the background the content sits on. */
 .ap-grid{
   position:absolute; inset:0; z-index:0; pointer-events:none;
-  background-image:repeating-linear-gradient(to bottom,
-    var(--line) 0, var(--line) 1px, transparent 1px, transparent calc(var(--apw) * 0.292));
+  /* CONSTANT CELLS, CENTRE-ANCHORED.
+     Rows used to step at 29.2% of --apw and the columns sat at fixed percentages, so both
+     rescaled every time a plate changed width — which is why the horizontal line drifted.
+     Now the cell is an absolute size and the pattern is anchored to the middle of the frame:
+     the row line lands exactly on mid-height and stays there, and a wider screen simply
+     exposes more columns either side instead of stretching the whole grid.
+     Column phase is offset half a cell so no vertical line runs through the headline. */
+  background-image:
+    linear-gradient(to right,  var(--line) 0 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 0 1px, transparent 1px);
+  background-size: var(--cell-w,160px) 100%, 100% var(--cell-h,290px);
+  background-position: calc(50% + var(--cell-w,160px) / 2) 0, 0 calc(50% - 0.5px);
+  background-repeat: repeat;
 }
-.ap-grid span{position:absolute; top:0; bottom:0; width:1px; background:var(--line);}
+/* the old percentage verticals would re-space with every plate — the gradient owns columns now */
+.ap-grid span{display:none;}
 
 /* stationary and centred, independent of whatever the aperture is currently doing */
 .headline{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:8;
@@ -521,6 +533,12 @@ function setAperture(w, h, p = 0){
   root.style.setProperty("--apw", w + "px");
   root.style.setProperty("--aph", h + "px");
   root.style.setProperty("--apy", (apOffset() * p) + "px");
+  /* cell size is absolute so it cannot drift between plates. It interpolates to the phone's
+     own 9:16 rhythm across the morph, so the landscape grid and the phone grid are one system
+     rather than two. Cells stay 9:16 in both. */
+  const landH = (screenH0 || h) * 0.58, landW = landH * 9 / 16;
+  root.style.setProperty("--cell-h", gsap.utils.interpolate(landH, G.endW * 0.292, p) + "px");
+  root.style.setProperty("--cell-w", gsap.utils.interpolate(landW, G.endW * 0.163, p) + "px");
   /* the phone scales off the SCREEN, not the crop box — see .body[data-body="phone"] */
   root.style.setProperty("--screenw", gsap.utils.interpolate(G.startW, G.screenW, p) + "px");
   const r = w / h;
