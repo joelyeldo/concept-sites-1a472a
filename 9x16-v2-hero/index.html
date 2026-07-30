@@ -542,7 +542,7 @@ const PHOTO_AR    = 2885 / 1400;   /* the cut-out's height / width */
 const SCREEN_W    = 0.944;         /* screen width, as a fraction of the photo width */
 const SCREEN_TOP  = 0.010;         /* screen top, as a fraction of photo height */
 const SCREEN_HGT  = 0.979;         /* screen height, as a fraction of photo height */
-const ISLAND_END  = 0.046;         /* dynamic island's bottom, as a fraction of screen height */
+const ISLAND_END  = 0.0461;        /* island bottom = ISLAND_TOP_F + ISLAND_H_F */
 
 /* The screen is divided into three bands. The crop box is NOT the screen — the status bar
    and the home bar sit on white screen outside it, which is what lets the crop LINE read as
@@ -557,7 +557,10 @@ const ISLAND_END  = 0.046;         /* dynamic island's bottom, as a fraction of 
    nav sat on top of it and buried the clock; at 0.042 the home band was thinner than the
    screen's own corner radius, so the crop's bottom line and its registration marks ran out
    past the curvature. Both bands now clear their obstacle with real margin. */
-const STATUS_F = 0.095;   /* status band height, as a fraction of screen height */
+/* Island geometry, measured off the mockup — the status band is DERIVED from it rather than
+   hard-coded, so the band always ends just under the island instead of leaving dead white. */
+const ISLAND_TOP_F = 0.0103, ISLAND_H_F = 0.0358, ISLAND_W_F = 0.2082;
+const STATUS_PAD   = 9;   /* px of white between the island's bottom and the band's edge */
 const NAV_PAD  = 0.075;   /* the nav's own side inset — wider than the frame's, so the bar is
                              visibly narrower than the crop box rather than matching it */
 const NAVBAND_F= 0.058;   /* nav band height — raised so a logo matching the 44px burger fits */
@@ -584,7 +587,7 @@ function geo(){
   const screenTop = PHONE_TOP + photoH * SCREEN_TOP;
   const screenH   = photoH * SCREEN_HGT;
 
-  const statusH = screenH * STATUS_F;
+  const statusH = screenH * (ISLAND_TOP_F + ISLAND_H_F) + STATUS_PAD;
   const navH    = screenH * NAVBAND_F;
   const homeH   = screenH * HOME_F;
   /* the crop's TOP line now sits between the island and the nav — just under the island edge,
@@ -673,9 +676,9 @@ function setNav(p){
   uiEl.style.setProperty("--status-h",   rowH + "px");
   uiEl.style.setProperty("--status-top", (G.screenH * ISLAND_MID - rowH / 2) + "px");
   /* the island is redrawn on top — measured off the mockup, not eyeballed */
-  uiEl.style.setProperty("--isl-w",   G.screenW * 0.2082 + "px");
-  uiEl.style.setProperty("--isl-h",   G.screenH * 0.0358 + "px");
-  uiEl.style.setProperty("--isl-top", G.screenH * 0.0103 + "px");
+  uiEl.style.setProperty("--isl-w",   G.screenW * ISLAND_W_F + "px");
+  uiEl.style.setProperty("--isl-h",   G.screenH * ISLAND_H_F + "px");
+  uiEl.style.setProperty("--isl-top", G.screenH * ISLAND_TOP_F + "px");
   uiEl.style.setProperty("--status-band", G.statusH + "px");
   uiEl.style.setProperty("--home-band", G.homeH + "px");
   uiEl.style.setProperty("--home-b",  (G.homeH / 2 - 2.5 + HOME_RISE) + "px");
