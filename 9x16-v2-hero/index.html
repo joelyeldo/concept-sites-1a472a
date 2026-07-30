@@ -305,24 +305,20 @@ body.reg #regout{display:block;}
     <div class="stage">
       <!-- --sw/--sx/--sy are PLACEHOLDER estimates. Press R and correct them per photo. -->
 
-      <!-- All four 16:9 bodies use the same plate for now. Registration measured off it, and
-           HEIGHT-fitted: the billboard's screen is 2.05:1, wider than 16:9, so matching widths
-           would push our aperture past the top and bottom of it. Swap in the other plates as
-           they arrive — each just needs its own three numbers. -->
-      <figure class="body" data-body="tv" style="--sw:56.8; --sx:50.0; --sy:50.2;">
-        <img src="assets/body-billboard.jpg" alt="">
+      <!-- The 16:9 plates. The cycle loops over however many of these exist, so adding a
+           fourth is markup only. Every screen measured off the plate and HEIGHT-fitted —
+           all three are wider than 16:9 (2.05, 2.10, 2.38), so matching widths would push
+           our aperture past the top and bottom of the board. -->
+      <figure class="body" data-body="frame-01" style="--sw:56.8; --sx:50.0; --sy:50.2;">
+        <img src="assets/body-16x9-01.jpg" alt="">
       </figure>
 
-      <figure class="body" data-body="cinema" style="--sw:56.8; --sx:50.0; --sy:50.2;">
-        <img src="assets/body-billboard.jpg" alt="">
+      <figure class="body" data-body="frame-02" style="--sw:44.9; --sx:49.9; --sy:47.7;">
+        <img src="assets/body-16x9-02.jpg" alt="">
       </figure>
 
-      <figure class="body" data-body="billboard" style="--sw:56.8; --sx:50.0; --sy:50.2;">
-        <img src="assets/body-billboard.jpg" alt="">
-      </figure>
-
-      <figure class="body" data-body="laptop" style="--sw:56.8; --sx:50.0; --sy:50.2;">
-        <img src="assets/body-billboard.jpg" alt="">
+      <figure class="body" data-body="frame-03" style="--sw:39.8; --sx:49.9; --sy:59.0;">
+        <img src="assets/body-16x9-03.jpg" alt="">
       </figure>
 
       <!-- the one that is not on the ground. Registration measured off the cut-out, not guessed:
@@ -541,8 +537,9 @@ const tl = gsap.timeline({
    The landscape formats cross-fade continuously whether or not you move: tv → cinema →
    billboard → laptop → back. The aperture stays put; only the thing holding it changes.
    Scroll owns exactly one thing — the transformation. */
-const LANDSCAPE = bodies.slice(0, 4);
-const PHONE     = bodies[4];
+/* derived from the markup, not hard-coded to four — drop another plate in and it joins the loop */
+const LANDSCAPE = bodies.filter(b => b.dataset.body !== "phone");
+const PHONE     = bodies.find(b => b.dataset.body === "phone");
 const HOLD_MS   = 1100;      /* how long each format holds */
 const FADE_S    = 0.32;      /* cross-fade */
 let cyc = 0, timer = null, onPhone = false;
