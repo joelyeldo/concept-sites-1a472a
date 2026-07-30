@@ -51,8 +51,43 @@
 *,*::before,*::after{box-sizing:border-box;}
 body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer",system-ui,sans-serif; font-size:17px; -webkit-font-smoothing:antialiased;}
 
-/* ───────────────────────────────────────────────────────────── pin shell */
-.hero{position:relative; height:600vh;}
+/* ───────────────────────────────────────────────────────────── nav
+   v1 geometry verbatim (styles.css:116-123): fixed, 16px from the top, centred, capped at
+   1180px, solid snow with an inset hairline and a soft drop shadow. On the morph it shrinks
+   to the phone's screen width and drops below the dynamic island, becoming a phone nav. */
+.nav{position:fixed; top:0; left:50%; transform:translateX(-50%); z-index:50; display:flex; justify-content:center;
+     width:100%; padding:var(--nav-top,16px) var(--nav-pad,clamp(1.25rem,4vw,4rem)) 0; pointer-events:none;}
+.nav__inner{
+  width:var(--nav-w, min(1180px,100%)); display:flex; align-items:center; justify-content:space-between;
+  padding:.7rem .9rem .7rem 1.4rem; background:var(--snow); pointer-events:auto;
+  box-shadow:inset 0 0 0 1px rgba(16,12,8,.10), 0 12px 38px rgba(16,12,8,.08);
+}
+.nav__brand{font-family:"Clash Display",sans-serif; font-weight:600; font-size:1.15rem; letter-spacing:-.02em; text-decoration:none; color:var(--pitch);}
+.nav__links{display:flex; gap:clamp(.9rem,2.2vw,2rem); white-space:nowrap;}
+.nav__links a{color:var(--pitch); text-decoration:none; font-weight:600; font-size:.92rem;}
+.nav__burger{display:none; width:22px; height:14px; position:relative; background:none; border:0; padding:0; cursor:pointer; flex:0 0 auto;}
+.nav__burger span{position:absolute; left:0; right:0; height:2px; background:var(--pitch); transition:transform .3s var(--ease-out), opacity .2s;}
+.nav__burger span:nth-child(1){top:0;} .nav__burger span:nth-child(2){top:6px;} .nav__burger span:nth-child(3){top:12px;}
+/* once it has constricted onto the phone there is no room for inline links — same rule a phone follows */
+.nav.is-phone .nav__links{display:none;}
+.nav.is-phone .nav__burger{display:block;}
+.nav.is-phone .nav__inner{padding:.55rem .8rem .55rem 1rem; box-shadow:inset 0 0 0 1px rgba(16,12,8,.10);}
+.nav.is-open .nav__burger span:nth-child(1){transform:translateY(6px) rotate(45deg);}
+.nav.is-open .nav__burger span:nth-child(2){opacity:0;}
+.nav.is-open .nav__burger span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+
+/* the phone's full-screen menu overlay — clipped to the screen, exactly as a phone does it */
+.menu{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:var(--apw); height:var(--aph);
+      z-index:45; background:var(--pitch); clip-path:inset(0 0 100% 0); visibility:hidden;
+      transition:clip-path .45s var(--ease-out), visibility 0s linear .45s;
+      display:grid; align-content:center; gap:1rem; padding:2rem;}
+.menu.is-open{clip-path:inset(0 0 0 0); visibility:visible; transition:clip-path .45s var(--ease-out);}
+.menu a{color:var(--snow); text-decoration:none; font-family:"Clash Display",sans-serif; font-weight:600; font-size:1.8rem; text-transform:lowercase;}
+
+/* ───────────────────────────────────────────────────────────── pin shell
+   180vh = 80vh of pinned scroll. The morph runs 0.05 → 0.70 of that, so it starts on the
+   very first scroll and is finished inside roughly half a screen of scrolling. */
+.hero{position:relative; height:180vh;}
 .pin{position:sticky; top:0; height:100dvh; overflow:hidden; background:var(--snow);}
 
 /* ───────────────────────────────────────────────────────────── 0 · THE PAGE GRID
@@ -172,6 +207,18 @@ body.reg #regout{display:block;}
 </head>
 <body>
 
+<header class="nav" id="nav">
+  <div class="nav__inner">
+    <a class="nav__brand" href="#top">9x16</a>
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#">what we do</a><a href="#">our work</a><a href="#">work with us</a>
+    </nav>
+    <button class="nav__burger" id="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+  </div>
+</header>
+
 <section class="hero" id="hero">
   <div class="pin">
 
@@ -218,9 +265,10 @@ body.reg #regout{display:block;}
         <div class="slot" style="--ar:16/12"><b>laptop</b><span>assets/body-laptop.png · open, screen blank</span></div>
       </figure>
 
-      <!-- the one that is not on the ground -->
-      <figure class="body" data-body="phone" style="--sw:88; --sx:50; --sy:50;">
-        <div class="slot" style="--ar:9/17.5"><b>iphone</b><span>assets/body-phone.png · in hand, screen blank</span></div>
+      <!-- the one that is not on the ground. Registration measured off the cut-out, not guessed:
+           screen is 94.4% of the photo's width, dead centre both axes. -->
+      <figure class="body" data-body="phone" style="--sw:94.4; --sx:50.1; --sy:50.0;">
+        <img src="assets/body-phone.png" alt="">
       </figure>
     </div>
 
@@ -243,6 +291,11 @@ body.reg #regout{display:block;}
       </div>
     </div>
 
+    <!-- the phone's own menu overlay — clipped to the screen, wipes down like a phone's -->
+    <div class="menu" id="menu" aria-hidden="true">
+      <a href="#">what we do</a><a href="#">our work</a><a href="#">work with us</a>
+    </div>
+
     <p class="cue" id="cue">scroll ↓ &nbsp;·&nbsp; press R for registration mode</p>
   </div>
 </section>
@@ -262,22 +315,34 @@ const ratioEl = document.getElementById("apRatio");
 const root    = document.documentElement;
 
 /* aperture geometry. Starts a large fixed 16:9 — the viewport is NOT restricted. Ends on a
-   9:16 screen sized off viewport height, so the phone body has room to exist around it.
+   9:16 frame inset inside the phone's screen.
 
-   HEADROOM — the screen must not fill the viewport height, or there is no room for the
-   phone's top and bottom to exist and it stops reading as a phone. 0.74 leaves ~13% of the
-   viewport above and below the screen for bezel, chin, hand and pavement. */
-const SCREEN_H = 0.84;
+   All four constants below are MEASURED off assets/body-phone.png, not guessed. If the
+   mockup is ever replaced, re-run the measurement and update them here. */
+const PHONE_TOP   = 16;            /* px from viewport top — same as the nav's top margin */
+const PHOTO_AR    = 2885 / 1400;   /* the cut-out's height / width */
+const SCREEN_W    = 0.944;         /* screen width, as a fraction of the photo width */
+const SCREEN_TOP  = 0.010;         /* screen top, as a fraction of photo height */
+const SCREEN_HGT  = 0.979;         /* screen height, as a fraction of photo height */
+const ISLAND_END  = 0.046;         /* dynamic island's bottom, as a fraction of screen height */
 
 function geo(){
   const vw = innerWidth, vh = innerHeight;
-  /* end: sized off available HEIGHT, so the phone body always has air around it */
-  const endH   = vh * SCREEN_H;
-  const endW   = endH * 9 / 16;
+  /* The whole phone has to be visible — the island is what the nav hangs off, so it cannot
+     bleed off the top. Work backwards: photo fits the viewport height with PHONE_TOP either
+     side, the screen is a known fraction of the photo, and the 9:16 frame is the screen's
+     width. NOTE the frame is NOT the screen: a real iPhone is 19.5:9, so a true 9:16 frame
+     sits inside the screen and leaves a band above and below. That band is the nav. */
+  const photoH = vh - PHONE_TOP * 2;
+  const photoW = photoH / PHOTO_AR;
+  const endW   = photoW * SCREEN_W;
+  const endH   = endW * 16 / 9;
+  const screenTop = PHONE_TOP + photoH * SCREEN_TOP;
+  const screenH   = photoH * SCREEN_HGT;
   /* start: as big a 16:9 as fits with room for a body around it */
   const startW = Math.min(vw * 0.62, vh * 0.60 * 16 / 9);
-  return { startW, startH: startW * 9 / 16, endW, endH, vw, vh,
-           ready: vw > 0 && vh > 0 };
+  return { startW, startH: startW * 9 / 16, endW, endH, photoW, photoH, screenTop, screenH,
+           vw, vh, ready: vw > 0 && vh > 0 };
 }
 let G = geo();
 /* the phone's screen width IS the site column — publish it so everything downstream agrees
@@ -285,11 +350,27 @@ let G = geo();
 function publishCol(){ root.style.setProperty("--col", G.endW + "px"); }
 publishCol();
 
+const navEl = document.getElementById("nav");
+
 function setAperture(w, h){
   root.style.setProperty("--apw", w + "px");
   root.style.setProperty("--aph", h + "px");
   const r = w / h;
   ratioEl.textContent = r >= 1 ? `${r.toFixed(2)} : 1` : `1 : ${(1/r).toFixed(2)}`;
+}
+
+/* THE NAV MORPH — v1's bar shrinks onto the phone and parks below the dynamic island.
+   p = 0 → fixed 16px from the top, capped at 1180px (v1 geometry, styles.css:116).
+   p = 1 → exactly the screen's width, sitting just under the island, hamburger only. */
+function setNav(p){
+  const pad     = parseFloat(getComputedStyle(navEl).paddingLeft) || 0;
+  const startW  = Math.min(1180, G.vw - pad * 2);
+  const endTop  = G.screenTop + G.screenH * ISLAND_END + 10;   /* clear of the island */
+  navEl.style.setProperty("--nav-w",   gsap.utils.interpolate(startW, G.endW, p) + "px");
+  navEl.style.setProperty("--nav-top", gsap.utils.interpolate(PHONE_TOP, endTop, p) + "px");
+  navEl.style.setProperty("--nav-pad", gsap.utils.interpolate(pad || 20, 0, p) + "px");
+  navEl.classList.toggle("is-phone", p > 0.55);
+  if (p <= 0.55) closeMenu();     /* a wide bar must never keep a phone overlay open */
 }
 setAperture(G.startW, G.startH);
 
@@ -328,7 +409,7 @@ function stopCycle(){ clearInterval(timer); timer = null; }
 
 /* handoff — once the morph starts, the cycle stops and the phone takes over. Scroll back up
    above the threshold and the cycle resumes where it left off. */
-const MORPH_AT = 0.52;
+const MORPH_AT = 0.06;
 function handoff(progress){
   const wantPhone = progress >= MORPH_AT;
   if (wantPhone === onPhone) return;
@@ -351,28 +432,52 @@ if (reduce) showLandscape(0);
    single proxy object tweened with .to() animates and scrubs backwards correctly. */
 const morph = { p: 0 };
 tl.to(morph, {
-  p:1, duration:.34,
+  p:1, duration:.65,
   onUpdate(){
     const p = gsap.parseEase("power2.inOut")(morph.p);
     setAperture(gsap.utils.interpolate(G.startW, G.endW, p),
                 gsap.utils.interpolate(G.startH, G.endH, p));
+    setNav(p);   /* the bar shrinks onto the phone on the same curve */
   }
-}, 0.52);
+}, 0.05);
 
 /* --- the ground the phone is standing over reveals in the gutters ---
    The phone itself is owned by handoff(), not the timeline — one owner per element, or the
    two fight over opacity. The pavement is not there at the start; the light Swiss grid is.
    It washes in over the grid as the frame turns vertical, so the world only becomes "street"
    once you're on the phone. Scrubs backwards cleanly, so scrolling up returns you to the grid. */
-tl.to("#ground", { opacity:1, duration:.20 }, 0.56)
-  .to("#cue", { opacity:0, duration:.04 }, 0.06);
+tl.to("#ground", { opacity:1, duration:.28, ease:"power1.inOut" }, 0.18)
+  .to("#cue", { opacity:0, duration:.05 }, 0.02);
 
 /* props settle onto the pavement once the ground is lit */
 props.forEach((p, i) => {
   const rot = p.style.getPropertyValue("--rot") || "0deg";
   tl.fromTo(p, { opacity:0, scale:.9, rotate:rot },
-               { opacity:1, scale:1, rotate:rot, duration:.10 }, 0.66 + i * 0.02);
+               { opacity:1, scale:1, rotate:rot, duration:.12 }, 0.42 + i * 0.02);
 });
+
+/* ── the phone's hamburger ──────────────────────────────────────────────────────────────
+   Same behaviour a phone nav has: toggles a full-screen overlay, but clipped to the screen
+   so it stays inside the mockup. Esc closes it, and so does scrolling back out of phone mode. */
+const menuEl   = document.getElementById("menu");
+const burgerEl = document.getElementById("burger");
+/* queries the DOM rather than closing over menuEl/burgerEl: setNav() calls this, and
+   ScrollTrigger can fire setNav before those consts initialise — that would be a TDZ throw. */
+function closeMenu(){
+  if (!navEl.classList.contains("is-open")) return;
+  const m = document.getElementById("menu"), b = document.getElementById("burger");
+  navEl.classList.remove("is-open"); m.classList.remove("is-open");
+  b.setAttribute("aria-expanded", "false"); m.setAttribute("aria-hidden", "true");
+}
+burgerEl.addEventListener("click", () => {
+  const open = !navEl.classList.contains("is-open");
+  navEl.classList.toggle("is-open", open); menuEl.classList.toggle("is-open", open);
+  burgerEl.setAttribute("aria-expanded", String(open));
+  menuEl.setAttribute("aria-hidden", String(!open));
+});
+addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
+
+setNav(0);   /* park the bar at v1 geometry before any scrolling happens */
 
 /* ── registration mode ─────────────────────────────────────────────────────────────────
    Press R. Outlines the aperture over the current body so you can align a swapped photo.
@@ -431,8 +536,12 @@ function check(){
   const fits   = g.startW < g.vw && g.startH < g.vh;   /* body needs room around it */
   /* the screen must NOT reach the top and bottom of the viewport, or there is nowhere for
      the phone's bezel and chin to be and it stops reading as a phone. */
-  const headroom = (g.vh - g.endH) / 2;
-  const hasAir   = headroom > 40;
+  /* the whole phone must be visible — the nav hangs off the dynamic island, so the top of
+     the mockup can never bleed off screen. */
+  const phoneFits = g.photoH + PHONE_TOP * 2 <= g.vh + 1;
+  const navTop    = g.screenTop + g.screenH * ISLAND_END + 10;
+  const frameTop  = (g.vh - g.endH) / 2;
+  const navClears = navTop + 44 <= frameTop + 1;   /* nav must fit between island and frame */
 
   const missingBody = bodies.filter(b => !b.querySelector("img"));
   const missingProp = props.filter(p => !p.querySelector("img"));
@@ -445,17 +554,20 @@ function check(){
   console.assert(is16x9, "FAIL: aperture does not start at 16:9 —", startR.toFixed(3));
   console.assert(is9x16, "FAIL: aperture does not land on 9:16 —", endR.toFixed(3));
   console.assert(fits,   "FAIL: aperture fills the viewport — no room for a body around it");
-  console.assert(hasAir, "FAIL: no headroom above/below the screen — cannot read as a phone");
+  console.assert(phoneFits, "FAIL: phone mockup does not fit the viewport — island would clip");
+  console.assert(navClears, "FAIL: nav does not fit between the dynamic island and the frame");
   console.assert(!badReg.length, "FAIL: bad registration data on", badReg.map(b=>b.dataset.body));
 
-  const pass = is16x9 && is9x16 && fits && hasAir && !badReg.length;
+  const pass = is16x9 && is9x16 && fits && phoneFits && navClears && !badReg.length;
   console.log(
 `9x16 hero rig — self-check
   mechanic : ${Math.round(g.startW)}×${Math.round(g.startH)} (${startR.toFixed(2)}:1, FIXED)  →  ${Math.round(g.endW)}×${Math.round(g.endH)} (1:${(1/endR).toFixed(2)})
-  gutters  : ${Math.round((g.vw - g.endW) / 2)}px each side — pavement, never content
-  headroom : ${Math.round(headroom)}px above and below — room for the phone body
-  theme    : light · Swiss grid behind body+frame · pavement washes in at 0.56
-  --col    : ${Math.round(g.endW)}px (phone screen width = site column)
+  phone    : ${Math.round(g.photoW)}×${Math.round(g.photoH)} mockup, top at ${PHONE_TOP}px — fully visible
+  screen   : ${Math.round(g.endW)}×${Math.round(g.screenH)} (1:${(g.screenH/g.endW).toFixed(2)}) — an iPhone is 19.5:9, so the 9:16 frame insets by ${Math.round(g.screenH - g.endH)}px
+  nav      : v1 (16px top, ≤1180px) → ${Math.round(g.endW)}px at y=${Math.round(navTop)}, ${Math.round(frameTop - navTop)}px of clear band under the island
+  gutters  : ${Math.round((g.vw - g.photoW) / 2)}px each side — pavement, never content
+  --col    : ${Math.round(g.endW)}px (screen width = site column)
+  timing   : morph 0.05→0.70 of an 80vh pin — starts on the first scroll
   ${pass ? "✓ RIG PASS" : "✗ RIG FAIL"}
 
 photos still needed (${missingBody.length + missingProp.length + (noGround?1:0)}):
