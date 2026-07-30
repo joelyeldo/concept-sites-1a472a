@@ -124,7 +124,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .screenui{position:absolute; left:50%; top:var(--scr-top,0px); transform:translateX(-50%);
   width:var(--scr-w,0px); height:var(--scr-h,0px); z-index:6; pointer-events:none; opacity:0;
   color:var(--pitch); font-family:"Switzer",sans-serif;}
-.status{position:absolute; left:0; right:0; top:0; height:var(--status-h,44px);
+.status{position:absolute; left:0; right:0; top:var(--status-top,0px); height:var(--status-h,22px);
   display:flex; align-items:center; justify-content:space-between; padding:0 8.5%;
   font-weight:700; font-size:.82rem; letter-spacing:.01em;}
 .status__icons{display:flex; align-items:center; gap:5px;}
@@ -413,7 +413,9 @@ const ISLAND_END  = 0.046;         /* dynamic island's bottom, as a fraction of 
    nav sat on top of it and buried the clock; at 0.042 the home band was thinner than the
    screen's own corner radius, so the crop's bottom line and its registration marks ran out
    past the curvature. Both bands now clear their obstacle with real margin. */
-const STATUS_F = 0.075;   /* status band height, as a fraction of screen height */
+const STATUS_F = 0.095;   /* status band height, as a fraction of screen height */
+const NAV_PAD  = 0.075;   /* the nav's own side inset — wider than the frame's, so the bar is
+                             visibly narrower than the crop box rather than matching it */
 const NAVBAND_F= 0.048;   /* nav band height,    as a fraction of screen height */
 const NAVGAP   = 8;       /* px of clear white between the nav and the crop line */
 const HOME_F   = 0.075;   /* home band height,   as a fraction of screen height */
@@ -483,7 +485,8 @@ function setNav(p){
      It also insets from the screen's left and right edges — flush to the bezel reads as a
      layer pasted over the photo; inset reads as UI running ON the screen. */
   const endTop = G.screenTop + G.statusH;
-  navEl.style.setProperty("--nav-w",   gsap.utils.interpolate(startW, G.endW, p) + "px");
+  const navEndW = G.screenW - G.screenW * NAV_PAD * 2;   /* narrower than the crop box */
+  navEl.style.setProperty("--nav-w",   gsap.utils.interpolate(startW, navEndW, p) + "px");
   /* published so every section we add inside the frame shares one gutter with the nav */
   root.style.setProperty("--screen-pad", (G.screenW * SCREEN_PAD) + "px");
   navEl.style.setProperty("--nav-top", gsap.utils.interpolate(PHONE_TOP, endTop, p) + "px");
@@ -496,9 +499,12 @@ function setNav(p){
   uiEl.style.setProperty("--scr-top", G.screenTop + "px");
   uiEl.style.setProperty("--scr-w",   G.screenW + "px");
   uiEl.style.setProperty("--scr-h",   G.screenH + "px");
-  /* the status ROW is not the status BAND: its height is twice the island's centre offset, so
-     align-items:center lands the clock and icons exactly on the island's centreline. */
-  uiEl.style.setProperty("--status-h", (G.screenH * ISLAND_MID * 2) + "px");
+  /* the status ROW is not the status BAND. Position it explicitly so its centre lands on the
+     island's centreline — deriving it from the band height and align-items left it floating
+     high above the island. */
+  const rowH = G.screenH * 0.026;
+  uiEl.style.setProperty("--status-h",   rowH + "px");
+  uiEl.style.setProperty("--status-top", (G.screenH * ISLAND_MID - rowH / 2) + "px");
   uiEl.style.setProperty("--home-b",  (G.homeH / 2 - 2.5) + "px");
   uiEl.style.opacity = p > 0.6 ? String((p - 0.6) / 0.4) : "0";
 }
