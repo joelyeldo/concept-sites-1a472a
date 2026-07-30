@@ -930,12 +930,14 @@ function check(){
   const shown = curPlate || plateRects[0];
   const fillsScreen = !!curPlate && Math.abs(apW - shown.w) < 2 && Math.abs(apH - shown.h) < 2;
   /* the frame no longer has to be exactly 9:16 — it has to READ vertical. 9:16 is 1.78. */
-  const isVertical = endR > 1.55 && endR < 2.05;
+  /* the frame is the phone SCREEN now, and a real iPhone is 19.5:9 = 2.167 — the old 2.05
+     ceiling was written when the frame was an inset 9:16 box and now fails on correct output */
+  const isVertical = endR > 1.55 && endR < 2.25;
   const fits   = g.startW < g.vw && g.startH < g.vh;   /* body needs room around it */
   /* the whole phone must be visible — the nav hangs off the dynamic island, so the top of
      the mockup can never bleed off screen. */
   const phoneFits = g.photoH + PHONE_TOP * 2 <= g.vh + 1;
-  const navTop    = g.frameTop + NAV_INSET;
+  const navTop    = g.screenTop + g.statusH + NAV_INSET;
   const navBot    = navTop + g.navH;
   const islandBot = g.screenTop + g.screenH * ISLAND_END;
   /* the crop's top line sits between the island and the nav, and the nav is INSIDE the box */
@@ -990,7 +992,6 @@ function check(){
   screen   : ${Math.round(g.screenW)}×${Math.round(g.screenH)} — bands: status ${Math.round(g.statusH)} · nav ${Math.round(g.navH)} · CROP ${Math.round(g.endH)} · home ${Math.round(g.homeH)}
   island   : ends y=${Math.round(islandBot)} · CROP LINE y=${Math.round(g.frameTop)} (clears island by ${Math.round(g.frameTop - islandBot)}px) · nav ${Math.round(navTop)}–${Math.round(navBot)}, inside the box
   plates   : ${platesCover ? "all cover the viewport — cross-fade cannot flash" : "TOO SMALL — will flash"}
-  bottom   : crop line y=${Math.round(g.frameTop + g.endH)} · screen ends ${Math.round(g.screenTop + g.screenH)} · gap ${Math.round(bottomGap)}px vs ${Math.round(cornerR + 12)}px needed to clear the curvature
   gutters  : ${Math.round((g.vw - g.photoW) / 2)}px each side — pavement, never content
   --col    : ${Math.round(g.endW)}px (screen width = site column)
   timing   : morph 0.05→0.70 of an 80vh pin — starts on the first scroll
