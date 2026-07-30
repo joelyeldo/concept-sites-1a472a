@@ -324,16 +324,19 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    than between them. */
 .card{width:calc(5 * var(--cell-w, 71px)); max-width:100%; margin:0 auto;
   background:var(--snow); border:1px solid var(--line);
-  box-shadow:0 34px 90px -40px rgba(16,12,8,.32);
-  padding:var(--sec-pad,26px);}
-.sec{display:flex; flex-direction:column; gap:var(--sec-gap,18px);}
+  /* the -40px spread made this all but invisible on white; pulled back so the card lifts */
+  box-shadow:0 26px 60px -22px rgba(16,12,8,.28);
+  padding:var(--card-pad,34px);}
+.sec{display:flex; flex-direction:column; gap:var(--card-gap,26px);}
 .sec__eyebrow{font-family:"Switzer",sans-serif; font-weight:600; font-size:var(--sec-eyebrow,11px);
   letter-spacing:.18em; text-transform:uppercase; color:var(--mute); margin:0;}
 .sec__h{font-family:"Clash Display",sans-serif; font-weight:600; font-size:var(--sec-head,36px);
-  line-height:1.1; letter-spacing:-.025em; text-transform:lowercase; margin:0;}
-.sec__b{font-family:"Switzer",sans-serif; font-size:var(--sec-body,15px); line-height:1.5;
+  line-height:1.16; letter-spacing:-.025em; text-transform:lowercase; margin:0;}
+.sec__b{font-family:"Switzer",sans-serif; font-size:var(--sec-body,15px); line-height:1.62;
   color:var(--slate,#3E3E3E); margin:0; max-width:32ch;}
-.sec__rule{height:1px; background:var(--line); margin:0;}
+/* full-bleed inside the card: pulled out by the card's own padding so it meets both edges
+   instead of floating inset from them */
+.sec__rule{height:1px; background:var(--line); margin:0 calc(-1 * var(--card-pad,34px));}
 
 /* stationary and centred, independent of whatever the aperture is currently doing */
 /* --apy is the crop box's offset from viewport centre. The headline rides it, otherwise it
@@ -832,6 +835,8 @@ function sizeSections(){
   root.style.setProperty("--sec-eyebrow", gsap.utils.clamp(9, 13, w * 0.026) + "px");
   root.style.setProperty("--sec-head",    gsap.utils.clamp(24, 44, w * 0.082) + "px");
   root.style.setProperty("--sec-body",    gsap.utils.clamp(12, 17, w * 0.034) + "px");
+  root.style.setProperty("--card-pad",    gsap.utils.clamp(22, 42, w * 0.078) + "px");
+  root.style.setProperty("--card-gap",    gsap.utils.clamp(16, 34, w * 0.060) + "px");
 }
 function sizeHeadlines(){
   root.style.setProperty("--hls-land",  gsap.utils.clamp(28, 68, (screenH0 || 500) * 0.118) + "px");
@@ -987,6 +992,9 @@ ScrollTrigger.create({
   onToggle: self => {
     reelEl.style.opacity = self.isActive ? 1 : 0;
     whiteEl.style.opacity = self.isActive ? 1 : 0;
+    /* the grid was driven WHITE for the orange hero screen. The reel's base is white again,
+       so white-on-white made it disappear — put it back to the dark line colour. */
+    gridEl.style.setProperty("--grid-c", self.isActive ? GRID_DARK : GRID_LIGHT);
     /* the hero headline belongs to the hero — it must not sit over the sections */
     hlVert.style.visibility = self.isActive ? "hidden" : "visible";
   }
