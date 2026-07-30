@@ -72,14 +72,14 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .ground{position:absolute; inset:0; z-index:1; overflow:hidden; background:var(--paper); opacity:0;}
 .ground img{width:100%; height:100%; object-fit:cover; display:block;}
 .ground--placeholder{
-  /* 9:16 paver cell: 45px x 80px. LIGHT THEME scaffolding — the site is light, so this is
-     too. The real plate will bring its own tone. Marked TEMP; delete when the photo lands. */
+  /* Paver cell 108 x 192px — exactly 9:16, and big enough to read as paving rather than
+     noise. Previously this drew FOUR gradients (45px and 80px on both axes), which is a
+     plaid, not a herringbone — that dense mesh over the page grid is what made the gutters
+     look like overlapping grids. Two layers, one cell size. TEMP; delete when the photo lands. */
   background-color:#E9E5DF;
   background-image:
-    repeating-linear-gradient(90deg, rgba(16,12,8,.11) 0 1px, transparent 1px 45px),
-    repeating-linear-gradient(0deg,  rgba(16,12,8,.11) 0 1px, transparent 1px 80px),
-    repeating-linear-gradient(0deg,  rgba(16,12,8,.05) 0 1px, transparent 1px 45px),
-    repeating-linear-gradient(90deg, rgba(16,12,8,.05) 0 1px, transparent 1px 80px);
+    repeating-linear-gradient(90deg, rgba(16,12,8,.10) 0 1px, transparent 1px 108px),
+    repeating-linear-gradient(0deg,  rgba(16,12,8,.10) 0 1px, transparent 1px 192px);
 }
 .ground__tag{
   position:absolute; left:1.2rem; bottom:1.1rem; z-index:2;
@@ -137,7 +137,20 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .crop__c--tl{top:-7px; left:-7px;}  .crop__c--tr{top:-7px; right:-7px;}
 .crop__c--bl{bottom:-7px; left:-7px;} .crop__c--br{bottom:-7px; right:-7px;}
 
-.aperture__inner{position:absolute; inset:0; display:grid; place-content:center; gap:.5rem; text-align:center; padding:1rem;}
+/* THE GRID CONTINUES INSIDE THE FRAME.
+   Verticals sit at the page's own six column positions, so the grid outside and the grid
+   inside are the same system. Rows step at 29.2% of the FRAME'S width — which makes every
+   cell a true 9:16 box whatever the frame is currently doing. One rule covers both states:
+   wide coarse desktop cells at 16:9, and the same grid scaled down into the phone at 9:16,
+   where it becomes the background the content sits on. */
+.ap-grid{
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  background-image:repeating-linear-gradient(to bottom,
+    var(--line) 0, var(--line) 1px, transparent 1px, transparent calc(var(--apw) * 0.292));
+}
+.ap-grid span{position:absolute; top:0; bottom:0; width:1px; background:var(--line);}
+
+.aperture__inner{position:absolute; inset:0; z-index:1; display:grid; place-content:center; gap:.5rem; text-align:center; padding:1rem;}
 .aperture__h{font-family:"Clash Display",sans-serif; font-weight:600; font-size:clamp(1.4rem,3.4vw,3rem); line-height:.95; margin:0; text-transform:lowercase; letter-spacing:-.02em;}
 .aperture__m{font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); font-weight:600;}
 
@@ -219,6 +232,11 @@ body.reg #regout{display:block;}
 
     <!-- 4 · APERTURE ──────────────────────────────────────────────────────────────────── -->
     <div class="aperture" id="aperture">
+      <!-- the page grid, continuing inside the frame — same six column positions -->
+      <div class="ap-grid" aria-hidden="true">
+        <span style="left:9%"></span><span style="left:25.5%"></span><span style="left:41.8%"></span>
+        <span style="left:58.2%"></span><span style="left:74.5%"></span><span style="left:91%"></span>
+      </div>
       <div class="aperture__inner">
         <p class="aperture__m" id="apRatio">16 : 9</p>
         <h1 class="aperture__h">the content<br>lives here</h1>
@@ -293,8 +311,8 @@ const tl = gsap.timeline({
    Scroll owns exactly one thing — the transformation. */
 const LANDSCAPE = bodies.slice(0, 4);
 const PHONE     = bodies[4];
-const HOLD_MS   = 2200;      /* how long each format holds */
-const FADE_S    = 0.55;      /* cross-fade */
+const HOLD_MS   = 1100;      /* how long each format holds */
+const FADE_S    = 0.32;      /* cross-fade */
 let cyc = 0, timer = null, onPhone = false;
 
 function showLandscape(i){
