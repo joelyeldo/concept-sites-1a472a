@@ -87,6 +87,21 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .nav.is-phone .nav__links{display:none;}
 .nav.is-phone .nav__burger{display:flex;}
 .nav.is-phone .nav__inner{padding:.35rem .5rem .35rem .8rem; box-shadow:inset 0 0 0 1px rgba(16,12,8,.10);}
+
+/* GLASS — only in the 16:9 state, where the bar floats over a dark photographic scene and a
+   solid white slab shouts. Translucent, blurred, light ink. The phone state stays solid white:
+   there the bar is UI on a screen, not an overlay on a photograph. */
+.nav.is-glass .nav__inner{
+  background:rgba(20,18,16,.30);
+  -webkit-backdrop-filter:blur(18px) saturate(1.3);
+  backdrop-filter:blur(18px) saturate(1.3);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.20);
+}
+.nav.is-glass .nav__links a{color:var(--snow);}
+.nav.is-glass .nav__burger{color:var(--snow);}
+.nav__logo--dark{display:none;}
+.nav.is-glass .nav__logo--light{display:none;}
+.nav.is-glass .nav__logo--dark{display:block;}
 .nav.is-open{z-index:90;}
 
 /* v1's mobile overlay, styles.css:157-182 — orange, wipes in from the RIGHT, one link per
@@ -264,7 +279,8 @@ body.reg #regout{display:block;}
 <header class="nav" id="nav">
   <div class="nav__inner">
     <a class="nav__brand" href="#top" aria-label="9x16 Media home">
-      <img class="nav__logo" src="assets/logo.svg" alt="9x16 Media">
+      <img class="nav__logo nav__logo--light" src="assets/logo.svg" alt="9x16 Media">
+      <img class="nav__logo nav__logo--dark" src="assets/logo-dark.svg" alt="9x16 Media">
     </a>
     <nav class="nav__links" aria-label="Primary">
       <a href="#">what we do</a><a href="#">our work</a><a href="#">work with us</a>
@@ -423,7 +439,8 @@ const STATUS_F = 0.095;   /* status band height, as a fraction of screen height 
 const NAV_PAD  = 0.075;   /* the nav's own side inset — wider than the frame's, so the bar is
                              visibly narrower than the crop box rather than matching it */
 const NAVBAND_F= 0.058;   /* nav band height — raised so a logo matching the 44px burger fits */
-const NAV_RISE = 4;       /* px the bar sits above its band's top edge */
+const CROP_GAP = 10;      /* px between the dynamic island's edge and the crop's top line */
+const NAV_INSET= 8;       /* px between the crop's top line and the nav inside it */
 const HOME_RISE= 3;       /* px the home indicator sits above its centred position */
 const NAVGAP   = 8;       /* px of clear white between the nav and the crop line */
 const HOME_F   = 0.075;   /* home band height,   as a fraction of screen height */
@@ -445,7 +462,10 @@ function geo(){
   const statusH = screenH * STATUS_F;
   const navH    = screenH * NAVBAND_F;
   const homeH   = screenH * HOME_F;
-  const frameTop = screenTop + statusH + navH + NAVGAP;
+  /* the crop's TOP line now sits between the island and the nav — just under the island edge,
+     well clear of the screen's top radius — so the nav is framed content inside the crop box
+     rather than chrome floating above it. */
+  const frameTop = screenTop + screenH * ISLAND_END + CROP_GAP;
   const endH     = (screenTop + screenH - homeH) - frameTop;
   /* the frame insets from the screen edges too — flush, its 12px corner registration marks
      get clipped by the bezel and the whole thing reads as a layer pasted over the photo. */
@@ -494,7 +514,7 @@ function setNav(p){
   /* the nav parks in its own band: below the status bar, above the crop line, touching neither.
      It also insets from the screen's left and right edges — flush to the bezel reads as a
      layer pasted over the photo; inset reads as UI running ON the screen. */
-  const endTop = G.screenTop + G.statusH - NAV_RISE;
+  const endTop = G.frameTop + NAV_INSET;   /* the nav lives INSIDE the crop box now */
   const navEndW = G.screenW - G.screenW * NAV_PAD * 2;   /* narrower than the crop box */
   navEl.style.setProperty("--nav-w",   gsap.utils.interpolate(startW, navEndW, p) + "px");
   /* published so every section we add inside the frame shares one gutter with the nav */
@@ -504,6 +524,7 @@ function setNav(p){
   /* on the phone the logo matches the burger's 44px box, so the two read as a pair */
   navEl.style.setProperty("--logo-h",  gsap.utils.interpolate(56, 44, p) + "px");
   navEl.classList.toggle("is-phone", p > 0.55);
+  navEl.classList.toggle("is-glass", p <= 0.55);   /* glass over the photo, solid on the phone */
   if (p <= 0.55) closeMenu();     /* a wide bar must never keep a phone overlay open */
 
   /* the phone's own chrome fades up with the mockup */
@@ -544,9 +565,20 @@ const HOLD_MS   = 1100;      /* how long each format holds */
 const FADE_S    = 0.32;      /* cross-fade */
 let cyc = 0, timer = null, onPhone = false;
 
+/* NO DIP CROSS-FADE.
+   Fading the outgoing plate out while fading the incoming one in makes their combined alpha
+   drop below 1 halfway through, so the background flashes between photos. Instead the
+   outgoing plate is held fully opaque underneath and only the incoming one fades up on top;
+   the others are hidden after it has fully covered them. Every plate is larger than the
+   viewport (checked in the self-check), so the one on top always covers what it replaces. */
 function showLandscape(i){
-  LANDSCAPE.forEach((b, j) =>
-    gsap.to(b, { opacity: j === i ? 1 : 0, duration: FADE_S, ease:"power1.inOut", overwrite:"auto" }));
+  const incoming = LANDSCAPE[i];
+  LANDSCAPE.forEach((b, j) => { b.style.zIndex = j === i ? 2 : 1; });
+  gsap.killTweensOf(LANDSCAPE);
+  gsap.to(incoming, {
+    opacity:1, duration:FADE_S, ease:"power1.inOut",
+    onComplete(){ LANDSCAPE.forEach((b, j) => { if (j !== i) gsap.set(b, { opacity:0 }); }); }
+  });
 }
 function startCycle(){
   if (timer || reduce) return;
@@ -702,14 +734,12 @@ function check(){
   /* the whole phone must be visible — the nav hangs off the dynamic island, so the top of
      the mockup can never bleed off screen. */
   const phoneFits = g.photoH + PHONE_TOP * 2 <= g.vh + 1;
-  const navTop    = g.screenTop + g.statusH;
+  const navTop    = g.frameTop + NAV_INSET;
   const navBot    = navTop + g.navH;
   const islandBot = g.screenTop + g.screenH * ISLAND_END;
-  /* the three that make the crop LINE readable as a crop line: the nav sits below the
-     island, it stops short of the crop line instead of covering it, and the frame leaves
-     the home band clear of the corner curvature. */
-  const clearsIsland = navTop >= islandBot - 1;
-  const noOverlap    = navBot <= g.frameTop - NAVGAP + 1;
+  /* the crop's top line sits between the island and the nav, and the nav is INSIDE the box */
+  const clearsIsland = g.frameTop >= islandBot - 1;
+  const navInside    = navTop >= g.frameTop - 1 && navBot <= g.frameTop + g.endH + 1;
   const homeRoom     = (g.screenTop + g.screenH) - (g.frameTop + g.endH) >= g.homeH - 1;
   /* the crop's bottom line and its 12px marks must stop ABOVE where the screen's corner
      radius begins, or they run out over the curvature and off the phone. */
@@ -729,20 +759,28 @@ function check(){
   console.assert(isVertical, "FAIL: landed frame does not read vertical — 1:", endR.toFixed(3));
   console.assert(fits,   "FAIL: aperture fills the viewport — no room for a body around it");
   console.assert(phoneFits, "FAIL: phone mockup does not fit the viewport — island would clip");
-  console.assert(clearsIsland, "FAIL: nav overlaps the dynamic island");
-  console.assert(noOverlap, "FAIL: nav covers the crop line — it must sit above it, clear");
+  console.assert(clearsIsland, "FAIL: crop top line overlaps the dynamic island");
+  console.assert(navInside, "FAIL: nav is not inside the crop box");
   console.assert(homeRoom, "FAIL: frame runs into the home band");
   console.assert(clearsCurve, "FAIL: crop's bottom line runs past the corner curvature —",
                  `${Math.round(bottomGap)}px gap, needs ${Math.round(cornerR + 12)}px`);
   console.assert(!badReg.length, "FAIL: bad registration data on", badReg.map(b=>b.dataset.body));
 
-  const pass = is16x9 && isVertical && fits && phoneFits && clearsIsland && noOverlap && homeRoom && clearsCurve && !badReg.length;
+  /* every plate must be larger than the viewport, or the no-dip cross-fade would let the
+     background show at the edges when the outgoing plate is hidden. */
+  const platesCover = bodies.filter(b=>b.dataset.body!=="phone").every(b=>{
+    const r=b.getBoundingClientRect(); return r.width>=g.vw-1 && r.height>=g.vh-1;
+  });
+  console.assert(platesCover, "FAIL: a 16:9 plate is smaller than the viewport — cross-fade will flash");
+
+  const pass = is16x9 && isVertical && fits && phoneFits && clearsIsland && navInside && homeRoom && clearsCurve && !badReg.length;
   console.log(
 `9x16 hero rig — self-check
   mechanic : ${Math.round(g.startW)}×${Math.round(g.startH)} (${startR.toFixed(2)}:1, FIXED)  →  ${Math.round(g.endW)}×${Math.round(g.endH)} (1:${endR.toFixed(2)} — reads vertical, 9:16 = 1.78)
   phone    : ${Math.round(g.photoW)}×${Math.round(g.photoH)} mockup, top at ${PHONE_TOP}px — fully visible
   screen   : ${Math.round(g.screenW)}×${Math.round(g.screenH)} — bands: status ${Math.round(g.statusH)} · nav ${Math.round(g.navH)} · CROP ${Math.round(g.endH)} · home ${Math.round(g.homeH)}
-  island   : ends y=${Math.round(islandBot)} · nav ${Math.round(navTop)}–${Math.round(navBot)} (clears island by ${Math.round(navTop - islandBot)}px) · crop line y=${Math.round(g.frameTop)} (gap ${Math.round(g.frameTop - navBot)}px)
+  island   : ends y=${Math.round(islandBot)} · CROP LINE y=${Math.round(g.frameTop)} (clears island by ${Math.round(g.frameTop - islandBot)}px) · nav ${Math.round(navTop)}–${Math.round(navBot)}, inside the box
+  plates   : ${platesCover ? "all cover the viewport — cross-fade cannot flash" : "TOO SMALL — will flash"}
   bottom   : crop line y=${Math.round(g.frameTop + g.endH)} · screen ends ${Math.round(g.screenTop + g.screenH)} · gap ${Math.round(bottomGap)}px vs ${Math.round(cornerR + 12)}px needed to clear the curvature
   gutters  : ${Math.round((g.vw - g.photoW) / 2)}px each side — pavement, never content
   --col    : ${Math.round(g.endW)}px (screen width = site column)
