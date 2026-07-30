@@ -311,7 +311,8 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    drift apart the way the live site's did. Left-aligned and anchored to the grid rather
    than centred — centring every screen would read as eight splash pages in a row. */
 .rs--built{display:block; place-content:initial; text-align:left;
-  padding:calc(var(--sec-pad,26px) + var(--status-band,0px)) var(--sec-pad,26px) var(--sec-pad,26px);}
+  padding:calc(var(--sec-pad,26px) + var(--status-band,0px)) var(--sec-pad,26px)
+          calc(var(--sec-pad,26px) + var(--home-band,0px));}
 .sec{height:100%; display:flex; flex-direction:column; justify-content:center; gap:var(--sec-gap,18px);}
 .sec__eyebrow{font-family:"Switzer",sans-serif; font-weight:600; font-size:var(--sec-eyebrow,11px);
   letter-spacing:.18em; text-transform:uppercase; color:var(--mute); margin:0;}
@@ -730,8 +731,10 @@ function setNav(p){
   uiEl.style.setProperty("--isl-w",   G.screenW * ISLAND_W_F + "px");
   uiEl.style.setProperty("--isl-h",   G.screenH * ISLAND_H_F + "px");
   uiEl.style.setProperty("--isl-top", G.screenH * ISLAND_TOP_F + "px");
-  uiEl.style.setProperty("--status-band", G.statusH + "px");
-  uiEl.style.setProperty("--home-band", G.homeH + "px");
+  /* on :root — the chrome bands are read by SECTIONS too (to clear the status bar), and a
+     section is not a descendant of .screenui, so scoping these to it silently fell back to 0 */
+  root.style.setProperty("--status-band", G.statusH + "px");
+  root.style.setProperty("--home-band", G.homeH + "px");
   uiEl.style.setProperty("--home-b",  (G.homeH / 2 - 2.5 + HOME_RISE) + "px");
   uiEl.style.opacity = p > 0.6 ? String((p - 0.6) / 0.4) : "0";
 }
