@@ -276,18 +276,22 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .ap-grid span{display:none;}
 
 /* stationary and centred, independent of whatever the aperture is currently doing */
-.headline{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:9;
+/* --apy is the crop box's offset from viewport centre. The headline rides it, otherwise it
+   stays centred on the VIEWPORT while the box sits lower — which is why it read off-centre on
+   the phone. Width is capped so wrapping does not change between plates. */
+.headline{position:absolute; left:50%; top:50%;
+  transform:translate(-50%, calc(-50% + var(--apy,0px))); z-index:9;
   display:grid; place-items:center; text-align:center; pointer-events:none;
-  /* tracks the frame, so the bigger type still wraps inside whatever screen is showing
-     instead of running over the billboard's edge or out of the phone */
-  width:var(--apw); padding:0 6%;}
+  width:min(var(--apw), 900px); padding:0 6%;}
 /* both headlines occupy the same cell and cross-fade — the copy changes with the format */
 .headline h1{grid-area:1/1; margin:0;}
-.hl-vert{opacity:0; color:#fff;}
+/* the vertical headline arrives on a WHITE screen and only inverts once the orange lands, so
+   its three colours are driven rather than fixed — white-on-white would be invisible */
+.hl-vert{opacity:0; color:var(--vh-c, var(--pitch));}
+.hl-vert .hl{background:var(--vh-bg, var(--orange)); color:var(--vh-fg, var(--snow));}
 .hl{background:var(--orange); color:var(--snow); padding:0 .1em;
     box-decoration-break:clone; -webkit-box-decoration-break:clone;}
-/* inverted on the orange screen: white box, orange word */
-.hl--inv{background:#fff; color:var(--orange);}
+.headline h1{will-change:opacity, transform, filter;}
 
 /* the orange screen fill — sized to the PHONE SCREEN, so it runs under the status bar and the
    home indicator as well as the crop box. Sits above the phone photo, below the grid. */
@@ -406,7 +410,7 @@ body.reg #regout{display:block;}
          current plate's screen is — the headline has to stay put while that happens. -->
     <div class="headline" id="headline">
       <h1 class="aperture__h hl-wide" id="hlWide">attention outgrew the <span class="hl">widescreen</span></h1>
-      <h1 class="aperture__h hl-vert" id="hlVert">it&rsquo;s a <span class="hl hl--inv">9x16</span> world now</h1>
+      <h1 class="aperture__h hl-vert" id="hlVert">it&rsquo;s a <span class="hl">9x16</span> world now</h1>
     </div>
 
     <!-- the phone's screen chrome, sitting on the white screen OUTSIDE the crop box.
@@ -478,13 +482,34 @@ const hlVert  = document.getElementById("hlVert");
    Deliberately lags the morph (starts at 0.45) so the colour flip lands as the frame settles
    into the phone rather than while it is still travelling. */
 const GRID_DARK = "rgba(16,12,8,0.09)", GRID_LIGHT = "rgba(255,255,255,0.55)";
+const seg = (p, a, b) => gsap.utils.clamp(0, 1, (p - a) / (b - a));
+
+/* THREE BEATS, not one blend — the old single ramp had the copy swapping while the frame was
+   still travelling, which is what made it feel muddy.
+     1. the wide headline LEAVES at once (exit faster than enter)
+     2. the vertical headline ARRIVES as the phone reads as a phone
+     3. white flips to ORANGE as the last beat, and the type inverts with it
+   A touch of blur rides each headline through its own crossfade: without it you see two
+   distinct words overlapping instead of one turning into the other. */
 function setPhase(p){
-  const t = gsap.utils.clamp(0, 1, (p - 0.45) / 0.40);
-  fillEl.style.opacity = t;                                   /* orange fills the whole screen */
-  gridEl.style.setProperty("--grid-c", gsap.utils.interpolate(GRID_DARK, GRID_LIGHT, t));
-  uiEl.style.color = gsap.utils.interpolate("#100C08", "#FFFFFF", t);  /* status + home bar */
-  hlWide.style.opacity = 1 - t;
-  hlVert.style.opacity = t;
+  const out  = seg(p, 0.00, 0.10);
+  const inn  = seg(p, 0.34, 0.60);
+  const warm = seg(p, 0.84, 1.00);
+
+  hlWide.style.opacity   = 1 - out;
+  hlWide.style.transform = `scale(${(1 - 0.04 * out).toFixed(4)})`;
+  hlWide.style.filter    = out > 0 && out < 1 ? `blur(${(out * 6).toFixed(2)}px)` : "none";
+
+  hlVert.style.opacity   = inn;
+  hlVert.style.transform = `scale(${(0.96 + 0.04 * inn).toFixed(4)})`;   /* never from scale(0) */
+  hlVert.style.filter    = inn > 0 && inn < 1 ? `blur(${((1 - inn) * 6).toFixed(2)}px)` : "none";
+  hlVert.style.setProperty("--vh-c",  gsap.utils.interpolate("#100C08", "#FFFFFF", warm));
+  hlVert.style.setProperty("--vh-bg", gsap.utils.interpolate("#FF7B00", "#FFFFFF", warm));
+  hlVert.style.setProperty("--vh-fg", gsap.utils.interpolate("#FAFAFA", "#FF7B00", warm));
+
+  fillEl.style.opacity = warm;
+  gridEl.style.setProperty("--grid-c", gsap.utils.interpolate(GRID_DARK, GRID_LIGHT, warm));
+  uiEl.style.color = gsap.utils.interpolate("#100C08", "#FFFFFF", warm);
 }
 
 /* aperture geometry. Starts a large fixed 16:9 — the viewport is NOT restricted. Ends on a
@@ -578,11 +603,13 @@ function setAperture(w, h, p = 0){
      own 9:16 rhythm across the morph, so the landscape grid and the phone grid are one system
      rather than two. Cells stay 9:16 in both. */
   setPhase(p);
-  /* Display size scales off the CURRENT frame width — a billboard gets billboard type, the
-     phone gets phone type, and neither overflows. The phone takes a larger share of its much
-     narrower frame, so the ratio is interpolated rather than fixed. */
-  const k = gsap.utils.interpolate(0.082, 0.115, p);
-  root.style.setProperty("--hl-size", gsap.utils.clamp(26, 112, w * k) + "px");
+  /* Display size is CONSTANT across plate changes: the landscape value comes off screenH0,
+     which is locked, not off the frame width, which varies per plate. Only the morph moves it. */
+  const sizeLand  = gsap.utils.clamp(28, 68, (screenH0 || 500) * 0.118);
+  const sizePhone = gsap.utils.clamp(22, 46, G.endW * 0.098);
+  root.style.setProperty("--hl-size", gsap.utils.interpolate(sizeLand, sizePhone, p) + "px");
+  /* the fill is the phone SCREEN, which has rounded corners — a square rectangle overshot them */
+  fillEl.style.borderRadius = (G.screenW * CORNER_R) + "px";
   const landH = (screenH0 || h) * 0.58, landW = landH * 9 / 16;
   root.style.setProperty("--cell-h", gsap.utils.interpolate(landH, G.endW * 0.292, p) + "px");
   root.style.setProperty("--cell-w", gsap.utils.interpolate(landW, G.endW * 0.163, p) + "px");
