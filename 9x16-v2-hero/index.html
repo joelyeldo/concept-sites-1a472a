@@ -77,7 +77,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .nav.is-open .nav__burger span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
 
 /* the phone's full-screen menu overlay — clipped to the screen, exactly as a phone does it */
-.menu{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:var(--apw); height:var(--aph);
+.menu{position:absolute; left:50%; top:50%; transform:translate(-50%, calc(-50% + var(--apy, 0px))); width:var(--apw); height:var(--aph);
       z-index:45; background:var(--pitch); clip-path:inset(0 0 100% 0); visibility:hidden;
       transition:clip-path .45s var(--ease-out), visibility 0s linear .45s;
       display:grid; align-content:center; gap:1rem; padding:2rem;}
@@ -156,7 +156,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    Fixed 16:9. Contracts to 9:16 on the second half of the scroll. The site's content lives
    in here — for now just a marker so the geometry is legible. */
 .aperture{
-  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  position:absolute; left:50%; top:50%; transform:translate(-50%, calc(-50% + var(--apy, 0px)));
   width:var(--apw); height:var(--aph); z-index:4;
   background:var(--snow); overflow:hidden;
 }
@@ -164,7 +164,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    Tracks --apw/--aph so it sits on the aperture at 16:9 and 9:16 alike, and through the
    morph between them. Lives above the aperture so overflow:hidden can't clip the marks. */
 .crop{
-  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  position:absolute; left:50%; top:50%; transform:translate(-50%, calc(-50% + var(--apy, 0px)));
   width:var(--apw); height:var(--aph); z-index:5; pointer-events:none;
   border:2px solid var(--pitch);
 }
@@ -352,9 +352,18 @@ publishCol();
 
 const navEl = document.getElementById("nav");
 
-function setAperture(w, h){
+/* How far the frame sits BELOW dead centre once it has landed in the phone.
+   Centred, the dynamic island eats most of the top band and the nav has nowhere to go. On a
+   real phone content runs from under the nav down to the bottom of the screen — so anchor the
+   frame's bottom to the screen's bottom, and the whole spare band collects above it. */
+function apOffset(){
+  return (G.screenTop + G.screenH - G.endH) - (G.vh - G.endH) / 2;
+}
+
+function setAperture(w, h, p = 0){
   root.style.setProperty("--apw", w + "px");
   root.style.setProperty("--aph", h + "px");
+  root.style.setProperty("--apy", (apOffset() * p) + "px");
   const r = w / h;
   ratioEl.textContent = r >= 1 ? `${r.toFixed(2)} : 1` : `1 : ${(1/r).toFixed(2)}`;
 }
@@ -436,7 +445,7 @@ tl.to(morph, {
   onUpdate(){
     const p = gsap.parseEase("power2.inOut")(morph.p);
     setAperture(gsap.utils.interpolate(G.startW, G.endW, p),
-                gsap.utils.interpolate(G.startH, G.endH, p));
+                gsap.utils.interpolate(G.startH, G.endH, p), p);
     setNav(p);   /* the bar shrinks onto the phone on the same curve */
   }
 }, 0.05);
@@ -540,7 +549,7 @@ function check(){
      the mockup can never bleed off screen. */
   const phoneFits = g.photoH + PHONE_TOP * 2 <= g.vh + 1;
   const navTop    = g.screenTop + g.screenH * ISLAND_END + 10;
-  const frameTop  = (g.vh - g.endH) / 2;
+  const frameTop  = (g.vh - g.endH) / 2 + apOffset();   /* frame is anchored to the screen bottom */
   const navClears = navTop + 44 <= frameTop + 1;   /* nav must fit between island and frame */
 
   const missingBody = bodies.filter(b => !b.querySelector("img"));
