@@ -138,7 +138,17 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    readable as a crop line rather than the edge of the screen. */
 .screenui{position:absolute; left:50%; top:var(--scr-top,0px); transform:translateX(-50%);
   width:var(--scr-w,0px); height:var(--scr-h,0px); z-index:8; pointer-events:none; opacity:0;
+  border-radius:var(--scr-r,0px); overflow:hidden;
   color:var(--pitch); font-family:"Switzer",sans-serif;}
+/* iOS chrome sits on frosted white, not on the app's colour — so it stays legible whatever the
+   app is doing underneath, exactly like the real thing. Clipped to the screen's corners. */
+.chrome-band{position:absolute; left:0; right:0; z-index:0; background:rgba(255,255,255,.72);
+  -webkit-backdrop-filter:blur(20px) saturate(1.5); backdrop-filter:blur(20px) saturate(1.5);}
+.chrome-band--top{top:0; height:var(--status-band,0px);
+  border-radius:var(--scr-r,0px) var(--scr-r,0px) 0 0;}
+.chrome-band--bot{bottom:0; height:var(--home-band,0px);
+  border-radius:0 0 var(--scr-r,0px) var(--scr-r,0px);}
+.status,.homebar{z-index:1;}
 .status{position:absolute; left:0; right:0; top:var(--status-top,0px); height:var(--status-h,22px);
   display:flex; align-items:center; justify-content:space-between; padding:0 8.5%;
   font-weight:700; font-size:.82rem; letter-spacing:.01em;}
@@ -415,6 +425,8 @@ body.reg #regout{display:block;}
     <!-- the phone's screen chrome, sitting on the white screen OUTSIDE the crop box.
          The clock reads 9:16, because of course it does. -->
     <div class="screenui" id="screenui" aria-hidden="true">
+      <div class="chrome-band chrome-band--top"></div>
+      <div class="chrome-band chrome-band--bot"></div>
       <div class="status">
         <span class="status__time">9:16</span>
         <span class="status__icons">
@@ -545,7 +557,10 @@ const NAVGAP   = 8;       /* px of clear white between the nav and the crop line
 const HOME_F   = 0.075;   /* home band height,   as a fraction of screen height */
 const SCREEN_PAD = 0.020; /* side inset for on-screen UI, as a fraction of screen width */
 const ISLAND_MID = 0.0284;/* island's vertical centre, as a fraction of screen height */
-const CORNER_R   = 0.090; /* screen's corner radius, as a fraction of screen WIDTH */
+/* Measured, not guessed: fitting a circle to the mockup's corner profile gives R=180px of a
+   1321px screen. The old 0.090 painted a 39px radius where the screen has ~60px, which is why
+   the orange corners never sat inside the glass. */
+const CORNER_R   = 0.1363;
 
 function geo(){
   const vw = innerWidth, vh = innerHeight;
@@ -564,8 +579,10 @@ function geo(){
   /* the crop's TOP line now sits between the island and the nav — just under the island edge,
      well clear of the screen's top radius — so the nav is framed content inside the crop box
      rather than chrome floating above it. */
-  const frameTop = screenTop + screenH * ISLAND_END + CROP_GAP;
-  const endH     = (screenTop + screenH - homeH) - frameTop;
+  /* the crop box is the WHOLE phone screen: the orange and its grid fill the display edge to
+     edge, and the status / home bands become glass laid over the top of it. */
+  const frameTop = screenTop;
+  const endH     = screenH;
   /* Full screen width. The inset existed only to keep the crop outline's 12px corner marks
      clear of the bezel; with the outline hidden it just left white gutters either side of the
      orange fill. The nav keeps its own inset (NAV_PAD) and content keeps --screen-pad. */
@@ -606,6 +623,10 @@ function setAperture(w, h, p = 0){
   const sizeLand  = gsap.utils.clamp(28, 68, (screenH0 || 500) * 0.118);
   const sizePhone = gsap.utils.clamp(22, 46, G.endW * 0.098);
   root.style.setProperty("--hl-size", gsap.utils.interpolate(sizeLand, sizePhone, p) + "px");
+  /* corners only exist once it IS a phone screen — a billboard has square ones */
+  const rad = G.screenW * CORNER_R * p;
+  root.style.setProperty("--scr-r", rad + "px");
+  apEl.style.borderRadius = rad + "px";
   const landH = (screenH0 || h) * 0.58, landW = landH * 9 / 16;
   root.style.setProperty("--cell-h", gsap.utils.interpolate(landH, G.endW * 0.292, p) + "px");
   root.style.setProperty("--cell-w", gsap.utils.interpolate(landW, G.endW * 0.163, p) + "px");
@@ -622,7 +643,7 @@ function setNav(p){
   /* the nav parks in its own band: below the status bar, above the crop line, touching neither.
      It also insets from the screen's left and right edges — flush to the bezel reads as a
      layer pasted over the photo; inset reads as UI running ON the screen. */
-  const endTop = G.frameTop + NAV_INSET;   /* the nav lives INSIDE the crop box now */
+  const endTop = G.screenTop + G.statusH + NAV_INSET;   /* below the glass status band */
   const navEndW = G.screenW - G.screenW * NAV_PAD * 2;   /* narrower than the crop box */
   navEl.style.setProperty("--nav-w",   gsap.utils.interpolate(startW, navEndW, p) + "px");
   /* published so every section we add inside the frame shares one gutter with the nav */
@@ -645,6 +666,8 @@ function setNav(p){
   const rowH = G.screenH * 0.026;
   uiEl.style.setProperty("--status-h",   rowH + "px");
   uiEl.style.setProperty("--status-top", (G.screenH * ISLAND_MID - rowH / 2) + "px");
+  uiEl.style.setProperty("--status-band", G.statusH + "px");
+  uiEl.style.setProperty("--home-band", G.homeH + "px");
   uiEl.style.setProperty("--home-b",  (G.homeH / 2 - 2.5 + HOME_RISE) + "px");
   uiEl.style.opacity = p > 0.6 ? String((p - 0.6) / 0.4) : "0";
 }
@@ -916,14 +939,15 @@ function check(){
   const navBot    = navTop + g.navH;
   const islandBot = g.screenTop + g.screenH * ISLAND_END;
   /* the crop's top line sits between the island and the nav, and the nav is INSIDE the box */
-  const clearsIsland = g.frameTop >= islandBot - 1;
-  const navInside    = navTop >= g.frameTop - 1 && navBot <= g.frameTop + g.endH + 1;
-  const homeRoom     = (g.screenTop + g.screenH) - (g.frameTop + g.endH) >= g.homeH - 1;
-  /* the crop's bottom line and its 12px marks must stop ABOVE where the screen's corner
-     radius begins, or they run out over the curvature and off the phone. */
-  const cornerR      = g.screenW * CORNER_R;
-  const bottomGap    = (g.screenTop + g.screenH) - (g.frameTop + g.endH);
-  const clearsCurve  = bottomGap >= cornerR + 12;
+  /* the crop box IS the screen now, so the old "sits below the island / above the curvature"
+     checks describe a layout that no longer exists. What matters instead: the fill matches the
+     screen exactly, and the glass bands cover the island and the home indicator. */
+  const isScreen  = Math.abs(g.endW - g.screenW) < 1 && Math.abs(g.endH - g.screenH) < 1
+                    && Math.abs(g.frameTop - g.screenTop) < 1;
+  const bandCoversIsland = g.screenTop + g.statusH >= islandBot - 1;
+  const navInside = navTop >= g.frameTop - 1 && navBot <= g.frameTop + g.endH + 1;
+  const navBelowBand = navTop >= g.screenTop + g.statusH - 1;
+  const cornerR = g.screenW * CORNER_R;
 
   const missingBody = bodies.filter(b => !b.querySelector("img"));
   const missingProp = props.filter(p => !p.querySelector("img"));
@@ -943,11 +967,10 @@ function check(){
   console.assert(isVertical, "FAIL: landed frame does not read vertical — 1:", endR.toFixed(3));
   console.assert(fits,   "FAIL: aperture fills the viewport — no room for a body around it");
   console.assert(phoneFits, "FAIL: phone mockup does not fit the viewport — island would clip");
-  console.assert(clearsIsland, "FAIL: crop top line overlaps the dynamic island");
-  console.assert(navInside, "FAIL: nav is not inside the crop box");
-  console.assert(homeRoom, "FAIL: frame runs into the home band");
-  console.assert(clearsCurve, "FAIL: crop's bottom line runs past the corner curvature —",
-                 `${Math.round(bottomGap)}px gap, needs ${Math.round(cornerR + 12)}px`);
+  console.assert(isScreen, "FAIL: the fill is not exactly the phone screen");
+  console.assert(bandCoversIsland, "FAIL: glass status band does not cover the dynamic island");
+  console.assert(navInside, "FAIL: nav is not inside the screen");
+  console.assert(navBelowBand, "FAIL: nav sits under the glass status band");
   console.assert(!badReg.length, "FAIL: bad registration data on", badReg.map(b=>b.dataset.body));
 
   /* every plate must be larger than the viewport, or the no-dip cross-fade would let the
@@ -957,7 +980,7 @@ function check(){
   });
   console.assert(platesCover, "FAIL: a 16:9 plate is smaller than the viewport — cross-fade will flash");
 
-  const pass = cellsSet && fillsScreen && isVertical && fits && phoneFits && clearsIsland && navInside && homeRoom && clearsCurve && !badReg.length;
+  const pass = cellsSet && fillsScreen && isVertical && fits && phoneFits && isScreen && bandCoversIsland && navInside && navBelowBand && !badReg.length;
   console.log(
 `9x16 hero rig — self-check
   mechanic : plate screen ${Math.round(shown.w)}×${Math.round(shown.h)} (${(shown.w/shown.h).toFixed(2)}:1)  →  ${Math.round(g.endW)}×${Math.round(g.endH)} (1:${endR.toFixed(2)} — vertical)
