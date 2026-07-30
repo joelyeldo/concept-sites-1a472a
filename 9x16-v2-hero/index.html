@@ -273,7 +273,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    wide coarse desktop cells at 16:9, and the same grid scaled down into the phone at 9:16,
    where it becomes the background the content sits on. */
 .ap-grid{
-  position:absolute; inset:0; z-index:0; pointer-events:none;
+  position:absolute; inset:0; z-index:1; pointer-events:none;
   /* CONSTANT CELLS, CENTRE-ANCHORED.
      Rows used to step at 29.2% of --apw and the columns sat at fixed percentages, so both
      rescaled every time a plate changed width — which is why the horizontal line drifted.
@@ -291,6 +291,10 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* the old percentage verticals would re-space with every plate — the gradient owns columns now */
 .ap-grid span{display:none;}
 
+/* white base under the grid: the sections need white, but painting it ON the sections hid the
+   grid. It fades in with the reel so the hero's orange still shows through underneath. */
+.ap-white{position:absolute; inset:0; z-index:0; background:var(--snow); opacity:0;}
+
 /* ── THE REEL ─────────────────────────────────────────────────────────────────────────
    Once the hero lands, the whole site plays inside the phone screen: each section is one
    screenful and the scroll goes section-to-section, snapping, the way a reels feed does.
@@ -299,7 +303,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    scroll systems mid-page, which is where this kind of thing usually goes wrong. */
 .reel{position:absolute; inset:0; z-index:2; opacity:0;
   transform:translate3d(0, calc(var(--reel-y,0) * -100%), 0); will-change:transform;}
-.rs{position:absolute; left:0; right:0; height:100%; background:var(--snow);
+.rs{position:absolute; left:0; right:0; height:100%;
   display:grid; place-content:center; gap:.4rem; text-align:center; padding:0 8%;}
 .rs__n{font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:var(--mute); font-weight:600;}
 .rs__t{font-family:"Clash Display",sans-serif; font-weight:600; font-size:1.6rem;
@@ -310,10 +314,19 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    One scale for every section, sized off the phone screen (--sec-*), so sections cannot
    drift apart the way the live site's did. Left-aligned and anchored to the grid rather
    than centred — centring every screen would read as eight splash pages in a row. */
-.rs--built{display:block; place-content:initial; text-align:left;
+.rs--built{display:flex; place-content:initial; text-align:left; align-items:center;
   padding:calc(var(--sec-pad,26px) + var(--status-band,0px)) var(--sec-pad,26px)
           calc(var(--sec-pad,26px) + var(--home-band,0px));}
-.sec{height:100%; display:flex; flex-direction:column; justify-content:center; gap:var(--sec-gap,18px);}
+
+/* v1's card, styles.css:849-856 — opaque snow so grid lines never cut through the copy, a
+   hairline border and a deep soft shadow. Width is a whole number of grid cells (5) and the
+   pattern is centre-anchored, so the card's left and right edges land ON grid lines rather
+   than between them. */
+.card{width:calc(5 * var(--cell-w, 71px)); max-width:100%; margin:0 auto;
+  background:var(--snow); border:1px solid var(--line);
+  box-shadow:0 34px 90px -40px rgba(16,12,8,.32);
+  padding:var(--sec-pad,26px);}
+.sec{display:flex; flex-direction:column; gap:var(--sec-gap,18px);}
 .sec__eyebrow{font-family:"Switzer",sans-serif; font-weight:600; font-size:var(--sec-eyebrow,11px);
   letter-spacing:.18em; text-transform:uppercase; color:var(--mute); margin:0;}
 .sec__h{font-family:"Clash Display",sans-serif; font-weight:600; font-size:var(--sec-head,36px);
@@ -455,15 +468,17 @@ body.reg #regout{display:block;}
         <span style="left:58.2%"></span><span style="left:74.5%"></span><span style="left:91%"></span>
       </div>
 
+      <div class="ap-white" id="apWhite" aria-hidden="true"></div>
+
       <div class="reel" id="reel">
         <section class="rs rs--built" data-s="story" style="top:0%">
-          <div class="sec">
+          <div class="card"><div class="sec">
             <p class="sec__eyebrow">our story</p>
             <h2 class="sec__h">every screen that ever mattered just got <span class="hl">taller.</span></h2>
             <p class="sec__rule"></p>
             <p class="sec__b">Billboards, cinema, television, the desktop web — all of it built for a world that looked sideways. Then everyone turned the screen ninety degrees and never turned it back.</p>
             <p class="sec__b">We only build for where they are actually looking.</p>
-          </div>
+          </div></div>
         </section>
         <section class="rs" data-s="trust" style="top:100%"><p class="rs__n">2 / 8</p><h2 class="rs__t">trusted by</h2><p class="rs__todo">3 logo bands, angled and criss-crossed</p></section>
         <section class="rs" data-s="dashboard" style="top:200%"><p class="rs__n">3 / 8</p><h2 class="rs__t">live dashboard</h2><p class="rs__todo">from live, cut everything after the graph</p></section>
@@ -547,6 +562,7 @@ const uiEl    = document.getElementById("screenui");
 const hlWide  = document.getElementById("hlWide");
 const hlVert  = document.getElementById("hlVert");
 const reelEl  = document.getElementById("reel");
+const whiteEl = document.getElementById("apWhite");
 const REEL    = [...document.querySelectorAll(".rs")];
 
 /* How far into the phone state we are: 0 = the landscape shot, 1 = fully the orange screen.
@@ -970,6 +986,7 @@ ScrollTrigger.create({
   onUpdate: self => reelTo(Math.round(self.progress * (REEL.length - 1))),
   onToggle: self => {
     reelEl.style.opacity = self.isActive ? 1 : 0;
+    whiteEl.style.opacity = self.isActive ? 1 : 0;
     /* the hero headline belongs to the hero — it must not sit over the sections */
     hlVert.style.visibility = self.isActive ? "hidden" : "visible";
   }
