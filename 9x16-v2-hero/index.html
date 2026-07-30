@@ -232,6 +232,11 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    morph between them. Lives above the aperture so overflow:hidden can't clip the marks. */
 .crop{
   position:absolute; left:50%; top:50%; transform:translate(-50%, calc(-50% + var(--apy, 0px)));
+  /* HIDDEN FOR NOW — delete this one line to bring the rails and registration marks back.
+     The markup, the geometry and the assertions that keep the frame clear of the island and
+     the corner curvature all still run, so nothing has to be rebuilt to restore it. */
+  display:none;
+
   /* the crop rails sit ABOVE the menu — the crop line is never covered by anything, it is
      the one constant of the whole piece. Layer order: aperture 4 · menu 5 · crop 6 · chrome 7 */
   width:var(--apw); height:var(--aph); z-index:6; pointer-events:none;
