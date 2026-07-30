@@ -416,7 +416,9 @@ const ISLAND_END  = 0.046;         /* dynamic island's bottom, as a fraction of 
 const STATUS_F = 0.095;   /* status band height, as a fraction of screen height */
 const NAV_PAD  = 0.075;   /* the nav's own side inset — wider than the frame's, so the bar is
                              visibly narrower than the crop box rather than matching it */
-const NAVBAND_F= 0.048;   /* nav band height,    as a fraction of screen height */
+const NAVBAND_F= 0.058;   /* nav band height — raised so a logo matching the 44px burger fits */
+const NAV_RISE = 2;       /* px the bar sits above its band's top edge */
+const HOME_RISE= 4;       /* px the home indicator sits above its centred position */
 const NAVGAP   = 8;       /* px of clear white between the nav and the crop line */
 const HOME_F   = 0.075;   /* home band height,   as a fraction of screen height */
 const SCREEN_PAD = 0.030; /* side inset for on-screen UI, as a fraction of screen width */
@@ -484,14 +486,15 @@ function setNav(p){
   /* the nav parks in its own band: below the status bar, above the crop line, touching neither.
      It also insets from the screen's left and right edges — flush to the bezel reads as a
      layer pasted over the photo; inset reads as UI running ON the screen. */
-  const endTop = G.screenTop + G.statusH;
+  const endTop = G.screenTop + G.statusH - NAV_RISE;
   const navEndW = G.screenW - G.screenW * NAV_PAD * 2;   /* narrower than the crop box */
   navEl.style.setProperty("--nav-w",   gsap.utils.interpolate(startW, navEndW, p) + "px");
   /* published so every section we add inside the frame shares one gutter with the nav */
   root.style.setProperty("--screen-pad", (G.screenW * SCREEN_PAD) + "px");
   navEl.style.setProperty("--nav-top", gsap.utils.interpolate(PHONE_TOP, endTop, p) + "px");
   navEl.style.setProperty("--nav-pad", gsap.utils.interpolate(pad, 0, p) + "px");
-  navEl.style.setProperty("--logo-h",  gsap.utils.interpolate(56, G.navH * 0.62, p) + "px");
+  /* on the phone the logo matches the burger's 44px box, so the two read as a pair */
+  navEl.style.setProperty("--logo-h",  gsap.utils.interpolate(56, 44, p) + "px");
   navEl.classList.toggle("is-phone", p > 0.55);
   if (p <= 0.55) closeMenu();     /* a wide bar must never keep a phone overlay open */
 
@@ -505,7 +508,7 @@ function setNav(p){
   const rowH = G.screenH * 0.026;
   uiEl.style.setProperty("--status-h",   rowH + "px");
   uiEl.style.setProperty("--status-top", (G.screenH * ISLAND_MID - rowH / 2) + "px");
-  uiEl.style.setProperty("--home-b",  (G.homeH / 2 - 2.5) + "px");
+  uiEl.style.setProperty("--home-b",  (G.homeH / 2 - 2.5 + HOME_RISE) + "px");
   uiEl.style.opacity = p > 0.6 ? String((p - 0.6) / 0.4) : "0";
 }
 setAperture(G.startW, G.startH);
@@ -566,11 +569,16 @@ if (reduce) showLandscape(0);
    NOTE: this was `fromTo({p:0},{p:1},{p:1,…})`, which GSAP reads as from p=1 to p=1 — the
    proxy never moved, so onUpdate read a constant and nothing reversed on scroll-up. A
    single proxy object tweened with .to() animates and scrubs backwards correctly. */
+/* last eased progress, so a resize or a late load can re-place everything from the CURRENT
+   geometry. Without this, G is recomputed on load/resize but the screen chrome keeps the
+   --scr-top it was given at parse time — which is how the status bar ended up off the phone. */
+let lastP = 0;
+
 const morph = { p: 0 };
 tl.to(morph, {
   p:1, duration:.65,
   onUpdate(){
-    const p = gsap.parseEase("power2.inOut")(morph.p);
+    const p = lastP = gsap.parseEase("power2.inOut")(morph.p);
     setAperture(gsap.utils.interpolate(G.startW, G.endW, p),
                 gsap.utils.interpolate(G.startH, G.endH, p), p);
     setNav(p);   /* the bar shrinks onto the phone on the same curve */
@@ -660,7 +668,15 @@ addEventListener("keydown", e => {
   e.preventDefault(); paint();
 });
 
-addEventListener("resize", () => { G = geo(); publishCol(); ScrollTrigger.refresh(); }, {passive:true});
+/* re-place everything from the CURRENT geometry at the CURRENT progress */
+function reflow(){
+  G = geo(); publishCol();
+  setAperture(gsap.utils.interpolate(G.startW, G.endW, lastP),
+              gsap.utils.interpolate(G.startH, G.endH, lastP), lastP);
+  setNav(lastP);
+  ScrollTrigger.refresh();
+}
+addEventListener("resize", reflow, {passive:true});
 
 /* ── SELF-CHECK ────────────────────────────────────────────────────────────────────────
    Verifies the mechanic AND reports exactly which photographs are still missing, so the
@@ -731,7 +747,7 @@ ${missingProp.map(p => `  · prop-${p.dataset.prop}.png    — cut-out, client b
 
 registration : press R over any body to align a swapped photo.`);
 }
-addEventListener("load", () => { G = geo(); publishCol(); ScrollTrigger.refresh(); check(); });
+addEventListener("load", () => { reflow(); check(); });
 check();
 </script>
 </body>
