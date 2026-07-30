@@ -548,7 +548,10 @@ function setNav(p){
   /* on the phone the logo matches the burger's 44px box, so the two read as a pair */
   navEl.style.setProperty("--logo-h",  gsap.utils.interpolate(56, 44, p) + "px");
   navEl.classList.toggle("is-phone", p > 0.55);
-  navEl.classList.toggle("is-glass", p <= 0.55);   /* glass over the photo, solid on the phone */
+  /* glass belongs to the resting 16:9 shot only. The moment the morph starts the bar is
+     travelling toward the phone, so it goes white immediately rather than staying dark
+     until it lands. */
+  navEl.classList.toggle("is-glass", p < 0.02);
   if (p <= 0.55) closeMenu();     /* a wide bar must never keep a phone overlay open */
 
   /* the phone's own chrome fades up with the mockup */
@@ -601,20 +604,35 @@ let cyc = 0, timer = null, onPhone = false;
    fixed 16:9 box and becomes whatever the current plate's screen is, edge to edge, and the
    grid fills it with no gutters. Each plate is scaled to cover the viewport; its screen
    centre sits dead centre, so the rect is just centred on the middle of the screen. */
-function plateGeom(b){
+/* the smallest this plate can be and still cover the viewport from its screen-centre anchor.
+   Plain "cover" is not enough: the plate is positioned by its SCREEN centre, not its own, so a
+   screen sitting low in the photo (frame-01 at 58.95%) leaves a band at the bottom. */
+function coverGeom(b){
   const img = b.querySelector("img");
   const ar  = img && img.naturalWidth ? img.naturalWidth / img.naturalHeight : 16 / 9;
   const n   = k => +b.style.getPropertyValue("--" + k);
-  /* Plain "cover" is not enough. The plate is positioned by its SCREEN centre, not its own
-     centre, so a screen sitting low in the photo (frame-01 at 58.95%) leaves a band at the
-     bottom. Size it so BOTH halves still reach the viewport edges from that anchor point. */
   const sx=n("sx"), sy=n("sy");
   const w   = Math.max(G.vw * 50 / Math.min(sx, 100-sx),
                        (G.vh * 50 / Math.min(sy, 100-sy)) * ar);
-  const h   = w / ar;
-  return { plateW:w, w: w * n("sw") / 100, h: h * n("sh") / 100 };
+  return { ar, n, plateW:w, screenH: (w / ar) * n("sh") / 100 };
+}
+
+/* EVERY PLATE'S SCREEN IS THE SAME HEIGHT. Only the width varies, by that screen's own ratio.
+   The grid's rows step off a fixed height, so they stay put as plates change and a wider
+   screen simply reveals more columns instead of the whole grid re-flowing. The shared height
+   is the largest any plate needs in order to cover, so normalising can only ever scale up —
+   never below the coverage floor, which is what would put the background band back. */
+let screenH0 = 0;
+function plateGeom(b){
+  const c      = coverGeom(b);
+  const target = screenH0 || c.screenH;
+  const plateH = target / (c.n("sh") / 100);
+  const plateW = plateH * c.ar;
+  return { plateW, w: plateW * c.n("sw") / 100, h: target };
 }
 function sizePlates(){
+  screenH0 = 0;                                                    /* measure uncapped... */
+  screenH0 = Math.max(...LANDSCAPE.map(b => coverGeom(b).screenH)); /* ...then lock the height */
   LANDSCAPE.forEach(b => b.style.setProperty("--plate-w", plateGeom(b).plateW + "px"));
 }
 
