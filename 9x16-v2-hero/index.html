@@ -69,21 +69,22 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    The fill below is TEMPORARY SCAFFOLDING, not the design. It is an exact 9:16 herringbone
    so the geometry is right to build against — herringbone alternates 90°, so half the pavers
    read 9:16 and half read 16:9. The two formats, interlocked, under the whole site. */
-.ground{position:absolute; inset:0; z-index:1; overflow:hidden; background:#2c2c30; opacity:0;}
+.ground{position:absolute; inset:0; z-index:1; overflow:hidden; background:var(--paper); opacity:0;}
 .ground img{width:100%; height:100%; object-fit:cover; display:block;}
 .ground--placeholder{
-  /* 9:16 paver cell: 45px x 80px. Marked TEMP — delete this rule when the photo lands. */
-  background-color:#2c2c30;
+  /* 9:16 paver cell: 45px x 80px. LIGHT THEME scaffolding — the site is light, so this is
+     too. The real plate will bring its own tone. Marked TEMP; delete when the photo lands. */
+  background-color:#E9E5DF;
   background-image:
-    repeating-linear-gradient(90deg, rgba(255,255,255,.055) 0 1px, transparent 1px 45px),
-    repeating-linear-gradient(0deg,  rgba(255,255,255,.055) 0 1px, transparent 1px 80px),
-    repeating-linear-gradient(0deg,  rgba(255,255,255,.03)  0 1px, transparent 1px 45px),
-    repeating-linear-gradient(90deg, rgba(255,255,255,.03)  0 1px, transparent 1px 80px);
+    repeating-linear-gradient(90deg, rgba(16,12,8,.11) 0 1px, transparent 1px 45px),
+    repeating-linear-gradient(0deg,  rgba(16,12,8,.11) 0 1px, transparent 1px 80px),
+    repeating-linear-gradient(0deg,  rgba(16,12,8,.05) 0 1px, transparent 1px 45px),
+    repeating-linear-gradient(90deg, rgba(16,12,8,.05) 0 1px, transparent 1px 80px);
 }
 .ground__tag{
   position:absolute; left:1.2rem; bottom:1.1rem; z-index:2;
   font-size:.62rem; letter-spacing:.16em; text-transform:uppercase;
-  color:rgba(255,255,255,.4); font-weight:600;
+  color:var(--mute); font-weight:600;
 }
 
 /* PROP SLOTS — flyers, small products, paper planes carrying client branding.
@@ -124,6 +125,18 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
   width:var(--apw); height:var(--aph); z-index:4;
   background:var(--snow); overflow:hidden;
 }
+/* THE CROP — always on, in both states. Rails + registration marks, the site's own language.
+   Tracks --apw/--aph so it sits on the aperture at 16:9 and 9:16 alike, and through the
+   morph between them. Lives above the aperture so overflow:hidden can't clip the marks. */
+.crop{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:var(--apw); height:var(--aph); z-index:5; pointer-events:none;
+  border:2px solid var(--pitch);
+}
+.crop__c{position:absolute; width:12px; height:12px; background:var(--snow); border:2px solid var(--pitch);}
+.crop__c--tl{top:-7px; left:-7px;}  .crop__c--tr{top:-7px; right:-7px;}
+.crop__c--bl{bottom:-7px; left:-7px;} .crop__c--br{bottom:-7px; right:-7px;}
+
 .aperture__inner{position:absolute; inset:0; display:grid; place-content:center; gap:.5rem; text-align:center; padding:1rem;}
 .aperture__h{font-family:"Clash Display",sans-serif; font-weight:600; font-size:clamp(1.4rem,3.4vw,3rem); line-height:.95; margin:0; text-transform:lowercase; letter-spacing:-.02em;}
 .aperture__m{font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); font-weight:600;}
@@ -198,7 +211,13 @@ body.reg #regout{display:block;}
       </figure>
     </div>
 
-    <!-- 3 · APERTURE ──────────────────────────────────────────────────────────────────── -->
+    <!-- 3 · CROP — permanent chrome, present on 16:9 and 9:16 alike -->
+    <div class="crop" id="crop" aria-hidden="true">
+      <span class="crop__c crop__c--tl"></span><span class="crop__c crop__c--tr"></span>
+      <span class="crop__c crop__c--bl"></span><span class="crop__c crop__c--br"></span>
+    </div>
+
+    <!-- 4 · APERTURE ──────────────────────────────────────────────────────────────────── -->
     <div class="aperture" id="aperture">
       <div class="aperture__inner">
         <p class="aperture__m" id="apRatio">16 : 9</p>
@@ -217,6 +236,7 @@ body.reg #regout{display:block;}
 <script>
 gsap.registerPlugin(ScrollTrigger);
 
+const reduce  = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const bodies  = [...document.querySelectorAll(".body")];
 const props   = [...document.querySelectorAll(".prop")];
 const apEl    = document.getElementById("aperture");
@@ -229,7 +249,7 @@ const root    = document.documentElement;
    HEADROOM — the screen must not fill the viewport height, or there is no room for the
    phone's top and bottom to exist and it stops reading as a phone. 0.74 leaves ~13% of the
    viewport above and below the screen for bezel, chin, hand and pavement. */
-const SCREEN_H = 0.74;
+const SCREEN_H = 0.84;
 
 function geo(){
   const vw = innerWidth, vh = innerHeight;
@@ -261,16 +281,51 @@ setAperture(G.startW, G.startH);
    SECOND HALF (.52 → 1):  aperture contracts to 9:16, phone takes over, ground reveals. */
 const tl = gsap.timeline({
   defaults:{ ease:"none" },
-  scrollTrigger:{ trigger:"#hero", start:"top top", end:"bottom bottom", scrub:.6 }
+  scrollTrigger:{
+    trigger:"#hero", start:"top top", end:"bottom bottom", scrub:.6,
+    onUpdate: self => handoff(self.progress)   /* cycle ⇄ phone, both directions */
+  }
 });
 
-/* --- bodies cross-fade over a stationary aperture --- */
-const swap = [0.02, 0.15, 0.28, 0.41];       /* tv, cinema, billboard, laptop */
-bodies.slice(0, 4).forEach((b, i) => {
-  tl.to(b, { opacity:1, duration:.05 }, swap[i]);
-  if (i < 3) tl.to(b, { opacity:0, duration:.05 }, swap[i + 1]);
-});
-tl.to(bodies[3], { opacity:0, duration:.06 }, 0.56);          /* laptop out */
+/* --- bodies cycle on their own clock, NOT on scroll ---------------------------------
+   The landscape formats cross-fade continuously whether or not you move: tv → cinema →
+   billboard → laptop → back. The aperture stays put; only the thing holding it changes.
+   Scroll owns exactly one thing — the transformation. */
+const LANDSCAPE = bodies.slice(0, 4);
+const PHONE     = bodies[4];
+const HOLD_MS   = 2200;      /* how long each format holds */
+const FADE_S    = 0.55;      /* cross-fade */
+let cyc = 0, timer = null, onPhone = false;
+
+function showLandscape(i){
+  LANDSCAPE.forEach((b, j) =>
+    gsap.to(b, { opacity: j === i ? 1 : 0, duration: FADE_S, ease:"power1.inOut", overwrite:"auto" }));
+}
+function startCycle(){
+  if (timer || reduce) return;
+  showLandscape(cyc);
+  timer = setInterval(() => { cyc = (cyc + 1) % LANDSCAPE.length; showLandscape(cyc); }, HOLD_MS);
+}
+function stopCycle(){ clearInterval(timer); timer = null; }
+
+/* handoff — once the morph starts, the cycle stops and the phone takes over. Scroll back up
+   above the threshold and the cycle resumes where it left off. */
+const MORPH_AT = 0.52;
+function handoff(progress){
+  const wantPhone = progress >= MORPH_AT;
+  if (wantPhone === onPhone) return;
+  onPhone = wantPhone;
+  if (wantPhone){
+    stopCycle();
+    LANDSCAPE.forEach(b => gsap.to(b, { opacity:0, duration:FADE_S, overwrite:"auto" }));
+    gsap.to(PHONE, { opacity:1, duration:FADE_S, overwrite:"auto" });
+  } else {
+    gsap.to(PHONE, { opacity:0, duration:FADE_S, overwrite:"auto" });
+    startCycle();
+  }
+}
+startCycle();
+if (reduce) showLandscape(0);
 
 /* --- the contraction: 16:9 → 9:16 ---
    NOTE: this was `fromTo({p:0},{p:1},{p:1,…})`, which GSAP reads as from p=1 to p=1 — the
@@ -286,12 +341,12 @@ tl.to(morph, {
   }
 }, 0.52);
 
-/* --- the phone arrives, and the ground it is standing over reveals in the gutters --- */
-tl.to(bodies[4], { opacity:1, duration:.10 }, 0.60)
-  /* the pavement is not there at the start — the light Swiss grid is. It washes in over the
-     grid as the frame turns vertical, so the world only becomes "street" once you're on the
-     phone. Scrubs backwards cleanly, so scrolling up returns you to the grid. */
-  .to("#ground", { opacity:1, duration:.20 }, 0.56)
+/* --- the ground the phone is standing over reveals in the gutters ---
+   The phone itself is owned by handoff(), not the timeline — one owner per element, or the
+   two fight over opacity. The pavement is not there at the start; the light Swiss grid is.
+   It washes in over the grid as the frame turns vertical, so the world only becomes "street"
+   once you're on the phone. Scrubs backwards cleanly, so scrolling up returns you to the grid. */
+tl.to("#ground", { opacity:1, duration:.20 }, 0.56)
   .to("#cue", { opacity:0, duration:.04 }, 0.06);
 
 /* props settle onto the pavement once the ground is lit */
