@@ -166,7 +166,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* ───────────────────────────────────────────────────────────── pin shell
    180vh = 80vh of pinned scroll. The morph runs 0.05 → 0.70 of that, so it starts on the
    very first scroll and is finished inside roughly half a screen of scrolling. */
-.hero{position:relative; height:calc(180vh + var(--reel-n,8) * 100vh);}
+.hero{position:relative; height:calc(180vh + var(--reel-n,8) * 80vh);}
 .pin{position:sticky; top:0; height:100dvh; overflow:hidden; background:var(--snow);}
 
 /* ───────────────────────────────────────────────────────────── 0 · THE PAGE GRID
@@ -909,13 +909,30 @@ addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
    on a section rather than between two — the reels/shorts behaviour. Snap duration is kept
    short: a long settle reads as the page fighting you. */
 root.style.setProperty("--reel-n", REEL.length);
+
+/* The stack is NOT scrubbed. Scrubbing binds it to the wheel, so a section creeps up a little
+   with every notch and only then snaps — which reads as a scrolling page, not a feed. Instead
+   the scroll only decides WHICH section is current, and the slide between them is its own
+   animation with its own easing. The section holds still, then moves, like a reel. */
+const reelProxy = { y: 0 };
+let reelIdx = 0;
+function reelTo(i){
+  if (i === reelIdx) return;
+  reelIdx = i;
+  gsap.to(reelProxy, {
+    y: i, duration: 0.5, ease: "power3.out", overwrite: true,   /* ease-OUT: moves at once */
+    onUpdate(){ root.style.setProperty("--reel-y", reelProxy.y.toFixed(4)); }
+  });
+}
+
 ScrollTrigger.create({
   trigger: "#hero",
   start: () => "top top-=" + (innerHeight * 1.8),
   end: "bottom bottom",
-  scrub: 0.4,
+  /* snap holds the scrollbar on a section so progress rounds cleanly and a flick cannot
+     leave you parked between two */
   snap: { snapTo: 1 / (REEL.length - 1), duration: { min: 0.12, max: 0.3 }, ease: "power2.inOut", delay: 0.02 },
-  onUpdate: self => root.style.setProperty("--reel-y", (self.progress * (REEL.length - 1)).toFixed(4)),
+  onUpdate: self => reelTo(Math.round(self.progress * (REEL.length - 1))),
   onToggle: self => {
     reelEl.style.opacity = self.isActive ? 1 : 0;
     /* the hero headline belongs to the hero — it must not sit over the sections */
