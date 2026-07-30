@@ -291,8 +291,12 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    the phone. Width is capped so wrapping does not change between plates. */
 .headline{position:absolute; left:50%; top:50%;
   transform:translate(-50%, calc(-50% + var(--apy,0px))); z-index:9;
-  display:grid; place-items:center; text-align:center; pointer-events:none;
-  width:min(var(--apw), 900px); padding:0 6%;}
+  display:grid; place-items:center; text-align:center; pointer-events:none;}
+/* Each headline gets a FIXED box and size for its own state. Sizing them off --apw meant the
+   box narrowed from 1120px to 437px across the morph, so the words re-wrapped and shuffled
+   lines the whole way down. They are constant now — they only cross-fade. */
+.hl-wide{width:var(--hlw-land,900px); font-size:var(--hls-land,56px);}
+.hl-vert{width:var(--hlw-phone,380px); font-size:var(--hls-phone,42px);}
 /* both headlines occupy the same cell and cross-fade — the copy changes with the format */
 .headline h1{grid-area:1/1; margin:0;}
 /* the vertical headline arrives on a WHITE screen and only inverts once the orange lands, so
@@ -307,7 +311,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    white fill used to sit, so its corners and inset match by construction instead of being
    re-derived and never quite lining up. The status bar and home bar bands sit OUTSIDE the crop
    box, on the phone's own white screen, so they stay white the way real phone chrome does. */
-.aperture__h{font-family:"Clash Display",sans-serif; font-weight:600; font-size:var(--hl-size,3rem); line-height:.94; margin:0; text-transform:lowercase; letter-spacing:-.025em;}
+.aperture__h{font-family:"Clash Display",sans-serif; font-weight:600; line-height:.94; margin:0; text-transform:lowercase; letter-spacing:-.025em;}
 .aperture__m{font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); font-weight:600;}
 
 /* registration mode — press R. Shows where the aperture sits so you can align a new photo. */
@@ -618,11 +622,6 @@ function setAperture(w, h, p = 0){
      own 9:16 rhythm across the morph, so the landscape grid and the phone grid are one system
      rather than two. Cells stay 9:16 in both. */
   setPhase(p);
-  /* Display size is CONSTANT across plate changes: the landscape value comes off screenH0,
-     which is locked, not off the frame width, which varies per plate. Only the morph moves it. */
-  const sizeLand  = gsap.utils.clamp(28, 68, (screenH0 || 500) * 0.118);
-  const sizePhone = gsap.utils.clamp(22, 46, G.endW * 0.098);
-  root.style.setProperty("--hl-size", gsap.utils.interpolate(sizeLand, sizePhone, p) + "px");
   /* corners only exist once it IS a phone screen — a billboard has square ones */
   const rad = G.screenW * CORNER_R * p;
   root.style.setProperty("--scr-r", rad + "px");
@@ -740,10 +739,19 @@ function plateGeom(b){
   const plateW = plateH * c.ar;
   return { plateW, w: plateW * c.n("sw") / 100, h: target };
 }
+/* Headline boxes are viewport-derived only, so they never move during the morph or between
+   plate swaps. Landscape size comes off screenH0 (locked); the phone box off the screen. */
+function sizeHeadlines(){
+  root.style.setProperty("--hls-land",  gsap.utils.clamp(28, 68, (screenH0 || 500) * 0.118) + "px");
+  root.style.setProperty("--hlw-land",  Math.min(900, G.vw * 0.62) + "px");
+  root.style.setProperty("--hls-phone", gsap.utils.clamp(22, 46, G.screenW * 0.098) + "px");
+  root.style.setProperty("--hlw-phone", G.screenW * 0.84 + "px");
+}
 function sizePlates(){
   screenH0 = 0;                                                    /* measure uncapped... */
   screenH0 = Math.max(...LANDSCAPE.map(b => coverGeom(b).screenH)); /* ...then lock the height */
   LANDSCAPE.forEach(b => b.style.setProperty("--plate-w", plateGeom(b).plateW + "px"));
+  sizeHeadlines();
 }
 
 let curPlate = null;                 /* the screen rect currently on show — the morph's start */
