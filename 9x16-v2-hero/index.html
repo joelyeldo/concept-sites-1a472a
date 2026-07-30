@@ -440,6 +440,11 @@ const reduce  = matchMedia("(prefers-reduced-motion: reduce)").matches;
    the first showLandscape() hit the temporal dead zone and threw — which killed setInterval
    before it was ever registered, so the plates never cycled and the aperture never moved. */
 let lastP = 0;
+
+/* Shared screen height every plate is normalised to. Declared up here for the same reason as
+   lastP: setAperture() reads it and runs during init, above the cycle section where this used
+   to live — so it hit the temporal dead zone and took the whole script down with it. */
+let screenH0 = 0;
 const bodies  = [...document.querySelectorAll(".body")];
 const props   = [...document.querySelectorAll(".prop")];
 const apEl    = document.getElementById("aperture");
@@ -640,7 +645,6 @@ function coverGeom(b){
    screen simply reveals more columns instead of the whole grid re-flowing. The shared height
    is the largest any plate needs in order to cover, so normalising can only ever scale up —
    never below the coverage floor, which is what would put the background band back. */
-let screenH0 = 0;
 function plateGeom(b){
   const c      = coverGeom(b);
   const target = screenH0 || c.screenH;
@@ -861,6 +865,12 @@ function check(){
     return !(n("sw") > 0 && n("sw") <= 100 && n("sx") >= 0 && n("sx") <= 100 && n("sy") >= 0 && n("sy") <= 100);
   });
 
+  /* a dead init (a TDZ throw has now bitten twice) leaves these unset while everything still
+     "looks" wired — assert it loudly instead of discovering it by eye. */
+  const cw = parseFloat(root.style.getPropertyValue("--cell-w")) || 0;
+  const ch = parseFloat(root.style.getPropertyValue("--cell-h")) || 0;
+  const cellsSet = cw > 0 && ch > 0;
+  console.assert(cellsSet, "FAIL: --cell-w/--cell-h never set — setAperture never ran, init threw");
   console.assert(fillsScreen, "FAIL: aperture does not fill the plate screen — grid will gutter");
   console.assert(isVertical, "FAIL: landed frame does not read vertical — 1:", endR.toFixed(3));
   console.assert(fits,   "FAIL: aperture fills the viewport — no room for a body around it");
@@ -879,12 +889,12 @@ function check(){
   });
   console.assert(platesCover, "FAIL: a 16:9 plate is smaller than the viewport — cross-fade will flash");
 
-  const pass = fillsScreen && isVertical && fits && phoneFits && clearsIsland && navInside && homeRoom && clearsCurve && !badReg.length;
+  const pass = cellsSet && fillsScreen && isVertical && fits && phoneFits && clearsIsland && navInside && homeRoom && clearsCurve && !badReg.length;
   console.log(
 `9x16 hero rig — self-check
   mechanic : plate screen ${Math.round(shown.w)}×${Math.round(shown.h)} (${(shown.w/shown.h).toFixed(2)}:1)  →  ${Math.round(g.endW)}×${Math.round(g.endH)} (1:${endR.toFixed(2)} — vertical)
   plates   : ${plateRects.map(r=>r.id.replace('frame-','')+' '+(r.w/r.h).toFixed(2)+':1').join(' · ')}   none is 16:9, by design
-  grid fill: aperture ${Math.round(apW)}×${Math.round(apH)} vs screen ${Math.round(shown.w)}×${Math.round(shown.h)} — ${fillsScreen?'exact, no gutters':'MISMATCH'}
+  cells    : ${cw.toFixed(1)}x${ch.toFixed(1)}  ratio ${(cw/ch).toFixed(4)} (9:16=0.5625) — constant across plates\n  grid fill: aperture ${Math.round(apW)}×${Math.round(apH)} vs screen ${Math.round(shown.w)}×${Math.round(shown.h)} — ${fillsScreen?'exact, no gutters':'MISMATCH'}
   phone    : ${Math.round(g.photoW)}×${Math.round(g.photoH)} mockup, top at ${PHONE_TOP}px — fully visible
   screen   : ${Math.round(g.screenW)}×${Math.round(g.screenH)} — bands: status ${Math.round(g.statusH)} · nav ${Math.round(g.navH)} · CROP ${Math.round(g.endH)} · home ${Math.round(g.homeH)}
   island   : ends y=${Math.round(islandBot)} · CROP LINE y=${Math.round(g.frameTop)} (clears island by ${Math.round(g.frameTop - islandBot)}px) · nav ${Math.round(navTop)}–${Math.round(navBot)}, inside the box
