@@ -140,10 +140,16 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
   width:var(--scr-w,0px); height:var(--scr-h,0px); z-index:8; pointer-events:none; opacity:0;
   border-radius:var(--scr-r,0px); overflow:hidden;
   color:var(--pitch); font-family:"Switzer",sans-serif;}
-/* iOS chrome sits on frosted white, not on the app's colour — so it stays legible whatever the
-   app is doing underneath, exactly like the real thing. Clipped to the screen's corners. */
-.chrome-band{position:absolute; left:0; right:0; z-index:0; background:rgba(255,255,255,.72);
-  -webkit-backdrop-filter:blur(20px) saturate(1.5); backdrop-filter:blur(20px) saturate(1.5);}
+/* iOS chrome sits on solid white so it stays legible whatever the app is doing underneath.
+   Clipped to the screen's corners. */
+.chrome-band{position:absolute; left:0; right:0; z-index:0; background:#fff;}
+
+/* The dynamic island lives in the PHONE PHOTO, which the full-screen orange now paints over —
+   so it is re-drawn here, above both the fill and the white bands. Geometry measured off the
+   mockup: 20.82% of screen width, 3.58% of its height, 1.03% down. */
+.island{position:absolute; left:50%; transform:translateX(-50%); z-index:3;
+  top:var(--isl-top,0px); width:var(--isl-w,0px); height:var(--isl-h,0px);
+  background:#0b0b0d; border-radius:999px;}
 .chrome-band--top{top:0; height:var(--status-band,0px);
   border-radius:var(--scr-r,0px) var(--scr-r,0px) 0 0;}
 .chrome-band--bot{bottom:0; height:var(--home-band,0px);
@@ -430,6 +436,7 @@ body.reg #regout{display:block;}
          The clock reads 9:16, because of course it does. -->
     <div class="screenui" id="screenui" aria-hidden="true">
       <div class="chrome-band chrome-band--top"></div>
+      <div class="island"></div>
       <div class="chrome-band chrome-band--bot"></div>
       <div class="status">
         <span class="status__time">9:16</span>
@@ -665,6 +672,10 @@ function setNav(p){
   const rowH = G.screenH * 0.026;
   uiEl.style.setProperty("--status-h",   rowH + "px");
   uiEl.style.setProperty("--status-top", (G.screenH * ISLAND_MID - rowH / 2) + "px");
+  /* the island is redrawn on top — measured off the mockup, not eyeballed */
+  uiEl.style.setProperty("--isl-w",   G.screenW * 0.2082 + "px");
+  uiEl.style.setProperty("--isl-h",   G.screenH * 0.0358 + "px");
+  uiEl.style.setProperty("--isl-top", G.screenH * 0.0103 + "px");
   uiEl.style.setProperty("--status-band", G.statusH + "px");
   uiEl.style.setProperty("--home-band", G.homeH + "px");
   uiEl.style.setProperty("--home-b",  (G.homeH / 2 - 2.5 + HOME_RISE) + "px");
