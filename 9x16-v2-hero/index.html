@@ -49,11 +49,19 @@
   --aph:calc(62vw * 9 / 16);                           /* live aperture height, driven by JS */
 }
 *,*::before,*::after{box-sizing:border-box;}
-body{margin:0; background:#1a1a1c; color:var(--pitch); font-family:"Switzer",system-ui,sans-serif; font-size:17px; -webkit-font-smoothing:antialiased;}
+body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer",system-ui,sans-serif; font-size:17px; -webkit-font-smoothing:antialiased;}
 
 /* ───────────────────────────────────────────────────────────── pin shell */
 .hero{position:relative; height:600vh;}
-.pin{position:sticky; top:0; height:100dvh; overflow:hidden;}
+.pin{position:sticky; top:0; height:100dvh; overflow:hidden; background:var(--snow);}
+
+/* ───────────────────────────────────────────────────────────── 0 · THE PAGE GRID
+   Light theme. This is the same Swiss grid from our v1 build — verticals at the original
+   column positions — and it is what sits behind the body and the frame. The pavement is
+   NOT here at the start; it fades in over this during the transformation. */
+.bggrid{position:absolute; inset:0; z-index:0; pointer-events:none; background:var(--snow);}
+.bggrid span{position:absolute; top:0; bottom:0; width:1px; background:var(--line);}
+.bggrid i{position:absolute; left:0; right:0; height:1px; background:var(--line);}
 
 /* ───────────────────────────────────────────────────────────── 1 · THE GROUND
    PHOTO SLOT — pavement, shot straight down, filling the viewport.
@@ -61,7 +69,7 @@ body{margin:0; background:#1a1a1c; color:var(--pitch); font-family:"Switzer",sys
    The fill below is TEMPORARY SCAFFOLDING, not the design. It is an exact 9:16 herringbone
    so the geometry is right to build against — herringbone alternates 90°, so half the pavers
    read 9:16 and half read 16:9. The two formats, interlocked, under the whole site. */
-.ground{position:absolute; inset:0; overflow:hidden; background:#26262a;}
+.ground{position:absolute; inset:0; z-index:1; overflow:hidden; background:#2c2c30; opacity:0;}
 .ground img{width:100%; height:100%; object-fit:cover; display:block;}
 .ground--placeholder{
   /* 9:16 paver cell: 45px x 80px. Marked TEMP — delete this rule when the photo lands. */
@@ -101,12 +109,12 @@ body{margin:0; background:#1a1a1c; color:var(--pitch); font-family:"Switzer",sys
    so nobody mistakes scaffolding for design. Delete .slot when the photo goes in. */
 .slot{
   position:relative; width:100%; aspect-ratio:var(--ar,16/10);
-  border:2px dashed rgba(255,255,255,.28); border-radius:2px;
+  border:2px dashed rgba(16,12,8,.3); border-radius:2px;
   display:grid; place-content:center; gap:.35rem; text-align:center;
-  background:rgba(255,255,255,.03);
+  background:rgba(16,12,8,.025);
 }
-.slot b{font-size:.82rem; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.75);}
-.slot span{font-size:.7rem; color:rgba(255,255,255,.42);}
+.slot b{font-size:.82rem; letter-spacing:.14em; text-transform:uppercase; color:rgba(16,12,8,.62);}
+.slot span{font-size:.7rem; color:var(--mute);}
 
 /* ───────────────────────────────────────────────────────────── 3 · THE APERTURE
    Fixed 16:9. Contracts to 9:16 on the second half of the scroll. The site's content lives
@@ -131,7 +139,7 @@ body.reg .body:not(.is-live){opacity:.18 !important;}
 }
 body.reg #regout{display:block;}
 
-.cue{position:absolute; left:50%; bottom:1.8rem; transform:translateX(-50%); z-index:6; font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.55); font-weight:600;}
+.cue{position:absolute; left:50%; bottom:1.8rem; transform:translateX(-50%); z-index:6; font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); font-weight:600;}
 
 @media (prefers-reduced-motion:reduce){ .hero{height:auto;} .pin{position:relative;} }
 </style>
@@ -140,6 +148,13 @@ body.reg #regout{display:block;}
 
 <section class="hero" id="hero">
   <div class="pin">
+
+    <!-- 0 · PAGE GRID — light theme, v1 column positions. Sits behind body and frame. -->
+    <div class="bggrid" aria-hidden="true">
+      <span style="left:9%"></span><span style="left:25.5%"></span><span style="left:41.8%"></span>
+      <span style="left:58.2%"></span><span style="left:74.5%"></span><span style="left:91%"></span>
+      <i style="top:24%"></i><i style="top:68%"></i>
+    </div>
 
     <!-- 1 · GROUND ────────────────────────────────────────────────────────────────────── -->
     <div class="ground ground--placeholder" id="ground">
@@ -208,21 +223,29 @@ const apEl    = document.getElementById("aperture");
 const ratioEl = document.getElementById("apRatio");
 const root    = document.documentElement;
 
-/* aperture geometry. Starts a large fixed 16:9 — the viewport is NOT restricted. Ends on
-   the 9:16 column. Measured off a probe so clamp()/vw tokens resolve to real pixels. */
-const probe = document.createElement("div");
-probe.style.cssText = "position:absolute;visibility:hidden;height:0;width:var(--col);";
-document.body.appendChild(probe);
+/* aperture geometry. Starts a large fixed 16:9 — the viewport is NOT restricted. Ends on a
+   9:16 screen sized off viewport height, so the phone body has room to exist around it.
+
+   HEADROOM — the screen must not fill the viewport height, or there is no room for the
+   phone's top and bottom to exist and it stops reading as a phone. 0.74 leaves ~13% of the
+   viewport above and below the screen for bezel, chin, hand and pavement. */
+const SCREEN_H = 0.74;
 
 function geo(){
   const vw = innerWidth, vh = innerHeight;
-  const endW   = probe.offsetWidth || Math.min(620, Math.max(360, vh * 9 / 16));
+  /* end: sized off available HEIGHT, so the phone body always has air around it */
+  const endH   = vh * SCREEN_H;
+  const endW   = endH * 9 / 16;
   /* start: as big a 16:9 as fits with room for a body around it */
   const startW = Math.min(vw * 0.62, vh * 0.60 * 16 / 9);
-  return { startW, startH: startW * 9 / 16, endW, endH: endW * 16 / 9, vw, vh,
+  return { startW, startH: startW * 9 / 16, endW, endH, vw, vh,
            ready: vw > 0 && vh > 0 };
 }
 let G = geo();
+/* the phone's screen width IS the site column — publish it so everything downstream agrees
+   instead of the hero and the page each deriving their own number. */
+function publishCol(){ root.style.setProperty("--col", G.endW + "px"); }
+publishCol();
 
 function setAperture(w, h){
   root.style.setProperty("--apw", w + "px");
@@ -249,11 +272,15 @@ bodies.slice(0, 4).forEach((b, i) => {
 });
 tl.to(bodies[3], { opacity:0, duration:.06 }, 0.56);          /* laptop out */
 
-/* --- the contraction: 16:9 → 9:16 --- */
-tl.fromTo({p:0}, {p:1}, {
+/* --- the contraction: 16:9 → 9:16 ---
+   NOTE: this was `fromTo({p:0},{p:1},{p:1,…})`, which GSAP reads as from p=1 to p=1 — the
+   proxy never moved, so onUpdate read a constant and nothing reversed on scroll-up. A
+   single proxy object tweened with .to() animates and scrubs backwards correctly. */
+const morph = { p: 0 };
+tl.to(morph, {
   p:1, duration:.34,
   onUpdate(){
-    const p = gsap.parseEase("power2.inOut")(this.targets()[0].p);
+    const p = gsap.parseEase("power2.inOut")(morph.p);
     setAperture(gsap.utils.interpolate(G.startW, G.endW, p),
                 gsap.utils.interpolate(G.startH, G.endH, p));
   }
@@ -261,7 +288,10 @@ tl.fromTo({p:0}, {p:1}, {
 
 /* --- the phone arrives, and the ground it is standing over reveals in the gutters --- */
 tl.to(bodies[4], { opacity:1, duration:.10 }, 0.60)
-  .fromTo("#ground", { filter:"brightness(.35)" }, { filter:"brightness(1)", duration:.20 }, 0.58)
+  /* the pavement is not there at the start — the light Swiss grid is. It washes in over the
+     grid as the frame turns vertical, so the world only becomes "street" once you're on the
+     phone. Scrubs backwards cleanly, so scrolling up returns you to the grid. */
+  .to("#ground", { opacity:1, duration:.20 }, 0.56)
   .to("#cue", { opacity:0, duration:.04 }, 0.06);
 
 /* props settle onto the pavement once the ground is lit */
@@ -313,7 +343,7 @@ addEventListener("keydown", e => {
   e.preventDefault(); paint();
 });
 
-addEventListener("resize", () => { G = geo(); setAperture(G.startW, G.startH); ScrollTrigger.refresh(); }, {passive:true});
+addEventListener("resize", () => { G = geo(); publishCol(); ScrollTrigger.refresh(); }, {passive:true});
 
 /* ── SELF-CHECK ────────────────────────────────────────────────────────────────────────
    Verifies the mechanic AND reports exactly which photographs are still missing, so the
@@ -326,6 +356,10 @@ function check(){
   const is16x9 = Math.abs(startR - 16/9) < 0.02;
   const is9x16 = Math.abs(endR - 9/16) < 0.02;
   const fits   = g.startW < g.vw && g.startH < g.vh;   /* body needs room around it */
+  /* the screen must NOT reach the top and bottom of the viewport, or there is nowhere for
+     the phone's bezel and chin to be and it stops reading as a phone. */
+  const headroom = (g.vh - g.endH) / 2;
+  const hasAir   = headroom > 40;
 
   const missingBody = bodies.filter(b => !b.querySelector("img"));
   const missingProp = props.filter(p => !p.querySelector("img"));
@@ -338,13 +372,17 @@ function check(){
   console.assert(is16x9, "FAIL: aperture does not start at 16:9 —", startR.toFixed(3));
   console.assert(is9x16, "FAIL: aperture does not land on 9:16 —", endR.toFixed(3));
   console.assert(fits,   "FAIL: aperture fills the viewport — no room for a body around it");
+  console.assert(hasAir, "FAIL: no headroom above/below the screen — cannot read as a phone");
   console.assert(!badReg.length, "FAIL: bad registration data on", badReg.map(b=>b.dataset.body));
 
-  const pass = is16x9 && is9x16 && fits && !badReg.length;
+  const pass = is16x9 && is9x16 && fits && hasAir && !badReg.length;
   console.log(
 `9x16 hero rig — self-check
   mechanic : ${Math.round(g.startW)}×${Math.round(g.startH)} (${startR.toFixed(2)}:1, FIXED)  →  ${Math.round(g.endW)}×${Math.round(g.endH)} (1:${(1/endR).toFixed(2)})
   gutters  : ${Math.round((g.vw - g.endW) / 2)}px each side — pavement, never content
+  headroom : ${Math.round(headroom)}px above and below — room for the phone body
+  theme    : light · Swiss grid behind body+frame · pavement washes in at 0.56
+  --col    : ${Math.round(g.endW)}px (phone screen width = site column)
   ${pass ? "✓ RIG PASS" : "✗ RIG FAIL"}
 
 photos still needed (${missingBody.length + missingProp.length + (noGround?1:0)}):
@@ -354,7 +392,7 @@ ${missingProp.map(p => `  · prop-${p.dataset.prop}.png    — cut-out, client b
 
 registration : press R over any body to align a swapped photo.`);
 }
-addEventListener("load", () => { G = geo(); setAperture(G.startW, G.startH); ScrollTrigger.refresh(); check(); });
+addEventListener("load", () => { G = geo(); publishCol(); ScrollTrigger.refresh(); check(); });
 check();
 </script>
 </body>
