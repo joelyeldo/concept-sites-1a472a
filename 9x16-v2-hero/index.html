@@ -306,7 +306,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    gaps, so the section reads as one instrument, not five floating cards. */
 /* clears the nav above and the home indicator below, so the card reads as UI sitting ON
    the screen rather than butting into the phone's own chrome */
-.dash__wrap{display:flex; flex-direction:column; width:100%;
+.dash__wrap{position:relative; z-index:1; display:flex; flex-direction:column; width:100%;
   margin-top:calc(var(--nav-band,54px) + 5px); margin-bottom:5px; height:auto; flex:1 1 auto; min-height:0;
   background:var(--snow); border:1px solid var(--line);
   box-shadow:0 26px 60px -22px rgba(16,12,8,.28); overflow:hidden;}
@@ -688,7 +688,7 @@ body.reg #regout{display:block;}
         </section>
 
         <!-- 3 · DASHBOARD — phone-native. Stat header + one area chart, then nothing. Numbers PLACEHOLDER. -->
-        <section class="rs rs--built dash" data-s="dashboard" style="top:300%">
+        <section class="rs rs--built rs--dark dash" data-s="dashboard" style="top:300%">
           <div class="dash__wrap">
             <div class="dash__hd">
               <h2 class="dash__t">live attention <span class="hl">dashboard</span></h2>
