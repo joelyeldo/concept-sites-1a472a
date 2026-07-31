@@ -48,6 +48,10 @@
      defined here — an undefined var makes the whole transition declaration invalid, so the
      browser threw it away and everything snapped instead of animating. */
   --ease-out:cubic-bezier(.23,1,.32,1);
+  /* OPEN DECISION — the Writer wants to judge card elevation once every section is built.
+     Flip this one value to bring every in-phone card's shadow back at once:
+     0 26px 60px -22px rgba(16,12,8,.28) */
+  --card-shadow:none;
   --col:clamp(360px, calc(100dvh * 9 / 16), 620px);   /* where the aperture ends up */
   --apw:62vw;                                          /* live aperture width, driven by JS */
   --aph:calc(62vw * 9 / 16);                           /* live aperture height, driven by JS */
@@ -319,7 +323,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .dash__wrap{position:relative; z-index:1; display:flex; flex-direction:column; width:100%;
   margin-top:5px; margin-bottom:5px; height:auto; flex:1 1 auto; min-height:0;   /* .rs--built reserves the nav band now — this used to double-count it */
   background:var(--snow); border:1px solid var(--line);
-  box-shadow:0 26px 60px -22px rgba(16,12,8,.28); overflow:hidden;}
+  box-shadow:var(--card-shadow); overflow:hidden;}
 .dash__hd{padding:calc(var(--card-pad,30px)*.6) calc(var(--card-pad,30px)*.7);
   border-bottom:1px solid var(--line);}
 .dash__t{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
@@ -452,7 +456,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    stretching to fill and inflating the blocks to do it. */
 .ubento{flex:0 1 auto; width:100%; max-height:100%; display:flex; flex-direction:column;
   background:var(--snow); border:1px solid var(--line);
-  box-shadow:0 26px 60px -22px rgba(16,12,8,.28);}
+  box-shadow:var(--card-shadow);}
 /* :not(:first-child) rather than `* + *` on purpose — the blocks below set `border:none`,
    and at equal specificity the later rule wins and the partitions vanish. */
 .ubento > *:not(:first-child){border-top:1px solid var(--line);}
@@ -597,7 +601,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .card{width:calc(5 * var(--cell-w, 71px)); max-width:100%; margin:0 auto;
   background:var(--snow); border:1px solid var(--line);
   /* the -40px spread made this all but invisible on white; pulled back so the card lifts */
-  box-shadow:0 26px 60px -22px rgba(16,12,8,.28);
+  box-shadow:var(--card-shadow);
   padding:var(--card-pad,34px);}
 .sec{display:flex; flex-direction:column; gap:var(--card-gap,26px);}
 .sec__eyebrow{font-family:"Switzer",sans-serif; font-weight:600; font-size:var(--sec-eyebrow,11px);
