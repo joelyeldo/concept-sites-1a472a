@@ -77,10 +77,11 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .nav__links a{
   font-family:"Clash Display",sans-serif; font-weight:500; text-transform:lowercase;
   color:var(--pitch); text-decoration:none; font-size:1.12rem; opacity:.9;
-  padding:.32rem .7rem; border-radius:6px;
+  padding:.32rem .7rem;
   transition:background-color .2s var(--ease-out), color .2s var(--ease-out), opacity .2s var(--ease-out);
 }
-/* hover highlight — orange fill, white text (holds in both glass and solid nav states) */
+/* hover highlight — SHARP orange fill, white text, matching the .hl title highlight (no radius);
+   holds in both glass and solid nav states */
 .nav__links a:hover{background:var(--orange); color:#fff; opacity:1;}
 .nav__burger{display:none; flex-direction:column; justify-content:center; align-items:center; gap:7px;
   width:44px; height:44px; padding:0; background:none; border:none; cursor:pointer; color:var(--pitch);}
