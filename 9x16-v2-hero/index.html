@@ -403,10 +403,31 @@ body.reg #regout{display:block;}
    Each band is 240% of screen width so its ends never rotate into view.
    The marquees run on CSS animation, independent of scroll, so the section is alive while
    it just sits there. Two identical halves make the -50% keyframe loop seamlessly. */
-.trust__k{position:relative; z-index:2; margin:0 auto; text-align:center; max-width:26ch;
-  background:var(--snow); border:1px solid var(--line);
-  box-shadow:0 26px 60px -22px rgba(16,12,8,.28); padding:var(--card-pad,34px);}
-.trust__bands{position:absolute; inset:0; z-index:0; overflow:hidden;}
+/* DARK SECTION. Black fill plus its own white grid — the shared .ap-grid behind every slide
+   is driven dark for the white sections, so a dark section has to carry its own or the grid
+   vanishes. Uses the same --cell-w/--cell-h, so the rhythm is identical, only the ink flips. */
+.rs--dark{background:var(--pitch);}
+.rs--dark::before{content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(to right,  rgba(255,255,255,.13) 0 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,.13) 0 1px, transparent 1px);
+  background-size: var(--cell-w,160px) 100%, 100% var(--cell-h,290px);
+  background-position: calc(50% + var(--cell-w,160px) / 2) 0, 0 calc(50% - 0.5px);
+  background-repeat:repeat;}
+
+/* The headline is broken across the gaps BETWEEN the bands rather than sitting on a card —
+   the bands are the section, and a card would just cover them. Each fragment is centred in
+   its own gap; positions are tuned to the band tops (14 / 42 / 70%). */
+.trust__k{position:absolute; inset:0; z-index:2; pointer-events:none;}
+.tline{position:absolute; left:0; right:0; text-align:center;
+  font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  font-size:var(--sec-head,36px); line-height:1; letter-spacing:-.025em; color:var(--snow);
+  padding:0 var(--sec-pad,26px);}
+.tline--1{top:5%;}
+.tline--2{top:30%;}
+.tline--3{top:57%;}
+.tline .hl{background:var(--orange); color:var(--snow);}
+.trust__bands{position:absolute; inset:0; z-index:1; overflow:hidden;}
 .band{
   position:absolute; left:50%; width:240%; height:var(--band-h,92px);
   display:flex; align-items:center; overflow:hidden;
@@ -594,11 +615,12 @@ body.reg #regout{display:block;}
           </div></div>
         </section>
         <!-- 2 · TRUST — angled, criss-crossed wordmark bands. Logos are PLACEHOLDER slots. -->
-        <section class="rs rs--built trust" data-s="trust" style="top:200%">
-          <div class="trust__k">
-            <p class="sec__eyebrow">the proof</p>
-            <h2 class="sec__h">brands who needed to be <span class="hl">believed.</span></h2>
-          </div>
+        <section class="rs rs--built rs--dark trust" data-s="trust" style="top:200%">
+          <h2 class="trust__k">
+            <span class="tline tline--1">you&rsquo;ve already</span>
+            <span class="tline tline--2"><span class="hl">scrolled past</span></span>
+            <span class="tline tline--3">our work.</span>
+          </h2>
           <div class="trust__bands" aria-label="Client logos">
             <div class="band band--a"><div class="btrack" style="--dur:46s"><span class="logo"><img class="sq" alt="Netflix" src="assets/brands/netflix.svg"></span><span class="logo"><img class="sq" alt="Amazon" src="assets/brands/amazon.svg"></span><span class="logo"><img class="" alt="Samsung" src="assets/brands/samsung.svg"></span><span class="logo"><img class="sq" alt="Pepsi" src="assets/brands/pepsi.svg"></span><span class="logo"><img class="" alt="Red Bull" src="assets/brands/redbull.svg"></span><span class="logo"><img class="sq" alt="Spotify" src="assets/brands/spotify.svg"></span><span class="logo"><img class="sq" alt="Swiggy" src="assets/brands/swiggy.svg"></span><span class="logo"><img class="" alt="Kreo" src="assets/brands/kreo.png"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Netflix" src="assets/brands/netflix.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Amazon" src="assets/brands/amazon.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Samsung" src="assets/brands/samsung.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Pepsi" src="assets/brands/pepsi.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Red Bull" src="assets/brands/redbull.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Spotify" src="assets/brands/spotify.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Swiggy" src="assets/brands/swiggy.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Kreo" src="assets/brands/kreo.png"></span></div></div>
             <div class="band band--b"><div class="btrack btrack--rev" style="--dur:40s"><span class="logo"><img class="sq" alt="Flipkart" src="assets/brands/flipkart.svg"></span><span class="logo"><img class="" alt="Paytm" src="assets/brands/paytm.svg"></span><span class="logo"><img class="" alt="Cashify" src="assets/brands/cashify.png"></span><span class="logo"><img class="" alt="Lifelong" src="assets/brands/lifelong.svg"></span><span class="logo"><img class="" alt="Asus ROG" src="assets/brands/asus.svg"></span><span class="logo"><img class="" alt="Equal" src="assets/brands/equal.svg"></span><span class="logo"><img class="sq" alt="MSI" src="assets/brands/msi.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Flipkart" src="assets/brands/flipkart.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Paytm" src="assets/brands/paytm.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Cashify" src="assets/brands/cashify.png"></span><span class="logo"><img class="" aria-hidden="true" alt="Lifelong" src="assets/brands/lifelong.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Asus ROG" src="assets/brands/asus.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Equal" src="assets/brands/equal.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="MSI" src="assets/brands/msi.svg"></span></div></div>
