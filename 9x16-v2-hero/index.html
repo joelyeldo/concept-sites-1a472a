@@ -317,7 +317,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* clears the nav above and the home indicator below, so the card reads as UI sitting ON
    the screen rather than butting into the phone's own chrome */
 .dash__wrap{position:relative; z-index:1; display:flex; flex-direction:column; width:100%;
-  margin-top:calc(var(--nav-band,54px) + 5px); margin-bottom:5px; height:auto; flex:1 1 auto; min-height:0;
+  margin-top:5px; margin-bottom:5px; height:auto; flex:1 1 auto; min-height:0;   /* .rs--built reserves the nav band now — this used to double-count it */
   background:var(--snow); border:1px solid var(--line);
   box-shadow:0 26px 60px -22px rgba(16,12,8,.28); overflow:hidden;}
 .dash__hd{padding:calc(var(--card-pad,30px)*.6) calc(var(--card-pad,30px)*.7);
@@ -443,7 +443,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* flex-start, not centre: the header anchors just under the nav band and the card grows
    downward. Centring meant any overflow pushed the title up behind the navbar. */
 .unrel{height:100%; display:flex; flex-direction:column; justify-content:flex-start;
-  gap:calc(var(--card-gap,26px)*.6); overflow:hidden;}
+  gap:calc(var(--card-gap,26px)*.85); overflow:hidden;}
 .unrel__hd{flex:0 0 auto;}
 .unrel__sub{font-family:"Switzer",sans-serif; font-size:calc(var(--sec-body,15px)*.92);
   line-height:1.5; color:var(--slate); margin:.55em 0 0;}
@@ -456,11 +456,12 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* :not(:first-child) rather than `* + *` on purpose — the blocks below set `border:none`,
    and at equal specificity the later rule wins and the partitions vanish. */
 .ubento > *:not(:first-child){border-top:1px solid var(--line);}
-/* natural height. flex:1 let the two jokes swallow every spare pixel and the blocks became
-   enormous — the card fills the slide via .ubento, the blocks do not stretch to do it. */
-.ucard{flex:0 0 auto; display:flex; gap:.75em; align-items:flex-start; cursor:pointer;
+/* The two jokes share the card's spare height between them. This was safe to do only once
+   .rs--built started reserving the nav band: before that the stack overflowed and the
+   growth went into pushing the header up behind the navbar. */
+.ucard{flex:1 1 auto; display:flex; gap:.75em; align-items:center; cursor:pointer;
   background:transparent; border:none; box-shadow:none;
-  padding:calc(var(--card-pad,34px)*.58) calc(var(--card-pad,34px)*.62);
+  padding:calc(var(--card-pad,34px)*.62) calc(var(--card-pad,34px)*.62);
   transition:background-color .3s var(--ease-out);}
 .ucard:hover, .ucard:focus-visible{background:var(--orange); outline:none;}
 .ucard:hover p, .ucard:focus-visible p{color:#fff;}
@@ -473,10 +474,10 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 
 /* the player. Compressed layout from the second reference — the square-art version is a
    third taller and this slide is already carrying three cards. */
-/* margin-top:auto parks the player on the bottom edge of the card, so whatever height is
-   left over lands as breathing room above it instead of inflating the jokes. */
-.pcard{flex:0 0 auto; margin-top:auto; background:transparent; border:none; box-shadow:none;
-  padding:calc(var(--card-pad,34px)*.58) calc(var(--card-pad,34px)*.62);}
+/* no margin-top:auto — that parked the player at the bottom and pooled every spare pixel
+   into one dead gap above it. The jokes absorb the slack instead. */
+.pcard{flex:0 0 auto; background:transparent; border:none; box-shadow:none;
+  padding:calc(var(--card-pad,34px)*.72) calc(var(--card-pad,34px)*.62);}
 .pcard__lab{font-family:"Switzer",sans-serif; font-weight:600; color:var(--mute); margin:0 0 .7em;
   font-size:var(--sec-eyebrow,11px); letter-spacing:.18em; text-transform:uppercase;}
 .pcard__row{display:flex; gap:.85em; align-items:center;}
@@ -584,8 +585,11 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    One scale for every section, sized off the phone screen (--sec-*), so sections cannot
    drift apart the way the live site's did. Left-aligned and anchored to the grid rather
    than centred — centring every screen would read as eight splash pages in a row. */
+/* Top padding has to clear BOTH bits of phone chrome: the iOS status bar AND the navbar
+   that sits under it. It only ever reserved --status-band, which is why section titles ran
+   under the nav — the dashboard had its own margin-top patching this locally. */
 .rs--built{display:flex; place-content:initial; text-align:left; align-items:center;
-  padding:calc(var(--sec-pad,26px) + var(--status-band,0px)) var(--sec-pad,26px)
+  padding:calc(var(--sec-pad,26px) + var(--status-band,0px) + var(--nav-band,0px)) var(--sec-pad,26px)
           calc(var(--sec-pad,26px) + var(--home-band,0px));}
 
 /* v1's card, styles.css:849-856 — opaque snow so grid lines never cut through the copy, a
