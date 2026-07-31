@@ -949,17 +949,11 @@ body.reg #regout{display:block;}
 .cta:hover{background:var(--orange);}
 .next{font-size:calc(var(--sec-body,14px)*.8); color:var(--mute);}
 
-/* 8 · FOOTER — terminal slide: sign-off + contact + the 24×7 gag on the real opening hours. */
-.foot{flex-direction:column; justify-content:flex-end; gap:var(--card-gap,20px);}
-.foot__mark{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
-  letter-spacing:-.03em; line-height:1; font-size:var(--sec-head,34px);}
-.foot__mark .hl{background:var(--orange); color:var(--snow); padding:0 .08em;}
-.foot__hours{font-size:var(--sec-body,14px); color:var(--slate); line-height:1.5; max-width:30ch;}
-.foot__c{display:flex; flex-direction:column; gap:.18rem; font-size:calc(var(--sec-body,14px)*.9); color:var(--slate);}
-.foot__c a{color:inherit; text-decoration:none; border-bottom:1px solid var(--line);}
-.foot__social{display:flex; gap:1rem; font-size:calc(var(--sec-body,14px)*.85); text-transform:lowercase; color:var(--mute);}
-.foot__social a{color:inherit; text-decoration:none;}
-.foot__legal{font-size:calc(var(--sec-body,14px)*.72); color:var(--mute); letter-spacing:.02em;}
+/* The v1 footer block that used to sit here is gone. None of its classes (.foot__mark,
+   .foot__c, .foot__social, .foot__legal) survive in the markup, but because it came LATER in
+   the sheet it was still winning: it re-coloured .foot__hours to --slate — dark grey on a
+   black ground, i.e. invisible — and put a stray gap and justify-content on .foot. Third
+   time a dead v1 rule has quietly overridden a live one (.work, .cta, now this). */
 
 @media (prefers-reduced-motion:reduce){ .hero{height:auto;} .pin{position:relative;} }
 </style>
