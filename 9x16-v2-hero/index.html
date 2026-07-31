@@ -849,7 +849,8 @@ body.reg #regout{display:block;}
 
 .cue{position:absolute; left:50%; bottom:1.8rem; transform:translateX(-50%); z-index:6; font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--snow); font-weight:600; transition:color .2s var(--ease-out);}
 /* the cue rides over the live plate's ground: white on dark plates, dark-grey on the light
-   ones (frames 02/03/04/08 — bright reflective floors). Toggled per plate in showLandscape. */
+   ones (frames 02/03/08/09 — measured bright at the cue's rendered spot). Toggled in showLandscape.
+   Classification is for the ~16:9 desktop crop; a very different viewport aspect could shift it. */
 .cue.on-light{color:#3a352f;}
 
 /* ── BUILT SECTIONS 2–8 ───────────────────────────────────────────────────────────────
@@ -1040,7 +1041,7 @@ body.reg #regout{display:block;}
         <img src="assets/hero-03.jpg" alt="">
       </figure>
 
-      <figure class="body" data-body="frame-04" data-tone="light" style="--sw:64.48; --sh:42.90; --sx:49.87; --sy:48.69;">
+      <figure class="body" data-body="frame-04" style="--sw:64.48; --sh:42.90; --sx:49.87; --sy:48.69;">
         <img src="assets/hero-04.jpg" alt="">
       </figure>
 
@@ -1065,7 +1066,7 @@ body.reg #regout{display:block;}
         <img src="assets/hero-08.jpg" alt="">
       </figure>
 
-      <figure class="body" data-body="frame-09" style="--sw:66.67; --sh:35.53; --sx:50.48; --sy:53.55;">
+      <figure class="body" data-body="frame-09" data-tone="light" style="--sw:66.67; --sh:35.53; --sx:50.48; --sy:53.55;">
         <img src="assets/hero-09.jpg" alt="">
       </figure>
 
