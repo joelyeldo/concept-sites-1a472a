@@ -1310,6 +1310,10 @@ addEventListener("scroll", () => {
 /* Slide 0 is the orange hero screen; every slide after it is white with the dark grid. The
    grid is driven WHITE for the orange, so it has to flip back or it is white-on-white. */
 function setReelPhase(i){
+  /* Re-place the trust fragments here, not just at init. At init the aperture is still the
+     LANDSCAPE plate (471px tall); the section only becomes the 935px phone screen after the
+     morph, so init-time pixel positions are stale by the time anyone sees them. */
+  placeTrustLines();
   const onOrange = i === 0;
   whiteEl.style.opacity = onOrange ? 0 : 1;
   gridEl.style.setProperty("--grid-c", onOrange ? GRID_LIGHT : GRID_DARK);
