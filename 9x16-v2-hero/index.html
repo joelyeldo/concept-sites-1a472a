@@ -423,9 +423,9 @@ body.reg #regout{display:block;}
   font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
   font-size:var(--sec-head,36px); line-height:1; letter-spacing:-.025em; color:var(--snow);
   padding:0 var(--sec-pad,26px);}
-.tline--1{top:5%;}
-.tline--2{top:30%;}
-.tline--3{top:57%;}
+/* vertical positions are COMPUTED (see placeTrustLines) — a fixed percentage cannot work:
+   the usable gap depends on the band's angle, its thickness AND the width of the fragment,
+   because a rotated band climbs across the text's own width. */
 .tline .hl{background:var(--orange); color:var(--snow);}
 .trust__bands{position:absolute; inset:0; z-index:1; overflow:hidden;}
 .band{
@@ -1072,6 +1072,34 @@ function plateGeom(b){
 }
 /* Headline boxes are viewport-derived only, so they never move during the morph or between
    plate swaps. Landscape size comes off screenH0 (locked); the phone box off the screen. */
+/* Drop each headline fragment into the middle of its gap between the bands.
+   At the section's horizontal centre a band's centreline is simply top + h/2, but the band
+   climbs by (fragmentWidth/2)·tan(angle) across the text, so that tilt is subtracted from the
+   gap before the midpoint is taken. Re-run on resize; a hard-coded % collided every time. */
+function placeTrustLines(){
+  const sec = document.querySelector('[data-s="trust"]');
+  if (!sec) return;
+  const H = sec.getBoundingClientRect().height;
+  if (!H) return;
+  const bands = [...sec.querySelectorAll(".band")].map(b => {
+    const cs = getComputedStyle(b);
+    const m  = cs.transform.match(/matrix\(([-\d.]+),\s*([-\d.]+)/);
+    const th = m ? Math.atan2(+m[2], +m[1]) : 0;
+    const h  = parseFloat(cs.height);
+    return { mid: b.offsetTop + h / 2, half: (h / 2) / Math.cos(th), tan: Math.abs(Math.tan(th)) };
+  }).sort((a, b) => a.mid - b.mid);
+
+  [...sec.querySelectorAll(".tline")].forEach((line, i) => {
+    const glyph = line.firstElementChild || line;
+    const tilt  = glyph.getBoundingClientRect().width / 2;
+    const above = bands[i - 1];
+    const below = bands[i];
+    const lo = above ? above.mid + above.half + above.tan * tilt : 0;
+    const hi = below ? below.mid - below.half - below.tan * tilt : H;
+    line.style.top = ((lo + hi) / 2 - line.offsetHeight / 2) + "px";
+  });
+}
+
 function sizeSections(){
   const w = G.screenW;
   root.style.setProperty("--sec-pad",     w * 0.072 + "px");
@@ -1095,6 +1123,7 @@ function sizePlates(){
   LANDSCAPE.forEach(b => b.style.setProperty("--plate-w", plateGeom(b).plateW + "px"));
   sizeHeadlines();
   sizeSections();
+  requestAnimationFrame(placeTrustLines);   /* after the new type sizes have applied */
 }
 
 let curPlate = null;                 /* the screen rect currently on show — the morph's start */
