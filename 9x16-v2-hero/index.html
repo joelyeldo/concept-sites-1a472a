@@ -635,9 +635,12 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 
 /* the continuous tail runs as one scroll, so mid-run slides do not each reserve the full
    nav + home bands — that was stacking ~250px of dead air between the founder and this. */
-.rs--cont{padding-top:calc(var(--sec-pad,26px) + var(--status-band,0px) + var(--nav-band,0px));
-  padding-bottom:var(--sec-pad,26px);}
-[data-s="founder"]{padding-bottom:var(--sec-pad,26px) !important;}
+/* Trimmed to the minimum that still clears the phone's own chrome. Note what is left is
+   almost entirely the chrome itself — status band + nav band ≈ 117px — not padding we chose;
+   below that the card would sit under the navbar when the section comes to rest. */
+.rs--cont{padding-top:calc(var(--status-band,0px) + var(--nav-band,0px) + 8px);
+  padding-bottom:8px;}
+[data-s="founder"]{padding-bottom:8px !important;}
 [data-s="footer"]{padding-bottom:calc(var(--sec-pad,26px) + var(--home-band,0px));}
 
 /* ── FOOTER ───────────────────────────────────────────────────────────────────────────
