@@ -353,6 +353,29 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .dash__key .k1 i{background:var(--pitch);}
 .dash__key .k2 i{border:1px solid var(--pitch);}
 
+
+/* ── OUR WORK ─────────────────────────────────────────────────────────────────────────
+   A horizontal rail of 9:16 cards. Native scroll-snap rather than a JS carousel: the
+   browser already does momentum, snapping, keyboard and touch correctly, and the reel's
+   wheel takeover only ever consumes VERTICAL deltas, so a sideways drag passes straight
+   through to this. Cards are labelled slots until real clips land. */
+.work{display:flex; flex-direction:column; gap:var(--card-gap,26px); height:100%; min-height:0;}
+.work__hd{flex:none;}
+.work__rail{flex:1 1 auto; min-height:0; display:flex; gap:calc(var(--sec-pad,26px)*.5);
+  overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory;
+  margin:0 calc(-1 * var(--sec-pad,26px)); padding:0 var(--sec-pad,26px);
+  scrollbar-width:none;}
+.work__rail::-webkit-scrollbar{display:none;}
+.wcard{flex:0 0 auto; scroll-snap-align:start; height:100%; aspect-ratio:9/16;
+  background:var(--paper); border:1px solid var(--line); position:relative; overflow:hidden;
+  display:grid; place-content:center; gap:.3rem; text-align:center; padding:1rem;}
+.wcard b{font-family:"Switzer",sans-serif; font-weight:600; font-size:calc(var(--sec-body,15px)*.72);
+  letter-spacing:.14em; text-transform:uppercase; color:var(--slate);}
+.wcard span{font-size:calc(var(--sec-body,15px)*.68); color:var(--mute);}
+.wcard__tag{position:absolute; left:0; top:0; background:var(--pitch); color:var(--snow);
+  font-family:"Switzer",sans-serif; font-weight:600; font-size:calc(var(--sec-body,15px)*.62);
+  letter-spacing:.12em; text-transform:uppercase; padding:.35em .6em;}
+
 /* ── THE REEL ─────────────────────────────────────────────────────────────────────────
    Once the hero lands, the whole site plays inside the phone screen: each section is one
    screenful and the scroll goes section-to-section, snapping, the way a reels feed does.
@@ -495,7 +518,7 @@ body.reg #regout{display:block;}
    together so the last one sits just above the home bar. 2 and 3 are 17deg apart and close,
    so they genuinely CROSS in view — which is the point of the idea, rather than three
    near-parallel diagonals with text wedged between them. */
-.band--a{top:13%; transform:translateX(-50%) rotate(-14deg);}
+.band--a{top:17%; transform:translateX(-50%) rotate(-14deg);}
 .band--b{top:57%; transform:translateX(-50%) rotate(11deg);}
 .band--c{top:73%; transform:translateX(-50%) rotate(-6deg);}
 .btrack{display:flex; align-items:center; height:100%; width:max-content;
@@ -718,7 +741,22 @@ body.reg #regout{display:block;}
         </section>
 
         <!-- 4 · CREATIVE — card + a row of 9:16 work slots. -->
-        <section class="rs" data-s="creative" style="top:400%"><p class="rs__n">4 / 9</p><h2 class="rs__t">the work</h2><p class="rs__todo">main display of what we made</p></section>
+        <section class="rs rs--built work-sec" data-s="creative" style="top:400%">
+          <div class="work">
+            <div class="work__hd">
+              <p class="sec__eyebrow">creative marketing naturals</p>
+              <h2 class="sec__h">here&rsquo;s <span class="hl">last month.</span></h2>
+            </div>
+            <div class="work__rail" tabindex="0" aria-label="Recent work, scroll sideways">
+              <article class="wcard"><span class="wcard__tag">Netflix</span><b>Squid Game</b><span>assets/work-1.mp4 &middot; 9:16 clip</span></article>
+              <article class="wcard"><span class="wcard__tag">Safe Pro Fire</span><b>launch</b><span>assets/work-2.mp4 &middot; 9:16 clip</span></article>
+              <article class="wcard"><span class="wcard__tag">GigaByte AORUS</span><b>hardware</b><span>assets/work-3.mp4 &middot; 9:16 clip</span></article>
+              <article class="wcard"><span class="wcard__tag">Hyderabad Hydras</span><b>matchday</b><span>assets/work-4.mp4 &middot; 9:16 clip</span></article>
+              <article class="wcard"><span class="wcard__tag">Kreo</span><b>product drop</b><span>assets/work-5.mp4 &middot; 9:16 clip</span></article>
+              <article class="wcard"><span class="wcard__tag">Swiggy</span><b>brand film</b><span>assets/work-6.mp4 &middot; 9:16 clip</span></article>
+            </div>
+          </div>
+        </section>
 
         <!-- 5 · UNRELATED — card, lighter; a short slot list. -->
         <section class="rs" data-s="unrelated" style="top:500%"><p class="rs__n">5 / 9</p><h2 class="rs__t">completely unrelated</h2></section>
