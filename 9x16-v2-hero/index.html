@@ -567,6 +567,49 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
   transition:background-color .24s var(--ease-out);}
 .chat__send:hover{background:var(--orange);}
 
+/* ── FOUNDER ──────────────────────────────────────────────────────────────────────────
+   Orange slide with the white grid, and a bento on top whose fills are TRANSPARENT — the
+   orange reads straight through and only the hairlines separate the blocks. Same partition
+   logic as the unrelated card, inverted for a dark ground. */
+.rs--flame{background:var(--orange);}
+.rs--flame::before{content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background-image:linear-gradient(to right, rgba(255,255,255,.30) 0 1px, transparent 1px),
+                   linear-gradient(to bottom, rgba(255,255,255,.30) 0 1px, transparent 1px);
+  background-size:var(--cell-w) 100%, 100% var(--cell-h);
+  background-position:calc(50% + var(--cell-w)/2) 0, 0 calc(50% - .5px);}
+.fnd{position:relative; z-index:1; width:100%; display:flex; flex-direction:column;
+  border:1px solid rgba(255,255,255,.55);}
+.fnd > *:not(:first-child){border-top:1px solid rgba(255,255,255,.55);}
+.fnd__hd{padding:calc(var(--card-pad,34px)*.6);}
+.fnd__hd .sec__eyebrow{color:rgba(255,255,255,.85);}
+.fnd__h{font-family:"Clash Display",sans-serif; font-weight:600; color:var(--snow);
+  font-size:calc(var(--sec-head,36px)*.82); line-height:1.1; letter-spacing:-.025em;
+  text-transform:lowercase; margin:.35em 0 0;}
+/* the wordmark sits in a white slab — inverted from the orange highlight used everywhere
+   else, because on an orange ground an orange highlight has nothing to say */
+.fnd__h .hl{background:var(--snow); color:var(--orange); padding:0 .16em;}
+.fnd__lede{font-family:"Switzer",sans-serif; color:rgba(255,255,255,.92); margin:.7em 0 0;
+  font-size:calc(var(--sec-body,15px)*.92); line-height:1.45;}
+/* photo left, stats stacked right — the reference's split */
+.fnd__body{display:flex; align-items:stretch;}
+.fnd__photo{position:relative; flex:0 0 46%; overflow:hidden; background:var(--pitch);
+  border-right:1px solid rgba(255,255,255,.55);}
+.fnd__photo img{width:100%; height:100%; object-fit:cover; object-position:62% 50%; display:block;}
+/* the subject stands right-of-centre in the source, hence 62% — a plain centre crop cuts him */
+.fnd__photo figcaption{position:absolute; left:.6em; top:.5em; margin:0; color:var(--snow);
+  font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  font-size:calc(var(--sec-head,36px)*.42); line-height:1.05; letter-spacing:-.02em;}
+.fnd__stats{flex:1 1 auto; display:flex; flex-direction:column; min-width:0;}
+.fstat{flex:1 1 auto; display:flex; flex-direction:column; justify-content:center;
+  padding:calc(var(--card-pad,34px)*.34) calc(var(--card-pad,34px)*.42);}
+.fstat + .fstat{border-top:1px solid rgba(255,255,255,.55);}
+.fstat__sq{width:8px; height:8px; background:var(--snow); margin-bottom:.5em;}
+.fstat__v{font-family:"Clash Display",sans-serif; font-weight:600; color:var(--snow);
+  font-size:calc(var(--sec-head,36px)*.52); line-height:1; letter-spacing:-.03em;
+  text-transform:lowercase;}
+.fstat__l{font-family:"Switzer",sans-serif; color:rgba(255,255,255,.9); margin:.3em 0 0;
+  font-size:calc(var(--sec-body,15px)*.76); line-height:1.3;}
+
 /* ── THE REEL ─────────────────────────────────────────────────────────────────────────
    Once the hero lands, the whole site plays inside the phone screen: each section is one
    screenful and the scroll goes section-to-section, snapping, the way a reels feed does.
@@ -630,10 +673,11 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    border by construction. Bled to the card's left, right and bottom edges, so the video
    rests on the bottom border and the card is the mask. If the clip is ever re-exported at a
    different size, change this one ratio to match it. */
-/* +3px lifts the clip off the bottom border. Flush, the card's own 1px border sat on the
-   clip's last row of pixels and clipped the corners of the frames at the point in the
-   rotation where they reach furthest down. */
-.sec__vid{margin:0 calc(-1 * var(--card-pad,34px)) calc(-1 * var(--card-pad,34px) + 3px);
+/* +10px lifts the clip off the bottom border. Worth knowing if this is ever revisited: the
+   artwork in the export occupies rows 20-85 of 100 and touches NEITHER source edge, so
+   nothing is being cropped by the file or by this box — what reads as clipping is the export
+   having dead space above and below the frames. Tightening that is a re-export, not CSS. */
+.sec__vid{margin:0 calc(-1 * var(--card-pad,34px)) calc(-1 * var(--card-pad,34px) + 10px);
   aspect-ratio:2000 / 800; overflow:hidden;}
 /* contain, not cover: box and source share a ratio, so this is a 1:1 fit and guarantees the
    frames survive even if the export comes back a pixel off square.
@@ -1134,8 +1178,32 @@ body.reg #regout{display:block;}
           </div>
         </section>
 
-        <!-- 6 · FOUNDER — card with portrait slot + credit. -->
-        <section class="rs" data-s="founder" style="top:600%"><p class="rs__n">6 / 9</p><h2 class="rs__t">the founder</h2></section>
+        <!-- 6 · FOUNDER — orange ground, white grid, transparent-fill bento on top. -->
+        <section class="rs rs--built rs--flame" data-s="founder" style="top:600%">
+          <div class="fnd">
+            <div class="fnd__hd">
+              <p class="sec__eyebrow">the founder</p>
+              <h2 class="fnd__h"><span class="hl">9x16</span> is built by</h2>
+              <p class="fnd__lede">Arsalan built an audience&rsquo;s trust from zero, so he knows what it costs to protect it.</p>
+            </div>
+            <div class="fnd__body">
+              <figure class="fnd__photo">
+                <img src="assets/founder.webp" alt="Arsalan, founder of 9x16">
+                <figcaption>meet<br>arsalan</figcaption>
+              </figure>
+              <div class="fnd__stats">
+                <div class="fstat"><span class="fstat__sq" aria-hidden="true"></span>
+                  <p class="fstat__v">8 yrs</p><p class="fstat__l">in social growth</p></div>
+                <div class="fstat"><span class="fstat__sq" aria-hidden="true"></span>
+                  <p class="fstat__v">7B+</p><p class="fstat__l">lifetime views</p></div>
+                <div class="fstat"><span class="fstat__sq" aria-hidden="true"></span>
+                  <p class="fstat__v">4M+</p><p class="fstat__l">followers of his own</p></div>
+                <div class="fstat"><span class="fstat__sq" aria-hidden="true"></span>
+                  <p class="fstat__v">world no.&thinsp;2</p><p class="fstat__l">in mental maths, he works out your ROI before you&rsquo;ve finished the sentence.</p></div>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <!-- 7 · TOGETHER — no scarcity, no pricing. Reason to act = a concrete next step. -->
         <section class="rs" data-s="together" style="top:700%"><p class="rs__n">7 / 9</p><h2 class="rs__t">work together</h2><p class="rs__todo">no scarcity, no pricing</p></section>
@@ -1895,17 +1963,24 @@ function storyPlay(){
        broken" and "this browser cannot decode an alpha MP4", and we need to tell them apart. */
     if (p && p.catch) p.catch(err => console.warn("story clip refused to play:", err && err.name, err && err.message));
   };
-  /* HAVE_CURRENT_DATA or better. Seeking to 0 and calling play() on an element that has not
-     buffered a frame yet stalls silently — the seek is async, play resolves against nothing,
-     and you get a parked first frame with no error anywhere. That is the autoplay that
-     "sometimes doesn't fire". */
-  if (v.readyState >= 2) go();
-  else v.addEventListener("canplay", go, { once:true });
+  /* Fire now AND again the moment data lands. On a cold load the element usually has not
+     buffered a frame by the time you first reach the section: play() then resolves against
+     nothing and you get a parked first frame with no error — which is exactly the "doesn't
+     autoplay the first time, works after that" bug. Asking twice costs nothing (play() on an
+     already-playing element is a no-op) and removes the race entirely. */
+  go();
+  if (v.readyState < 2){
+    v.addEventListener("loadeddata", go, { once:true });
+    v.addEventListener("canplay",    go, { once:true });
+  }
 }
 addEventListener("DOMContentLoaded", () => {
-  const v = document.getElementById("storyVid");
-  v && v.addEventListener("error", () => console.warn("story clip failed to load/decode:",
+  const v = document.getElementById("storyVid"); if (!v) return;
+  v.addEventListener("error", () => console.warn("story clip failed to load/decode:",
     v.error && v.error.code, v.currentSrc));
+  /* preload="auto" is a hint browsers are free to ignore for off-screen media. The clip is
+     180KB — fetch it up front so it is decoded long before anyone scrolls this far. */
+  try { v.load(); } catch (e) {}
 });
 
 /* ── COMPLETELY UNRELATED · chat, cursor, player ──────────────────────────────────────
