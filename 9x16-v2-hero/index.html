@@ -625,14 +625,21 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    bottom edge rather than sitting on a strip of padding. Reclaiming that bottom padding also
    takes the card back under the slide height; it was overflowing, and the aperture was
    cutting the bottom off the animation. */
-/* 2000/925 shows the bottom 26% of the source. Measured on ALPHA alone (the earlier pass
-   also filtered near-white and so missed the light character entirely, which is why the band
-   was cut too tight): content occupies 81.9%-100%, so 26% leaves ~8% of clear air above him.
-   He reads as walking ALONG the card's bottom border rather than jammed against it. */
+/* WHERE THIS WINDOW COMES FROM — measured, and worth keeping if the clip is ever re-cut.
+   Differencing two mid-animation frames separates the moving character from the frames:
+     character   rows 264-319 of 320  =  82.5% - 100% of source height
+     his torso   ~92%                    (55% down his body)
+   The card's bottom edge must land on his TORSO, not on his feet, so the window stops at
+   93% of the source instead of 100% — his legs fall below the card and he reads as walking
+   along its bottom border. The strip covers 15% of source height, i.e. 78% -> 93%, which
+   also lifts the frames off the bottom edge.
+     band f = 0.15            -> aspect-ratio 2000 / (3556 x 0.15) = 2000/533
+     object-position Y = (cut - f) / (1 - f) = (0.93 - 0.15) / 0.85 = 91.8%
+   Re-derive both with that formula if you move the cut. */
 .sec__vid{margin:0 calc(-1 * var(--card-pad,34px)) calc(-1 * var(--card-pad,34px));
-  aspect-ratio:2000 / 925; overflow:hidden;}
+  aspect-ratio:2000 / 533; overflow:hidden;}
 .sec__vid video{width:100%; height:100%; display:block;
-  object-fit:cover; object-position:50% 100%; background:transparent;}
+  object-fit:cover; object-position:50% 91.8%; background:transparent;}
 
 /* stationary and centred, independent of whatever the aperture is currently doing */
 /* --apy is the crop box's offset from viewport centre. The headline rides it, otherwise it
@@ -1869,11 +1876,19 @@ function storyCueIn(ms){
 }
 function storyPlay(){
   const v = document.getElementById("storyVid"); if (!v) return;
-  try { v.currentTime = 0; } catch (e) {}
-  const p = v.play();               /* muted + playsinline, so no gesture is required */
-  /* do NOT swallow this. A rejected play() is the difference between "the animation is
-     broken" and "this browser cannot decode an alpha MP4", and we need to be able to tell. */
-  if (p && p.catch) p.catch(err => console.warn("story clip refused to play:", err && err.name, err && err.message));
+  const go = () => {
+    try { v.currentTime = 0; } catch (e) {}
+    const p = v.play();             /* muted + playsinline, so no gesture is required */
+    /* do NOT swallow this. A rejected play() is the difference between "the animation is
+       broken" and "this browser cannot decode an alpha MP4", and we need to tell them apart. */
+    if (p && p.catch) p.catch(err => console.warn("story clip refused to play:", err && err.name, err && err.message));
+  };
+  /* HAVE_CURRENT_DATA or better. Seeking to 0 and calling play() on an element that has not
+     buffered a frame yet stalls silently — the seek is async, play resolves against nothing,
+     and you get a parked first frame with no error anywhere. That is the autoplay that
+     "sometimes doesn't fire". */
+  if (v.readyState >= 2) go();
+  else v.addEventListener("canplay", go, { once:true });
 }
 addEventListener("DOMContentLoaded", () => {
   const v = document.getElementById("storyVid");
@@ -2086,6 +2101,9 @@ document.querySelectorAll("[data-go]").forEach(a => {
 });
 
 function reelStep(dir){
+  /* released here rather than in the wheel handler, so handing the page back costs a fresh
+     gesture exactly like every other step does */
+  if (atEdge(dir)) { exitReel(); return; }
   const next = reelIdx + dir;
   if (next < 0 || next > REEL.length - 1) return;
   reelTo(next);
@@ -2104,14 +2122,24 @@ addEventListener("wheel", e => {
      opened it on. preventDefault here (unlike the chat, which has its own scrollable log)
      because the menu has nothing to scroll and the hero above the reel is not pinned. */
   if (navEl.classList.contains("is-open")) { e.preventDefault(); return; }
-  if (!reelActive) return;
+  if (!reelActive){
+    /* Re-arm the moment the visitor scrolls back DOWN. leftReel exists so that releasing at
+       the top of the reel doesn't instantly re-grab the page — but keying it only to the
+       morph being rewound meant that after releasing you had to scroll all the way up past
+       the morph before the reel would take again. Scrolling down IS the intent to re-enter. */
+    if (e.deltaY > 0) leftReel = false;
+    return;
+  }
   /* the chat log scrolls on its own; letting the reel eat those deltas would flick the
      slide out from under an open conversation. No preventDefault — that would block the
      log's native scrolling too, and the page is already pinned by lockScroll. */
   if (chatOpen()) return;
   if (Math.abs(e.deltaY) < 2) return;          /* ignore wheel noise */
   const dir = e.deltaY > 0 ? 1 : -1;
-  if (atEdge(dir)) { exitReel(); return; }     /* hand the page back, upward only */
+  /* The edge release used to sit HERE, ahead of the gesture gate — so the decaying tail of
+     the very flick that landed you on slide 0 immediately released the reel. You then had a
+     dead orange screen that would not scroll down. Releasing now goes through reelStep, i.e.
+     through the same one-gesture-one-step gate as every other move: it takes a NEW flick. */
   e.preventDefault();
   if (!scrollLocked) lockScroll();             /* re-pin if we had released and came back */
   gestureStep(dir, Math.abs(e.deltaY));
