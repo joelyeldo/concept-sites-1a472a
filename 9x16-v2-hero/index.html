@@ -298,6 +298,57 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    grid. It fades in with the reel so the hero's orange still shows through underneath. */
 .ap-white{position:absolute; inset:0; z-index:0; background:var(--snow); opacity:0;}
 
+
+/* ── DASHBOARD ────────────────────────────────────────────────────────────────────────
+   The live site's dashboard card, refit for one phone screen: title, period + toggle,
+   a 2x2 stat grid, then the chart. It STOPS at the graph — the 96% gauge and the trailing
+   target stats are cut. Boxes sit on the grid and are separated by hairlines rather than
+   gaps, so the section reads as one instrument, not five floating cards. */
+.dash__wrap{display:flex; flex-direction:column; height:100%; width:100%;
+  background:var(--snow); border:1px solid var(--line);
+  box-shadow:0 26px 60px -22px rgba(16,12,8,.28); overflow:hidden;}
+.dash__hd{padding:var(--card-pad,30px) var(--card-pad,30px) calc(var(--card-pad,30px)*.6);
+  border-bottom:1px solid var(--line);}
+.dash__t{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  font-size:calc(var(--sec-head,34px)*.82); line-height:1; letter-spacing:-.025em; margin:0;}
+.dash__per{display:flex; align-items:flex-start; justify-content:space-between; gap:.7rem;
+  padding:calc(var(--card-pad,30px)*.55) var(--card-pad,30px);
+  border-bottom:1px solid var(--line);}
+.dash__pt{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  font-size:calc(var(--sec-body,15px)*1.15); margin:0; letter-spacing:-.02em;}
+.dash__toggle{display:flex; flex:none; border:1px solid var(--line);}
+.dash__toggle button{font-family:"Switzer",sans-serif; font-size:calc(var(--sec-body,15px)*.8);
+  padding:.32em .8em; background:none; border:0; cursor:pointer; color:var(--mute);}
+.dash__toggle button[aria-pressed="true"]{background:var(--pitch); color:var(--snow);}
+.dash__grid{display:grid; grid-template-columns:1fr 1fr;}
+.dcell{padding:calc(var(--card-pad,30px)*.7) var(--card-pad,30px);
+  border-bottom:1px solid var(--line);}
+.dcell:nth-child(odd){border-right:1px solid var(--line);}
+.dcell__sq{width:.6em; height:.6em; background:var(--orange); display:block;
+  margin-bottom:calc(var(--card-pad,30px)*.5);}
+.dcell__n{font-family:"Clash Display",sans-serif; font-weight:600; letter-spacing:-.03em;
+  font-size:calc(var(--sec-head,34px)*.72); line-height:1; display:flex; align-items:center;
+  gap:.4em; flex-wrap:wrap;}
+.dchip{font-family:"Switzer",sans-serif; font-weight:600; font-size:calc(var(--sec-body,15px)*.68);
+  background:var(--orange); color:var(--snow); padding:.22em .45em; letter-spacing:0;}
+.dcell__l{font-family:"Switzer",sans-serif; font-size:calc(var(--sec-body,15px)*.86);
+  color:var(--slate); margin:.45em 0 0; line-height:1.3;}
+.dash__ch{flex:1; display:flex; flex-direction:column; padding:var(--card-pad,30px); min-height:0;}
+.dash__cht{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  font-size:calc(var(--sec-body,15px)*1.05); margin:0; letter-spacing:-.02em;}
+.dash__rng{font-family:"Switzer",sans-serif; font-size:calc(var(--sec-body,15px)*.76);
+  color:var(--mute); margin:.35em 0 0;}
+.dash__tot{display:flex; align-items:center; gap:.45em; margin:.6em 0 .2em;
+  font-family:"Clash Display",sans-serif; font-weight:600; letter-spacing:-.03em;
+  font-size:calc(var(--sec-head,34px)*.6);}
+.dash__svg{flex:1; min-height:0; width:100%;}
+.dash__svg svg{width:100%; height:100%; display:block; overflow:visible;}
+.dash__key{display:flex; gap:1.1em; align-items:center; margin-top:.5em;
+  font-family:"Switzer",sans-serif; font-size:calc(var(--sec-body,15px)*.74); color:var(--slate);}
+.dash__key i{display:inline-block; width:.62em; height:.62em; margin-right:.4em; vertical-align:middle;}
+.dash__key .k1 i{background:var(--pitch);}
+.dash__key .k2 i{border:1px solid var(--pitch);}
+
 /* ── THE REEL ─────────────────────────────────────────────────────────────────────────
    Once the hero lands, the whole site plays inside the phone screen: each section is one
    screenful and the scroll goes section-to-section, snapping, the way a reels feed does.
@@ -619,7 +670,7 @@ body.reg #regout{display:block;}
         <section class="rs rs--built rs--dark trust" data-s="trust" style="top:200%">
           <h2 class="trust__k">
             <span class="tline tline--1"><span class="tw">you&rsquo;ve already</span></span>
-            <span class="tline tline--2"><span class="tw"><span class="hl">scrolled past</span></span></span>
+            <span class="tline tline--2"><span class="tw"><span class="hl">seen</span></span></span>
             <span class="tline tline--3"><span class="tw">our work.</span></span>
           </h2>
           <div class="trust__bands" aria-label="Client logos">
@@ -631,95 +682,48 @@ body.reg #regout{display:block;}
 
         <!-- 3 · DASHBOARD — phone-native. Stat header + one area chart, then nothing. Numbers PLACEHOLDER. -->
         <section class="rs rs--built dash" data-s="dashboard" style="top:300%">
-          <div>
-            <p class="sec__eyebrow">you've already watched us work</p>
-            <h2 class="sec__h">about <span class="hl">63%</span> of you, statistically.</h2>
+          <div class="dash__wrap">
+            <div class="dash__hd">
+              <h2 class="dash__t">live attention <span class="hl">dashboard</span></h2>
+            </div>
+            <div class="dash__per">
+              <p class="dash__pt" data-d="period">monthly overview</p>
+              <div class="dash__toggle" role="group" aria-label="Period">
+                <button type="button" data-per="monthly" aria-pressed="true">monthly</button>
+                <button type="button" data-per="yearly" aria-pressed="false">yearly</button>
+              </div>
+            </div>
+            <div class="dash__grid">
+              <div class="dcell"><span class="dcell__sq"></span><p class="dcell__n"><span data-d="views">190.1M</span><span class="dchip" data-d="viewsChg">+12.4%</span></p><p class="dcell__l">total views</p></div>
+              <div class="dcell"><span class="dcell__sq"></span><p class="dcell__n"><span data-d="engagement">33.5M</span><span class="dchip" data-d="engagementChg">+11.0%</span></p><p class="dcell__l">engagement</p></div>
+              <div class="dcell"><span class="dcell__sq"></span><p class="dcell__n"><span data-d="followers">5.3M</span><span class="dchip" data-d="followersChg">+11.0%</span></p><p class="dcell__l">followers and subscribers</p></div>
+              <div class="dcell"><span class="dcell__sq"></span><p class="dcell__n"><span data-d="network">165.4M</span><span class="dchip" data-d="networkChg">+11.5%</span></p><p class="dcell__l">network access</p></div>
+            </div>
+            <div class="dash__ch">
+              <h3 class="dash__cht">impression and engagement <span style="color:var(--mute)">(in millions)</span></h3>
+              <p class="dash__rng" data-d="range">Jan 1, 2026 &ndash; Jul 26, 2026</p>
+              <p class="dash__rng" style="margin-top:.5em">total views</p>
+              <p class="dash__tot"><span data-d="graphTotal">1054.2M</span><span class="dchip" data-d="graphChg">+12.4%</span></p>
+              <div class="dash__svg" data-chart></div>
+              <div class="dash__key"><span class="k1"><i></i>views</span><span class="k2"><i></i>target</span></div>
+            </div>
           </div>
-          <div class="dash__stats">
-            <div><p class="stat__v">1.8B</p><p class="stat__l">views earned <span class="stat__d">▲</span></p></div>
-            <div><p class="stat__v">190M</p><p class="stat__l">reach / mo</p></div>
-            <div><p class="stat__v">5.3M</p><p class="stat__l">followers</p></div>
-          </div>
-          <!-- schematic trend — real series to be wired from the live dashboard data -->
-          <svg class="chart" viewBox="0 0 300 128" role="img" aria-label="Views trend, up and to the right">
-            <defs><linearGradient id="dashFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#FF7B00" stop-opacity=".26"/><stop offset="1" stop-color="#FF7B00" stop-opacity="0"/>
-            </linearGradient></defs>
-            <line class="chart__base" x1="8" y1="110" x2="292" y2="110"/>
-            <path fill="url(#dashFill)" d="M8,94 L55,80 L102,86 L149,60 L196,66 L243,40 L290,20 L290,110 L8,110 Z"/>
-            <path class="chart__line" d="M8,94 L55,80 L102,86 L149,60 L196,66 L243,40 L290,20"/>
-            <text class="chart__x" x="8" y="124">jan</text><text class="chart__x" x="149" y="124" text-anchor="middle">apr</text><text class="chart__x" x="290" y="124" text-anchor="end">jul</text>
-          </svg>
         </section>
 
         <!-- 4 · CREATIVE — card + a row of 9:16 work slots. -->
-        <section class="rs rs--built" data-s="creative" style="top:400%">
-          <div class="card"><div class="sec">
-            <p class="sec__eyebrow">the work</p>
-            <h2 class="sec__h">things people actually <span class="hl">stop for.</span></h2>
-            <div class="work" aria-label="Selected work">
-              <figure class="work__t"><span>reel 01</span></figure>
-              <figure class="work__t"><span>reel 02</span></figure>
-              <figure class="work__t"><span>reel 03</span></figure>
-            </div>
-            <p class="sec__b">Not the scroll-past kind. The kind a thumb stops on, holds, and sends to someone.</p>
-          </div></div>
-        </section>
+        <section class="rs" data-s="creative" style="top:400%"><p class="rs__n">4 / 9</p><h2 class="rs__t">the work</h2><p class="rs__todo">main display of what we made</p></section>
 
         <!-- 5 · UNRELATED — card, lighter; a short slot list. -->
-        <section class="rs rs--built" data-s="unrelated" style="top:500%">
-          <div class="card"><div class="sec">
-            <p class="sec__eyebrow">for no reason</p>
-            <h2 class="sec__h">completely <span class="hl">unrelated.</span></h2>
-            <p class="sec__b">Things we think about when we're not making things. No pitch attached.</p>
-            <nav class="list" aria-label="Notes">
-              <a href="#"><span class="list__t">why vertical won</span><span class="list__n">note</span></a>
-              <a href="#"><span class="list__t">the death of the billboard</span><span class="list__n">note</span></a>
-              <a href="#"><span class="list__t">trust doesn't scale. or does it?</span><span class="list__n">note</span></a>
-            </nav>
-          </div></div>
-        </section>
+        <section class="rs" data-s="unrelated" style="top:500%"><p class="rs__n">5 / 9</p><h2 class="rs__t">completely unrelated</h2></section>
 
         <!-- 6 · FOUNDER — card with portrait slot + credit. -->
-        <section class="rs rs--built" data-s="founder" style="top:600%">
-          <div class="card"><div class="sec">
-            <p class="sec__eyebrow">who's behind it</p>
-            <h2 class="sec__h">built by someone who <span class="hl">earned it first.</span></h2>
-            <div class="founder__row">
-              <figure class="founder__ph"><span>portrait</span></figure>
-              <div>
-                <p class="founder__name">Arsalan</p>
-                <p class="founder__role">founder · four years inside the networks before building 9x16</p>
-              </div>
-            </div>
-          </div></div>
-        </section>
+        <section class="rs" data-s="founder" style="top:600%"><p class="rs__n">6 / 9</p><h2 class="rs__t">the founder</h2></section>
 
         <!-- 7 · TOGETHER — no scarcity, no pricing. Reason to act = a concrete next step. -->
-        <section class="rs rs--built" data-s="together" style="top:700%">
-          <div class="card"><div class="sec">
-            <p class="sec__eyebrow">work with us</p>
-            <h2 class="sec__h">let's put it to <span class="hl">work.</span></h2>
-            <p class="sec__b">No retainer you don't need, no package you can't use. You tell us who you're trying to reach — we'll tell you, honestly, whether the trust transfers.</p>
-            <a class="cta" href="#">tell us who you're reaching →</a>
-            <p class="next">One reply, usually same week. No pitch deck required.</p>
-          </div></div>
-        </section>
+        <section class="rs" data-s="together" style="top:700%"><p class="rs__n">7 / 9</p><h2 class="rs__t">work together</h2><p class="rs__todo">no scarcity, no pricing</p></section>
 
         <!-- 8 · FOOTER — terminal slide: sign-off + contact + the 24×7 gag. -->
-        <section class="rs rs--built foot" data-s="footer" style="top:800%">
-          <p class="foot__mark">trust turned <span class="hl">vertical.</span></p>
-          <p class="foot__hours">open 24×7. (fine — Mon to Sat, 11 to 7. but the work never really clocks off.)</p>
-          <div class="foot__c">
-            <a href="mailto:arsi@9x16.studio">arsi@9x16.studio</a>
-            <a href="tel:+918369325960">+91 83693 25960</a>
-            <span>Mumbai, India</span>
-          </div>
-          <nav class="foot__social" aria-label="Social">
-            <a href="#">instagram</a><a href="#">youtube</a><a href="#">linkedin</a>
-          </nav>
-          <p class="foot__legal">© 2026 9x16 Media. Native to the flip.</p>
-        </section>
+        <section class="rs" data-s="footer" style="top:800%"><p class="rs__n">8 / 9</p><h2 class="rs__t">footer</h2><p class="rs__todo">24x7 joke on the opening hours</p></section>
       </div>
     </div>
 
@@ -1095,8 +1099,9 @@ function placeTrustLines(){
        allowance half the section width and the computed midpoint meaningless. */
     const tw   = line.querySelector(".tw");
     const tilt = (tw ? tw.getBoundingClientRect().width : 0) / 2;
-    const above = bands[i - 1];
-    const below = bands[i];
+    /* start at the SECOND gap: the first sits high enough that the nav covers it */
+    const above = bands[i];
+    const below = bands[i + 1];
     const lo = above ? above.mid + above.half + above.tan * tilt : 0;
     const hi = below ? below.mid - below.half - below.tan * tilt : H;
     line.style.top = ((lo + hi) / 2 - line.offsetHeight / 2) + "px";
@@ -1195,6 +1200,8 @@ tl.to(morph, {
     setAperture(gsap.utils.interpolate(from.w, G.endW, p),
                 gsap.utils.interpolate(from.h, G.endH, p), p);
     setNav(p);   /* the bar shrinks onto the phone on the same curve */
+    if (p >= 0.999 && !leftReel) enterReel();
+    if (p < 0.97) { leftReel = false; if (reelActive) exitReel(); }
   }
 }, 0.05);
 
@@ -1337,7 +1344,7 @@ addEventListener("wheel", e => {
   if (!reelActive) return;
   if (Math.abs(e.deltaY) < 2) return;          /* ignore wheel noise */
   const dir = e.deltaY > 0 ? 1 : -1;
-  if (atEdge(dir)) { unlockScroll(); return; } /* hand the page back, upward only */
+  if (atEdge(dir)) { exitReel(); return; }     /* hand the page back, upward only */
   e.preventDefault();
   if (!scrollLocked) lockScroll();             /* re-pin if we had released and came back */
   gestureStep(dir, Math.abs(e.deltaY));
@@ -1364,22 +1371,88 @@ addEventListener("touchmove", e => {
   gestureStep(dir, 999);        /* one swipe already threshold-gated above */
 }, { passive: false });
 
-ScrollTrigger.create({
-  trigger: "#hero",
-  start: () => "top top-=" + (innerHeight * 1.8),
-  end: "bottom bottom",
-  onToggle: self => {
-    reelActive = self.isActive;
-    reelEl.style.opacity = self.isActive ? 1 : 0;
-    if (self.isActive) lockScroll(); else unlockScroll();
-    /* NO reset here. The only intentional way out is slide 0 scrolling up, so reelIdx is
-       already 0 whenever a genuine exit happens — the reset was redundant. It was also
-       harmful: a hard upward flick can push the scroll out of range for a frame before the
-       pin restores it, and ScrollTrigger samples on its own ticker, so it saw the excursion,
-       fired inactive, and slammed the reel back to the orange from wherever you were. */
-    setReelPhase(reelIdx);
+/* The reel used to arm/disarm off a ScrollTrigger's isActive flag. That flag flips on a
+   single sampled frame, and a hard flick can push the scroll out of range for exactly one
+   frame before the pin restores it — so the reel kept disarming mid-section, input stopped
+   being captured, and the page ran free back to the hero. That is the bug that returned after
+   every change, because every change altered the timing of that race.
+
+   It is a state machine now, owned here, not inferred: the reel ARMS when the morph reaches
+   the end, and DISARMS only when the user deliberately steps up off slide 0. Nothing else can
+   turn it off. */
+let leftReel = false;
+function enterReel(){
+  if (reelActive) return;
+  reelActive = true;
+  reelEl.style.opacity = 1;
+  lockScroll();
+  setReelPhase(reelIdx);
+}
+function exitReel(){
+  if (!reelActive) return;
+  reelActive = false;
+  leftReel = true;                 /* don't re-arm until the morph has actually been rewound */
+  reelEl.style.opacity = 0;
+  unlockScroll();
+  setReelPhase(0);
+}
+
+
+/* ── DASHBOARD DATA + CHART ───────────────────────────────────────────────────────────
+   Numbers lifted verbatim from the live site's DASH object, so nothing here is invented.
+   The chart is drawn as plain SVG rather than pulling in a chart library — it is two
+   polylines and some gridlines, and the page already ships enough JS. */
+const DASH = {
+  monthly: { period:"monthly overview", range:"Jan 1, 2026 – Jul 26, 2026",
+    views:"190.1M", viewsChg:"+12.4%", engagement:"33.5M", engagementChg:"+11.0%",
+    followers:"5.3M", followersChg:"+11.0%", network:"165.4M", networkChg:"+11.5%",
+    graphTotal:"1054.2M", graphChg:"+12.4%",
+    cats:["Jan","Feb","Mar","Apr","May","Jun"],
+    series:[118.6,95.1,145.8,162.8,135.8,206.1],
+    targetLine:[102.6,114.4,127.6,142.3,158.6,176.9] },
+  yearly: { period:"yearly overview", range:"2022 – 2026",
+    views:"1.8B", viewsChg:"+33.3%", engagement:"350M", engagementChg:"+25.0%",
+    followers:"50M", followersChg:"+15.0%", network:"2400M", networkChg:"+28.5%",
+    graphTotal:"1054.2M", graphChg:"+12.4%",
+    cats:["2022","2023","2024","2025","2026"],
+    series:[250,600,800,1800,1054.2],
+    targetLine:[250,600,800,1800,2400] },
+};
+
+function dashChart(cats, views, targets){
+  const W=100, H=52, L=13, R=2, T=3, B=9;
+  const all=[...views,...targets];
+  const step=Math.pow(10, Math.floor(Math.log10(Math.max(...all)))) / 2;
+  const lo=Math.floor(Math.min(...all)/step)*step, hi=Math.ceil(Math.max(...all)/step)*step;
+  const x=i=>L+(W-L-R)*(cats.length>1 ? i/(cats.length-1) : .5);
+  const y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo||1));
+  let g="", ax="";
+  for(let v=lo; v<=hi+1e-9; v+=step){
+    g+=`<line x1="${L}" x2="${W-R}" y1="${y(v).toFixed(2)}" y2="${y(v).toFixed(2)}" stroke="rgba(16,12,8,.10)" stroke-width=".3"/>`;
+    ax+=`<text x="${L-2}" y="${(y(v)+1).toFixed(2)}" text-anchor="end" font-size="3" fill="#6B6560">${Math.round(v)}</text>`;
   }
-});
+  const pts=a=>a.map((v,i)=>`${x(i).toFixed(2)},${y(v).toFixed(2)}`).join(" ");
+  const cat=cats.map((c,i)=>`<text x="${x(i).toFixed(2)}" y="${H-2}" text-anchor="middle" font-size="3" fill="#6B6560">${c}</text>`).join("");
+  const dots=views.map((v,i)=>`<rect x="${(x(i)-.8).toFixed(2)}" y="${(y(v)-.8).toFixed(2)}" width="1.6" height="1.6" fill="#100C08"/>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Monthly views against target">
+    ${g}${ax}${cat}
+    <polyline points="${pts(targets)}" fill="none" stroke="#6B6560" stroke-width=".5" stroke-dasharray="2 1.6" vector-effect="non-scaling-stroke"/>
+    <polyline points="${pts(views)}" fill="none" stroke="#100C08" stroke-width=".9" vector-effect="non-scaling-stroke"/>
+    ${dots}</svg>`;
+}
+
+function renderDash(key){
+  const sec=document.querySelector('[data-s="dashboard"]');
+  if(!sec) return;
+  const d=DASH[key]; if(!d) return;
+  sec.querySelectorAll("[data-d]").forEach(el=>{ const v=d[el.dataset.d]; if(v!=null) el.textContent=v; });
+  const c=sec.querySelector("[data-chart]");
+  if(c) c.innerHTML=dashChart(d.cats,d.series,d.targetLine);
+  sec.querySelectorAll("[data-per]").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.per===key)));
+}
+document.querySelectorAll('[data-s="dashboard"] [data-per]').forEach(b=>
+  b.addEventListener("click", () => renderDash(b.dataset.per)));
+renderDash("monthly");
 
 setNav(0);   /* park the bar at v1 geometry before any scrolling happens */
 /* glass is only toggled from the scroll handler now, so it needs its resting state set
