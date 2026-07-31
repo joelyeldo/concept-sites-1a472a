@@ -433,8 +433,11 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    Header on the bare grid, then three stacked cards. Every other slide puts its type in
    one card, but this slide has three of them — a fourth around the header would read as a
    stack of panels instead of a feed, which is the opposite of what "unrelated" wants. */
-.unrel{height:100%; display:flex; flex-direction:column; gap:calc(var(--card-gap,26px)*.7);}
-.unrel__hd{flex:none;}
+/* flex-start, not centre: the header anchors just under the nav band and the card grows
+   downward. Centring meant any overflow pushed the title up behind the navbar. */
+.unrel{height:100%; display:flex; flex-direction:column; justify-content:flex-start;
+  gap:calc(var(--card-gap,26px)*.6); overflow:hidden;}
+.unrel__hd{flex:0 0 auto;}
 .unrel__sub{font-family:"Switzer",sans-serif; font-size:calc(var(--sec-body,15px)*.92);
   line-height:1.5; color:var(--slate); margin:.55em 0 0;}
 /* ONE card, partitioned — not three stacked cards. Shared outer border and a single shadow;
@@ -446,9 +449,11 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* :not(:first-child) rather than `* + *` on purpose — the blocks below set `border:none`,
    and at equal specificity the later rule wins and the partitions vanish. */
 .ubento > *:not(:first-child){border-top:1px solid var(--line);}
-.ucard{flex:1 1 auto; display:flex; gap:.75em; align-items:center; cursor:pointer;
+/* natural height. flex:1 let the two jokes swallow every spare pixel and the blocks became
+   enormous — the card fills the slide via .ubento, the blocks do not stretch to do it. */
+.ucard{flex:0 0 auto; display:flex; gap:.75em; align-items:flex-start; cursor:pointer;
   background:transparent; border:none; box-shadow:none;
-  padding:calc(var(--card-pad,34px)*.6) calc(var(--card-pad,34px)*.62);
+  padding:calc(var(--card-pad,34px)*.58) calc(var(--card-pad,34px)*.62);
   transition:background-color .3s var(--ease-out);}
 .ucard:hover, .ucard:focus-visible{background:var(--orange); outline:none;}
 .ucard:hover p, .ucard:focus-visible p{color:#fff;}
@@ -461,8 +466,10 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 
 /* the player. Compressed layout from the second reference — the square-art version is a
    third taller and this slide is already carrying three cards. */
-.pcard{flex:0 0 auto; background:transparent; border:none; box-shadow:none;
-  padding:calc(var(--card-pad,34px)*.6) calc(var(--card-pad,34px)*.62);}
+/* margin-top:auto parks the player on the bottom edge of the card, so whatever height is
+   left over lands as breathing room above it instead of inflating the jokes. */
+.pcard{flex:0 0 auto; margin-top:auto; background:transparent; border:none; box-shadow:none;
+  padding:calc(var(--card-pad,34px)*.58) calc(var(--card-pad,34px)*.62);}
 .pcard__lab{font-family:"Switzer",sans-serif; font-weight:600; color:var(--mute); margin:0 0 .7em;
   font-size:var(--sec-eyebrow,11px); letter-spacing:.18em; text-transform:uppercase;}
 .pcard__row{display:flex; gap:.85em; align-items:center;}
