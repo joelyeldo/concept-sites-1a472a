@@ -834,14 +834,17 @@ body.reg #regout{display:block;}
         <!-- 4 · CREATIVE — type + the band only. The clips live in the gutters (#vgut). -->
         <section class="rs rs--built work-sec" data-s="creative" style="top:400%">
           <div class="work">
-            <!-- The path is one C followed by two S commands. S reflects the previous control
-                 point across the join automatically, so the tangent is continuous by
-                 construction — the old version chained three independent C segments whose
-                 handles were not collinear, and every join showed as a visible kink. It also
-                 runs y80→y600 of the 700 viewBox instead of dying in the middle third. -->
+            <!-- Choppiness was never the segment joins — measured, the worst tangent jump on
+                 the old path was 2.6°, which is a smooth curve. It was CURVATURE against
+                 ribbon thickness: a 24-unit ribbon on a 68-unit turn radius bunches on the
+                 inner edge and stretches the letter spacing on the outer one. This path was
+                 picked by measuring candidates: min radius 94 (3.9x the stroke), max jitter
+                 0.92°, still filling y88-640 of the 700 viewBox. Two lobes, one S command —
+                 S reflects the previous control point, so the join is smooth by construction.
+                 KEEP THE RADIUS ABOVE ~4x THE STROKE if this path is ever redrawn. -->
             <div class="work__band" aria-hidden="true">
               <svg viewBox="0 0 400 700" preserveAspectRatio="xMidYMid slice">
-                <defs><path id="cbp" d="M -40,80 C 80,10 250,55 285,190 S 145,335 132,440 S 300,565 440,600"/></defs>
+                <defs><path id="cbp" d="M -60,110 C 140,30 350,180 315,350 S 80,520 70,640"/></defs>
                 <use href="#cbp" class="cband__ribbon"/>
                 <text class="cband__t" dominant-baseline="central"><textPath href="#cbp" startOffset="0" id="cbText"><tspan id="cbPhrase">no rotate prompt <tspan class="cband__sq">&#9642;</tspan> no black bars <tspan class="cband__sq">&#9642;</tspan> no skip button <tspan class="cband__sq">&#9642;</tspan> no problem <tspan class="cband__sq">&#9642;</tspan> </tspan>no rotate prompt <tspan class="cband__sq">&#9642;</tspan> no black bars <tspan class="cband__sq">&#9642;</tspan> no skip button <tspan class="cband__sq">&#9642;</tspan> no problem <tspan class="cband__sq">&#9642;</tspan> no rotate prompt <tspan class="cband__sq">&#9642;</tspan> no black bars <tspan class="cband__sq">&#9642;</tspan> no skip button <tspan class="cband__sq">&#9642;</tspan> no problem <tspan class="cband__sq">&#9642;</tspan> no rotate prompt <tspan class="cband__sq">&#9642;</tspan> no black bars <tspan class="cband__sq">&#9642;</tspan> no skip button <tspan class="cband__sq">&#9642;</tspan> no problem <tspan class="cband__sq">&#9642;</tspan> <animate id="cbAnim" attributeName="startOffset" from="0" to="-560" dur="24s" repeatCount="indefinite"/></textPath></text>
               </svg>
