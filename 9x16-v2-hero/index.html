@@ -998,8 +998,27 @@ function reelTo(i){
    step, with a lockout for the length of the slide. At the first section scrolling up, and the
    last scrolling down, we do NOT preventDefault — the page takes over again so you can get
    back into the hero or out of the reel. */
-let reelActive = false, reelLock = false, idleT = null;
-const QUIET_MS = 320;   /* how long the wheel must be silent before a NEW gesture is allowed */
+let reelActive = false;
+/* GESTURE DETECTION, not a silence timer.
+   Waiting for the wheel to go quiet does stop one flick double-stepping, but the inertia tail
+   runs for a second or more — so a quick second flick lands inside it and gets swallowed, and
+   the reel feels stuck until you try three times. A flick's deltas only ever DECAY; a new
+   flick starts with a delta larger than the one before it. So: ignore anything that is still
+   decaying from the last gesture, and treat a rise (or a real pause) as a new one. A short
+   floor of one slide-length stops a genuine double-flick from skipping a section. */
+const SAME_GESTURE_MS = 140;   /* events closer than this AND not accelerating = same flick */
+const MIN_STEP_MS     = 420;   /* never step faster than the slide itself */
+let lastAbs = 0, lastT = 0, lastStep = 0;
+
+function gestureStep(dir, absD){
+  const now = performance.now();
+  const decaying = absD <= lastAbs + 1 && (now - lastT) < SAME_GESTURE_MS;
+  lastAbs = absD; lastT = now;
+  if (decaying) return;                 /* the tail of the flick we already acted on */
+  if (now - lastStep < MIN_STEP_MS) return;
+  lastStep = now;
+  reelStep(dir);
+}
 
 /* A trackpad flick is not one event, it is a stream that keeps firing for 1-2s as the inertia
    decays. A fixed lockout expires part-way through that stream and the tail of the SAME flick
@@ -1007,11 +1026,6 @@ const QUIET_MS = 320;   /* how long the wheel must be silent before a NEW gestur
    starts when the step fires, the lock is released only once the wheel has been QUIET: every
    incoming event pushes the release further out, so one continuous flick can only ever be one
    step no matter how long its tail runs. */
-function holdUntilQuiet(){
-  clearTimeout(idleT);
-  idleT = setTimeout(() => { reelLock = false; }, QUIET_MS);
-}
-
 /* HARD SCROLL LOCK.
    preventDefault on wheel does not reliably cancel momentum that is already running, so the
    page kept creeping while the reel was active. The reel's range is only ~790px, so a few
@@ -1054,10 +1068,7 @@ addEventListener("wheel", e => {
   if (atEdge(dir)) { unlockScroll(); return; } /* hand the page back, upward only */
   e.preventDefault();
   if (!scrollLocked) lockScroll();             /* re-pin if we had released and came back */
-  const wasLocked = reelLock;
-  reelLock = true;
-  holdUntilQuiet();                            /* the whole inertia tail keeps it held */
-  if (!wasLocked) reelStep(dir);
+  gestureStep(dir, Math.abs(e.deltaY));
 }, { passive: false });
 
 addEventListener("keydown", e => {
@@ -1065,9 +1076,7 @@ addEventListener("keydown", e => {
   const dir = /Down|Right|PageDown| /.test(e.key) ? 1 : /Up|Left|PageUp/.test(e.key) ? -1 : 0;
   if (!dir || atEdge(dir)) return;
   e.preventDefault();
-  const wasLocked = reelLock;
-  reelLock = true; holdUntilQuiet();
-  if (!wasLocked) reelStep(dir);
+  gestureStep(dir, 999);        /* a keypress is always a fresh gesture */
 });
 
 let touchY = null;
@@ -1080,9 +1089,7 @@ addEventListener("touchmove", e => {
   if (atEdge(dir)) return;
   e.preventDefault();
   touchY = null;
-  const wasLocked = reelLock;
-  reelLock = true; holdUntilQuiet();
-  if (!wasLocked) reelStep(dir);
+  gestureStep(dir, 999);        /* one swipe already threshold-gated above */
 }, { passive: false });
 
 ScrollTrigger.create({
