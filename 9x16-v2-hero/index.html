@@ -613,6 +613,13 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* full-bleed inside the card: pulled out by the card's own padding so it meets both edges
    instead of floating inset from them */
 .sec__rule{height:1px; background:var(--line); margin:0 calc(-1 * var(--card-pad,34px));}
+/* the story animation. Sized by HEIGHT, not width: it is 9:16, so at card width it would be
+   576px tall in a 609px content box and there would be no room left for the copy. */
+.sec__vid{display:flex; justify-content:center;}
+.sec__vid video{height:var(--story-vid,200px); aspect-ratio:9/16; display:block;
+  object-fit:cover; background:var(--paper);}
+/* the Writer asked for +10px of card height on this slide — 5px each side of the block */
+[data-s="story"] .card{padding-block:calc(var(--card-pad,34px) + 5px);}
 
 /* stationary and centred, independent of whatever the aperture is currently doing */
 /* --apy is the crop box's offset from viewport centre. The headline rides it, otherwise it
@@ -961,8 +968,15 @@ body.reg #regout{display:block;}
             <p class="sec__eyebrow">our story</p>
             <h2 class="sec__h">every screen that ever mattered just got <span class="hl">taller.</span></h2>
             <p class="sec__rule"></p>
-            <p class="sec__b">Billboards, cinema, television, the desktop web — all of it built for a world that looked sideways. Then everyone turned the screen ninety degrees and never turned it back.</p>
-            <p class="sec__b">We only build for where they are actually looking.</p>
+            <p class="sec__b">Billboards, cinema, TV, the desktop web — all built for a world that looked sideways. Then everyone turned the screen and never turned it back.</p>
+            <p class="sec__b">We only build for where they&rsquo;re actually looking.</p>
+            <!-- 9:16 by construction (2000x3556). Muted + playsinline so it is allowed to
+                 start without a gesture; restarts from 0 on every landing, both directions. -->
+            <div class="sec__vid">
+              <video id="storyVid" muted playsinline preload="auto" disablepictureinpicture>
+                <source src="assets/story.mp4" type="video/mp4">
+              </video>
+            </div>
           </div></div>
         </section>
         <!-- 2 · TRUST — angled, criss-crossed wordmark bands. Logos are PLACEHOLDER slots. -->
@@ -1538,6 +1552,7 @@ function sizeSections(){
   root.style.setProperty("--card-pad",    gsap.utils.clamp(22, 42, w * 0.078) + "px");
   root.style.setProperty("--card-gap",    gsap.utils.clamp(16, 34, w * 0.060) + "px");
   root.style.setProperty("--band-h",      gsap.utils.clamp(54, 118, w * 0.205) + "px");
+  root.style.setProperty("--story-vid",   gsap.utils.clamp(140, 250, w * 0.58) + "px");
   /* the pavement either side of the phone, measured off the PHOTO not the screen — the
      mockup's bezel is wider than the glass, and a card that respects the glass instead of
      the body would ride onto the phone. The gutter clips size and sit off this. */
@@ -1771,6 +1786,7 @@ function setReelPhase(i){
   gridEl.style.setProperty("--grid-c", onOrange ? GRID_LIGHT : GRID_DARK);
   hlVert.style.visibility = onOrange ? "visible" : "hidden";
   workCards(REEL[i].dataset.s === "creative");
+  storyVid(REEL[i].dataset.s === "story");
   const onUnrel = REEL[i].dataset.s === "unrelated";
   playerLive(onUnrel);
   if (!onUnrel) closeChat();      /* a modal must never outlive the slide that opened it */
@@ -1814,6 +1830,17 @@ document.getElementById("vgut")?.addEventListener("click", e => {
 });
 /* the labelled slot only steps aside once a real file actually decodes */
 workClips().forEach(v => v.addEventListener("loadeddata", () => v.closest(".vc").classList.add("has-clip")));
+
+/* Restarts from 0 on every landing rather than resuming, so arriving from the trust strip
+   below gives the same beat as arriving from the hero above — the animation IS the section's
+   opening line, and a half-played one reads as a glitch. Declared as a function, and every
+   lookup is lazy, because setReelPhase runs during init. */
+function storyVid(on){
+  const v = document.getElementById("storyVid"); if (!v) return;
+  if (!on){ v.pause(); return; }
+  try { v.currentTime = 0; } catch (e) {}
+  v.play().catch(() => {});         /* muted + playsinline, so no gesture is required */
+}
 
 /* ── COMPLETELY UNRELATED · chat, cursor, player ──────────────────────────────────────
    Threads and quips are the live build's, verbatim. Same lazy-lookup rule as the work
