@@ -602,6 +602,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
   background:var(--snow); border:1px solid var(--line);
   /* the -40px spread made this all but invisible on white; pulled back so the card lifts */
   box-shadow:var(--card-shadow);
+  overflow:hidden;                /* the card is the clipping mask for the story animation */
   padding:var(--card-pad,34px);}
 .sec{display:flex; flex-direction:column; gap:var(--card-gap,26px);}
 .sec__eyebrow{font-family:"Switzer",sans-serif; font-weight:600; font-size:var(--sec-eyebrow,11px);
@@ -618,7 +619,10 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    The rest is empty, so the clip runs full card width and the box crops to that band:
    2000/720 is 20.2% of the source height, the content plus a sliver of air above it.
    object-position 50% 100% anchors the crop to the bottom. Re-measure if the clip changes. */
-.sec__vid{width:100%; aspect-ratio:2000 / 720; overflow:hidden;}
+/* full-bleed to the CARD's edges, pulled out by the card's own padding the same way
+   .sec__rule is. The card is the clipping mask: the character enters at the left border and
+   leaves at the right one, never touching the page behind it. */
+.sec__vid{margin:0 calc(-1 * var(--card-pad,34px)); aspect-ratio:2000 / 720; overflow:hidden;}
 .sec__vid video{width:100%; height:100%; display:block;
   object-fit:cover; object-position:50% 100%; background:transparent;}
 
@@ -1721,7 +1725,12 @@ function reelTo(i){
   setReelPhase(i);
   gsap.to(reelProxy, {
     y: i, duration: 0.5, ease: "power3.out", overwrite: true,   /* ease-OUT: moves at once */
-    onUpdate(){ root.style.setProperty("--reel-y", reelProxy.y.toFixed(4)); }
+    onUpdate(){ root.style.setProperty("--reel-y", reelProxy.y.toFixed(4)); },
+    /* on LANDING, not on departure — the clip is 2.33s and the slide takes 0.5s, so starting
+       it any earlier throws away a fifth of it behind a moving section. overwrite:true means
+       a fast flick past this slide kills the tween before it completes, so a skipped-through
+       story slide never fires. */
+    onComplete(){ if (REEL[i] && REEL[i].dataset.s === "story") storyPlay(); }
   });
 }
 
@@ -1786,7 +1795,7 @@ function setReelPhase(i){
   gridEl.style.setProperty("--grid-c", onOrange ? GRID_LIGHT : GRID_DARK);
   hlVert.style.visibility = onOrange ? "visible" : "hidden";
   workCards(REEL[i].dataset.s === "creative");
-  storyVid(REEL[i].dataset.s === "story");
+  storyArm();     /* rewound and held; reelTo starts it when the slide has landed */
   const onUnrel = REEL[i].dataset.s === "unrelated";
   playerLive(onUnrel);
   if (!onUnrel) closeChat();      /* a modal must never outlive the slide that opened it */
@@ -1835,9 +1844,17 @@ workClips().forEach(v => v.addEventListener("loadeddata", () => v.closest(".vc")
    below gives the same beat as arriving from the hero above — the animation IS the section's
    opening line, and a half-played one reads as a glitch. Declared as a function, and every
    lookup is lazy, because setReelPhase runs during init. */
-function storyVid(on){
+/* Armed on every phase change, played only once the slide has actually LANDED. Starting it
+   inside setReelPhase meant playback began the instant the reel started moving, so a third of
+   a 2.33s clip was spent behind a sliding section. Split in two: arm rewinds and holds on
+   frame 0, play runs it. Lazy lookups — setReelPhase runs during init. */
+function storyArm(){
   const v = document.getElementById("storyVid"); if (!v) return;
-  if (!on){ v.pause(); return; }
+  v.pause();
+  try { v.currentTime = 0; } catch (e) {}
+}
+function storyPlay(){
+  const v = document.getElementById("storyVid"); if (!v) return;
   try { v.currentTime = 0; } catch (e) {}
   v.play().catch(() => {});         /* muted + playsinline, so no gesture is required */
 }
