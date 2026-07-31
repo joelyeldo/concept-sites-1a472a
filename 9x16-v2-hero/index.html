@@ -633,9 +633,17 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .sec__vid{margin:0 calc(-1 * var(--card-pad,34px)) calc(-1 * var(--card-pad,34px));
   aspect-ratio:2000 / 800; overflow:hidden;}
 /* contain, not cover: box and source share a ratio, so this is a 1:1 fit and guarantees the
-   frames survive even if the export comes back a pixel off square. */
+   frames survive even if the export comes back a pixel off square.
+   blend DARKEN kills the white backing without re-exporting anything. The clip's background
+   encodes as rgb(253,255,255) — not the card's rgb(250,250,250), and with a faint cyan cast
+   from chroma subsampling — so it read as a pale rectangle sitting on the card. darken takes
+   min() per channel: anything lighter than the card becomes exactly the card, and every
+   darker pixel (black outlines, the orange, the grey frame) is untouched. Better than
+   matching the card to the video, because it keeps ONE white token for the whole site and
+   re-matches itself automatically if the card colour ever changes. */
 .sec__vid video{width:100%; height:100%; display:block;
-  object-fit:contain; object-position:50% 100%; background:transparent;}
+  object-fit:contain; object-position:50% 100%; background:transparent;
+  mix-blend-mode:darken;}
 
 /* stationary and centred, independent of whatever the aperture is currently doing */
 /* --apy is the crop box's offset from viewport centre. The headline rides it, otherwise it
