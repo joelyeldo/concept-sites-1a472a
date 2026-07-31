@@ -619,50 +619,62 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
   font-size:calc(var(--sec-body,15px)*.72); line-height:1.25;}
 
 /* ── WORK TOGETHER ────────────────────────────────────────────────────────────────────
-   Shares the founder's orange bento; only the last block differs. */
-.wwu{padding:calc(var(--card-pad,34px)*.6); display:flex; flex-direction:column;
-  align-items:flex-start; gap:.7em;}
-.wwu__cta{display:inline-block; background:var(--snow); color:var(--orange);
-  font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
-  font-size:calc(var(--sec-head,36px)*.46); letter-spacing:-.02em; text-decoration:none;
-  padding:.42em .7em; transition:transform .16s var(--ease-out);}
-.wwu__cta:active{transform:scale(.97);}
-.wwu__sub{font-family:"Switzer",sans-serif; color:rgba(255,255,255,.9); margin:0;
-  font-size:calc(var(--sec-body,15px)*.78);}
+   A plain white .card on the orange grid — the live mobile layout. Nothing bespoke here
+   except the CTA, which borrows the rectangular-cursor treatment from the joke cards so the
+   two read as the same gesture. */
+.cta{align-self:flex-start; display:inline-flex; align-items:stretch; height:38px;
+  background:var(--pitch); color:var(--snow); text-decoration:none;
+  transition:transform .16s var(--ease-out);}
+.cta:active{transform:scale(.97);}
+.cta__l{display:flex; align-items:center; padding:0 .9rem; white-space:nowrap;
+  font-family:"Switzer",sans-serif; font-weight:600; font-size:calc(var(--sec-body,15px)*.86);}
+.cta__a{display:grid; place-items:center; aspect-ratio:9/16;
+  border-left:1px solid rgba(255,255,255,.4);}
+.cta__a svg{width:14px; height:14px; transform:rotate(-45deg); transition:transform .3s var(--ease-out);}
+.cta:hover .cta__a svg{transform:rotate(0deg);}
+
+/* the continuous tail runs as one scroll, so mid-run slides do not each reserve the full
+   nav + home bands — that was stacking ~250px of dead air between the founder and this. */
+.rs--cont{padding-top:calc(var(--sec-pad,26px) + var(--status-band,0px) + var(--nav-band,0px));
+  padding-bottom:var(--sec-pad,26px);}
+[data-s="founder"]{padding-bottom:var(--sec-pad,26px) !important;}
+[data-s="footer"]{padding-bottom:calc(var(--sec-pad,26px) + var(--home-band,0px));}
 
 /* ── FOOTER ───────────────────────────────────────────────────────────────────────────
-   Black ground, matching the form pages. Its own white grid, like the trust strip. */
+   Black ground with its OWN grid: two verticals framing the column and a hairline under
+   each block. Not the page's 6-column grid — this one is structural, per the reference. */
 .rs--pitchbg{background:var(--pitch);}
-.rs--pitchbg::before{content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
-  background-image:linear-gradient(to right, rgba(255,255,255,.13) 0 1px, transparent 1px),
-                   linear-gradient(to bottom, rgba(255,255,255,.13) 0 1px, transparent 1px);
-  background-size:var(--cell-w) 100%, 100% var(--cell-h);
-  background-position:calc(50% + var(--cell-w)/2) 0, 0 calc(50% - .5px);}
-.foot{position:relative; z-index:1; width:100%; display:flex; flex-direction:column;
-  gap:calc(var(--card-gap,26px)*.42);}
+.foot{position:relative; z-index:1; width:100%; display:flex; flex-direction:column;}
+.foot__v{position:absolute; top:0; bottom:0; width:1px; background:rgba(255,255,255,.16);}
+.foot__v--l{left:0;} .foot__v--r{right:0;}
+.foot__b{padding:calc(var(--card-pad,34px)*.52) calc(var(--card-pad,34px)*.5);
+  border-bottom:1px solid rgba(255,255,255,.16); display:flex; flex-direction:column;
+  gap:calc(var(--card-gap,26px)*.3);}
+.foot__b:last-child{border-bottom:none;}
+.foot__b--soc{flex-direction:row; gap:.55em;}
+.foot__b--end{flex-direction:row; justify-content:space-between; align-items:center;
+  font-family:"Switzer",sans-serif; font-size:calc(var(--sec-body,15px)*.66);
+  color:rgba(255,255,255,.42); letter-spacing:.02em;}
 .foot__tag{font-family:"Clash Display",sans-serif; font-weight:600; color:var(--snow);
-  font-size:calc(var(--sec-head,36px)*.8); line-height:1.08; letter-spacing:-.03em;
+  font-size:calc(var(--sec-head,36px)*.78); line-height:1.06; letter-spacing:-.03em;
   text-transform:lowercase; margin:0;}
-.foot__tag .hl, .foot__hours .hl{background:var(--orange); color:var(--snow); padding:0 .12em;}
-.foot__note{font-family:"Switzer",sans-serif; color:rgba(255,255,255,.72); margin:0;
-  font-size:calc(var(--sec-body,15px)*.84); line-height:1.45; max-width:30ch;}
+.foot__tag .hl{background:var(--orange); color:var(--snow); padding:0 .12em;}
+.foot__note{font-family:"Switzer",sans-serif; color:rgba(255,255,255,.68); margin:0;
+  font-size:calc(var(--sec-body,15px)*.82); line-height:1.45; max-width:32ch;}
 .foot__email{font-family:"Clash Display",sans-serif; font-weight:600; color:var(--snow);
-  font-size:calc(var(--sec-head,36px)*.42); letter-spacing:-.02em; text-decoration:none;
-  border-bottom:2px solid var(--orange); align-self:flex-start; padding-bottom:.06em;}
+  font-size:calc(var(--sec-head,36px)*.4); letter-spacing:-.02em; text-decoration:none;
+  align-self:flex-start;}
 .foot__addr{font-family:"Switzer",sans-serif; color:rgba(255,255,255,.62); margin:0;
   font-size:calc(var(--sec-body,15px)*.76); line-height:1.5;}
 .foot__addr a{color:inherit; text-decoration:none;}
-/* the 24x7 gag the brief asked for, built off the wordmark itself */
-.foot__hours{font-family:"Clash Display",sans-serif; font-weight:600; color:var(--snow);
-  text-transform:lowercase; font-size:calc(var(--sec-body,15px)*.98); letter-spacing:-.01em; margin:0;}
-.foot__social{display:flex; gap:.55em;}
+.foot__hours{font-family:"Switzer",sans-serif; color:rgba(255,255,255,.62); margin:0;
+  font-size:calc(var(--sec-body,15px)*.76); line-height:1.5;}
 .foot__ic{width:30px; height:30px; display:grid; place-items:center; color:var(--snow);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.28); transition:background-color .2s var(--ease-out);}
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.24); transition:background-color .2s var(--ease-out);}
 .foot__ic svg{width:15px; height:15px;}
 .foot__ic:hover{background:var(--orange); box-shadow:none;}
-.foot__domain{font-family:"Switzer",sans-serif; font-weight:600; letter-spacing:.16em;
-  text-transform:uppercase; color:rgba(255,255,255,.42); margin:0;
-  font-size:calc(var(--sec-body,15px)*.68);}
+.foot__domain{font-family:"Switzer",sans-serif; font-weight:600; letter-spacing:.1em;
+  text-transform:lowercase; color:rgba(255,255,255,.55);}
 
 /* ── THE REEL ─────────────────────────────────────────────────────────────────────────
    Once the hero lands, the whole site plays inside the phone screen: each section is one
@@ -1258,36 +1270,46 @@ body.reg #regout{display:block;}
             </div>
           </div>
         </section>
-        <!-- 7 · WORK TOGETHER — orange ground like the founder. No scarcity counter, no
-             pricing or custom-scope language: the reason to act is one concrete next step. -->
-        <section class="rs rs--built rs--flame" data-s="together" style="top:700%">
-          <div class="fnd">
-            <div class="fnd__hd">
-              <p class="sec__eyebrow">work with us</p>
-              <h2 class="fnd__h">tell us what you&rsquo;re <span class="hl">building.</span></h2>
-              <p class="fnd__lede">One email, one reply. If we&rsquo;re right for it we&rsquo;ll say so — and if we&rsquo;re not, we&rsquo;ll say that too.</p>
-            </div>
-            <div class="wwu">
-              <a class="wwu__cta" href="mailto:arsi@9x16.studio">arsi@9x16.studio</a>
-              <p class="wwu__sub">Mon&ndash;Sat, 11 AM &ndash; 7 PM &middot; Mumbai, India</p>
-            </div>
-          </div>
+        <!-- 7 · WORK TOGETHER — white card on the orange grid, per the live mobile layout.
+             No scarcity counter, no pricing or custom-scope language. Contact details are
+             deliberately NOT here; they belong to the footer.
+             TITLE + CTA COPY ARE PLACEHOLDERS pending the Writer's pick. -->
+        <section class="rs rs--built rs--flame rs--cont" data-s="together" style="top:700%">
+          <div class="card"><div class="sec">
+            <p class="sec__eyebrow">work with us</p>
+            <h2 class="sec__h">tell us what you&rsquo;re <span class="hl">building.</span></h2>
+            <p class="sec__rule"></p>
+            <p class="sec__b">One email, one reply. If we&rsquo;re right for it we&rsquo;ll say so — and if we&rsquo;re not, we&rsquo;ll say that too.</p>
+            <a class="cta" href="#apply">
+              <span class="cta__l">start a project</span>
+              <span class="cta__a"><svg viewBox="0 0 24 24"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </a>
+          </div></div>
         </section>
 
-        <!-- 8 · FOOTER — black ground, the sign-off and contact block. -->
-        <section class="rs rs--built rs--pitchbg" data-s="footer" style="top:800%">
+        <!-- 8 · FOOTER — black ground. Its grid is NOT the page grid: two verticals framing
+             the column and a hairline under each block, white on black. -->
+        <section class="rs rs--built rs--pitchbg rs--cont" data-s="footer" style="top:800%">
           <div class="foot">
-            <h2 class="foot__tag">attention made <span class="hl">9x16</span></h2>
-            <p class="foot__note">Tell us what you&rsquo;re building. If it&rsquo;s a fit, you&rsquo;ll hear from us quickly.</p>
-            <a class="foot__email" href="mailto:arsi@9x16.studio">arsi@9x16.studio</a>
-            <p class="foot__addr"><a href="tel:+918369325960">+91 83693 25960</a><br>Mumbai, India</p>
-            <p class="foot__hours">open <span class="hl">9&thinsp;&times;&thinsp;16</span>, answering <span class="hl">24&thinsp;&times;&thinsp;7</span></p>
-            <div class="foot__social" aria-label="Social links">
+            <span class="foot__v foot__v--l" aria-hidden="true"></span>
+            <span class="foot__v foot__v--r" aria-hidden="true"></span>
+            <div class="foot__b">
+              <h2 class="foot__tag">attention made <span class="hl">9x16</span></h2>
+              <p class="foot__note">Tell us what you&rsquo;re building. If it&rsquo;s a fit, you&rsquo;ll hear from us quickly.</p>
+            </div>
+            <div class="foot__b">
+              <a class="foot__email" href="mailto:arsi@9x16.studio">arsi@9x16.studio</a>
+              <p class="foot__addr"><a href="tel:+918369325960">+91 83693 25960</a><br>Mumbai, India</p>
+              <p class="foot__hours">Mon&ndash;Sat, 11&ndash;7. Replies tend to arrive outside that.</p>
+            </div>
+            <div class="foot__b foot__b--soc">
               <a class="foot__ic" href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg></a>
               <a class="foot__ic" href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="5" width="20" height="14" rx="3.5"/><path d="M10.2 8.7l5 3.3-5 3.3z" fill="currentColor" stroke="none"/></svg></a>
-              <a class="foot__ic" href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4"/></svg></a>
+              <a class="foot__ic" href="#" aria-label="X"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 4l16 16M20 4L4 20"/></svg></a>
             </div>
-            <p class="foot__domain">9x16.studio</p>
+            <div class="foot__b foot__b--end">
+              <span>&copy; 2026 9x16. All rights reserved.</span><span class="foot__domain">9x16.studio</span>
+            </div>
           </div>
         </section>
 
