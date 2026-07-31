@@ -625,21 +625,20 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    bottom edge rather than sitting on a strip of padding. Reclaiming that bottom padding also
    takes the card back under the slide height; it was overflowing, and the aperture was
    cutting the bottom off the animation. */
-/* WHERE THIS WINDOW COMES FROM — measured, and worth keeping if the clip is ever re-cut.
-   Differencing two mid-animation frames separates the moving character from the frames:
-     character   rows 264-319 of 320  =  82.5% - 100% of source height
-     his torso   ~92%                    (55% down his body)
-   The card's bottom edge must land on his TORSO, not on his feet, so the window stops at
-   93% of the source instead of 100% — his legs fall below the card and he reads as walking
-   along its bottom border. The strip covers 15% of source height, i.e. 78% -> 93%, which
-   also lifts the frames off the bottom edge.
-     band f = 0.15            -> aspect-ratio 2000 / (3556 x 0.15) = 2000/533
-     object-position Y = (cut - f) / (1 - f) = (0.93 - 0.15) / 0.85 = 91.8%
-   Re-derive both with that formula if you move the cut. */
+/* WHERE THIS WINDOW COMES FROM — read off the actual frames, not inferred. Rendering the
+   source with percentage gridlines shows:
+     frames     82% - 98.5% of source height (tallest once they rotate upright)
+     character  head at 89.5%, body running PAST 100% — the source itself cuts him mid-torso
+   So the window has to end at 100%: that is where his torso already is, and anything less
+   slices the frames in half. 18% of source height, i.e. 82% -> 100%, gives the frames a
+   sliver of air above and puts his torso on the card's bottom edge.
+     band f = 0.18            -> aspect-ratio 2000 / (3556 x 0.18) = 2000/640
+     object-position Y = (cut - f) / (1 - f) = (1.00 - 0.18) / 0.82 = 100%
+   Re-derive both with that formula if the clip is ever re-cut. */
 .sec__vid{margin:0 calc(-1 * var(--card-pad,34px)) calc(-1 * var(--card-pad,34px));
-  aspect-ratio:2000 / 533; overflow:hidden;}
+  aspect-ratio:2000 / 640; overflow:hidden;}
 .sec__vid video{width:100%; height:100%; display:block;
-  object-fit:cover; object-position:50% 91.8%; background:transparent;}
+  object-fit:cover; object-position:50% 100%; background:transparent;}
 
 /* stationary and centred, independent of whatever the aperture is currently doing */
 /* --apy is the crop box's offset from viewport centre. The headline rides it, otherwise it
