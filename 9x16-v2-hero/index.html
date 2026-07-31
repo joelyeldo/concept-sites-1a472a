@@ -630,7 +630,10 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    border by construction. Bled to the card's left, right and bottom edges, so the video
    rests on the bottom border and the card is the mask. If the clip is ever re-exported at a
    different size, change this one ratio to match it. */
-.sec__vid{margin:0 calc(-1 * var(--card-pad,34px)) calc(-1 * var(--card-pad,34px));
+/* +3px lifts the clip off the bottom border. Flush, the card's own 1px border sat on the
+   clip's last row of pixels and clipped the corners of the frames at the point in the
+   rotation where they reach furthest down. */
+.sec__vid{margin:0 calc(-1 * var(--card-pad,34px)) calc(-1 * var(--card-pad,34px) + 3px);
   aspect-ratio:2000 / 800; overflow:hidden;}
 /* contain, not cover: box and source share a ratio, so this is a 1:1 fit and guarantees the
    frames survive even if the export comes back a pixel off square.
@@ -1813,8 +1816,11 @@ function setReelPhase(i){
   hlVert.style.visibility = onOrange ? "visible" : "hidden";
   workCards(REEL[i].dataset.s === "creative");
   storyArm();     /* rewound and held... */
-  /* ...then cued to start as the slide lands. 520ms = the reel tween's 0.5s plus a frame. */
-  if (REEL[i].dataset.s === "story") storyCueIn(520);
+  /* ...then cued almost immediately. This was 520ms — waiting for the reel tween to land —
+     but that stacks on top of the gesture gate and the 0.5s slide, so it read as a second or
+     two of dead air. 120ms is just enough to not fire before the section has started moving;
+     the character walking in while the card arrives is the right beat anyway. */
+  if (REEL[i].dataset.s === "story") storyCueIn(120);
   const onUnrel = REEL[i].dataset.s === "unrelated";
   playerLive(onUnrel);
   if (!onUnrel) closeChat();      /* a modal must never outlive the slide that opened it */
@@ -1881,7 +1887,9 @@ function storyCueIn(ms){
 function storyPlay(){
   const v = document.getElementById("storyVid"); if (!v) return;
   const go = () => {
-    try { v.currentTime = 0; } catch (e) {}
+    /* storyArm already rewound it. Seeking again costs a decode round-trip before the first
+       frame can show, which is dead time on top of the cue delay — only seek if it drifted. */
+    if (v.currentTime > 0.02) { try { v.currentTime = 0; } catch (e) {} }
     const p = v.play();             /* muted + playsinline, so no gesture is required */
     /* do NOT swallow this. A rejected play() is the difference between "the animation is
        broken" and "this browser cannot decode an alpha MP4", and we need to tell them apart. */
