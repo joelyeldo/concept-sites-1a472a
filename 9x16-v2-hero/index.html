@@ -656,7 +656,8 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    screen boundary. Founder itself stays a full slide: it is the last snap target. */
 .rs.rs--cont{height:auto; align-items:stretch;
   padding-top:var(--sec-pad,26px); padding-bottom:var(--sec-pad,26px);}
-.rs[data-s="footer"]{padding-bottom:calc(var(--sec-pad,26px) + var(--home-band,0px));}
+.rs[data-s="footer"]{align-items:center; padding-left:0; padding-right:0;
+  padding-bottom:calc(var(--sec-pad,26px) + var(--home-band,0px));}
 /* top-aligned rather than centred, so the air under the navbar is a number we set instead of
    whatever half the leftover happens to be. The tail follows this card, so moving it moves
    work-with-us and the footer with it. */
@@ -667,11 +668,12 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    Black ground with its OWN grid: two verticals framing the column and a hairline under
    each block. Not the page's 6-column grid — this one is structural, per the reference. */
 .rs--pitchbg{background:var(--pitch);}
-/* full-bleed HERE, not on the blocks. Percentage padding resolves against the containing
-   block, so `9%` set on a block inside the padded .foot meant 9% of 340px, not of the 398px
-   section the verticals are drawn on — the text landed 5px short and crossed every rule. */
-.foot{position:relative; z-index:1; width:100%; display:flex; flex-direction:column;
-  margin:0 calc(-1 * var(--sec-pad,26px));}
+/* The section drops its own side padding for the footer (below), so .foot IS the full width
+   of the black fill. That matters because percentage padding resolves against the containing
+   block: `9%` on a block inside a padded .foot meant 9% of 340px, not of the 398px the
+   verticals are drawn on, and every line of text sat 5px short and crossed a rule. Negative
+   margins do not fix it either — they shift a flex item, they do not widen it. */
+.foot{position:relative; z-index:1; width:100%; display:flex; flex-direction:column;}
 /* The live footer's two rules — 9% and 91% — running the full height of the black fill,
    top edge to bottom edge. On the SECTION, not the inner column, so they span the whole
    fill rather than just the text block. */
