@@ -440,28 +440,26 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    Header on the bare grid, then three stacked cards. Every other slide puts its type in
    one card, but this slide has three of them — a fourth around the header would read as a
    stack of panels instead of a feed, which is the opposite of what "unrelated" wants. */
-/* flex-start, not centre: the header anchors just under the nav band and the card grows
-   downward. Centring meant any overflow pushed the title up behind the navbar. */
-.unrel{height:100%; display:flex; flex-direction:column; justify-content:flex-start;
-  gap:calc(var(--card-gap,26px)*.85); overflow:hidden;}
-.unrel__hd{flex:0 0 auto;}
+/* The card is the whole section now — title block included — so it just centres itself in
+   the space .rs--built leaves between the nav band and the home band. */
+.unrel{height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+.unrel__hd{flex:0 0 auto; padding:calc(var(--card-pad,34px)*.62);}
 .unrel__sub{font-family:"Switzer",sans-serif; font-size:calc(var(--sec-body,15px)*.92);
   line-height:1.5; color:var(--slate); margin:.55em 0 0;}
-/* ONE card, partitioned — not three stacked cards. Shared outer border and a single shadow;
-   the blocks are separated by hairlines, the way the bento boxes on the live site are. It
-   grows to fill the slide so the section is not mostly empty screen. */
-.ubento{flex:1 1 auto; min-height:0; display:flex; flex-direction:column;
+/* ONE card, partitioned — title, two jokes, player. Shared outer border and a single
+   shadow; blocks are separated by hairlines, like the bento boxes on the live site.
+   flex:0 1 auto, NOT 1 1: the card takes its natural height and centres, rather than
+   stretching to fill and inflating the blocks to do it. */
+.ubento{flex:0 1 auto; width:100%; max-height:100%; display:flex; flex-direction:column;
   background:var(--snow); border:1px solid var(--line);
   box-shadow:0 26px 60px -22px rgba(16,12,8,.28);}
 /* :not(:first-child) rather than `* + *` on purpose — the blocks below set `border:none`,
    and at equal specificity the later rule wins and the partitions vanish. */
 .ubento > *:not(:first-child){border-top:1px solid var(--line);}
-/* The two jokes share the card's spare height between them. This was safe to do only once
-   .rs--built started reserving the nav band: before that the stack overflowed and the
-   growth went into pushing the header up behind the navbar. */
-.ucard{flex:1 1 auto; display:flex; gap:.75em; align-items:center; cursor:pointer;
+/* natural height again — the card no longer stretches, so neither should the blocks */
+.ucard{flex:0 0 auto; display:flex; gap:.75em; align-items:flex-start; cursor:pointer;
   background:transparent; border:none; box-shadow:none;
-  padding:calc(var(--card-pad,34px)*.62) calc(var(--card-pad,34px)*.62);
+  padding:calc(var(--card-pad,34px)*.55) calc(var(--card-pad,34px)*.62);
   transition:background-color .3s var(--ease-out);}
 .ucard:hover, .ucard:focus-visible{background:var(--orange); outline:none;}
 .ucard:hover p, .ucard:focus-visible p{color:#fff;}
@@ -477,7 +475,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* no margin-top:auto — that parked the player at the bottom and pooled every spare pixel
    into one dead gap above it. The jokes absorb the slack instead. */
 .pcard{flex:0 0 auto; background:transparent; border:none; box-shadow:none;
-  padding:calc(var(--card-pad,34px)*.72) calc(var(--card-pad,34px)*.62);}
+  padding:calc(var(--card-pad,34px)*.62) calc(var(--card-pad,34px)*.62);}
 .pcard__lab{font-family:"Switzer",sans-serif; font-weight:600; color:var(--mute); margin:0 0 .7em;
   font-size:var(--sec-eyebrow,11px); letter-spacing:.18em; text-transform:uppercase;}
 .pcard__row{display:flex; gap:.85em; align-items:center;}
@@ -1013,13 +1011,13 @@ body.reg #regout{display:block;}
              chat; the eyebrow ("the group chat") is doing double duty as the affordance. -->
         <section class="rs rs--built" data-s="unrelated" style="top:500%">
           <div class="unrel">
+            <div class="ubento">
             <div class="unrel__hd">
               <p class="sec__eyebrow">the group chat</p>
               <h2 class="sec__h">things that never made <span class="hl">the deck.</span></h2>
               <p class="unrel__sub">None of this will help you decide. All of it is true.</p>
             </div>
 
-            <div class="ubento">
             <article class="ucard" data-chat="0" role="button" tabindex="0">
               <span class="ucard__sq" aria-hidden="true"></span>
               <p>Our founder does four-digit multiplication in his head and loses his phone twice a day.</p>
