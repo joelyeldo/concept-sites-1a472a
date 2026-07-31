@@ -606,7 +606,9 @@ function setPhase(p){
   hlVert.style.setProperty("--vh-fg", gsap.utils.interpolate("#FAFAFA", "#FF7B00", warm));
 
   apEl.style.backgroundColor = `rgba(255,123,0,${warm})`;
-  gridEl.style.setProperty("--grid-c", gsap.utils.interpolate(GRID_DARK, GRID_LIGHT, warm));
+  /* only when the reel is not driving it — otherwise the morph's last frame keeps re-applying
+     the WHITE it needs for the orange screen and the reel's grey never sticks */
+  if (!reelActive) gridEl.style.setProperty("--grid-c", gsap.utils.interpolate(GRID_DARK, GRID_LIGHT, warm));
   /* chrome stays dark on white — the status bar and home indicator do not change with whatever
      the app is doing inside, which is the whole point of them reading as the phone's own UI */
 }
@@ -1100,9 +1102,11 @@ ScrollTrigger.create({
     reelActive = self.isActive;
     reelEl.style.opacity = self.isActive ? 1 : 0;
     if (self.isActive) lockScroll(); else unlockScroll();
-    /* deactivation can now only mean "scrolled back up into the hero", so resetting to the
-       orange slide is correct — re-entering from the hero should land on it again. */
-    if (!self.isActive) reelTo(0);
+    /* NO reset here. The only intentional way out is slide 0 scrolling up, so reelIdx is
+       already 0 whenever a genuine exit happens — the reset was redundant. It was also
+       harmful: a hard upward flick can push the scroll out of range for a frame before the
+       pin restores it, and ScrollTrigger samples on its own ticker, so it saw the excursion,
+       fired inactive, and slammed the reel back to the orange from wherever you were. */
     setReelPhase(reelIdx);
   }
 });
