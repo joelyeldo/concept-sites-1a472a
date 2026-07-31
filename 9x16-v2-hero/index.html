@@ -103,6 +103,13 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .nav.is-glass .nav__logo--light{display:none;}
 .nav.is-glass .nav__logo--dark{display:block;}
 .nav.is-open{z-index:90;}
+/* The hero headline lives at z9 in the pin and the menu at z6, so an open menu had "it's a
+   9x16 world now" printed straight through it. Re-layering is not the fix — the iOS chrome
+   has to stay above the menu — so the headline fades out while the menu is open. The fade
+   is on the WRAPPER: the morph writes opacity AND visibility inline on the h1s themselves
+   and inline beats any rule here, but a parent's opacity is not something a child escapes. */
+.headline{transition:opacity .2s var(--ease-out);}
+:root.menu-open .headline{opacity:0; pointer-events:none;}
 
 /* v1's mobile overlay, styles.css:157-182 — orange, wipes in from the RIGHT, one link per
    9:16 grid row, tap fills the row white. Clipped to the phone screen instead of the viewport,
@@ -1614,6 +1621,7 @@ function closeMenu(){
   navEl.classList.remove("is-open"); m.classList.remove("is-open");
   b.classList.remove("is-open");          /* v1 puts is-open on the BUTTON — that's the X selector */
   b.setAttribute("aria-expanded", "false"); m.setAttribute("aria-hidden", "true");
+  document.documentElement.classList.remove("menu-open");
 }
 burgerEl.addEventListener("click", () => {
   const open = !navEl.classList.contains("is-open");
@@ -1622,6 +1630,7 @@ burgerEl.addEventListener("click", () => {
   burgerEl.classList.toggle("is-open", open);
   burgerEl.setAttribute("aria-expanded", String(open));
   menuEl.setAttribute("aria-hidden", String(!open));
+  document.documentElement.classList.toggle("menu-open", open);
 });
 addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
 
