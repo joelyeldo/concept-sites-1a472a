@@ -98,6 +98,22 @@ fieldset[hidden]{display:none;}
 .chips label:has(input:focus-visible){outline:2px solid var(--orange); outline-offset:-2px;}
 
 .cell--send{flex-direction:row; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;}
+.acts{display:flex; align-items:stretch; gap:.7rem; flex-wrap:wrap;}
+/* the back button inverts the send: white with grey partitions at rest, black with white
+   ones on hover, and its arrow tile sits on the LEFT because it goes the other way. */
+.back{display:inline-flex; align-items:stretch; height:52px; text-decoration:none;
+  background:var(--snow); color:var(--pitch); box-shadow:inset 0 0 0 1px var(--line);
+  transition:background-color .22s var(--ease-out), color .22s var(--ease-out),
+             box-shadow .22s var(--ease-out), transform .16s var(--ease-out);}
+.back:hover{background:var(--pitch); color:var(--snow); box-shadow:inset 0 0 0 1px var(--pitch);}
+.back:active{transform:scale(.985);}
+.back__a{align-self:stretch; width:32px; display:flex; align-items:center; justify-content:center;
+  border-right:1px solid var(--line); transition:border-color .22s var(--ease-out);}
+.back:hover .back__a{border-right-color:rgba(255,255,255,.4);}
+.back__a svg{width:16px; height:16px; transform:rotate(45deg); transition:transform .3s var(--ease-out);}
+.back:hover .back__a svg{transform:rotate(0deg);}
+.back__l{display:flex; align-items:center; padding:0 1.3rem; white-space:nowrap;
+  font-family:"Switzer",sans-serif; font-weight:600; font-size:1rem;}
 .send{display:inline-flex; align-items:stretch; height:52px;
   background:var(--pitch); color:var(--snow); border:none; padding:0; cursor:pointer;
   transition:background-color .22s var(--ease-out), transform .16s var(--ease-out);}
@@ -111,9 +127,11 @@ fieldset[hidden]{display:none;}
 .send:hover .send__a svg{transform:rotate(0deg);}
 .note{font-size:.86rem; color:var(--mute); margin:0;}
 
+/* on success the card becomes ONE block: the ask, the routes and the form all step aside so
+   the confirmation is not sitting underneath a form you already filled in. */
 .done{display:none; background:var(--snow); padding:clamp(2.4rem,5vw,4rem) clamp(1.4rem,3vw,2.6rem);}
 .done.is-on{display:block;}
-form.is-off{display:none;}
+.is-off{display:none !important;}
 .done__h{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
   font-size:clamp(1.9rem,4.4vw,3rem); line-height:1.05; letter-spacing:-.03em; margin:0;}
 .done__p{color:var(--slate); margin:1rem 0 0; max-width:44ch; line-height:1.55;}
@@ -266,15 +284,22 @@ form.is-off{display:none;}
         </fieldset>
 
         <div class="cell cell--send">
-          <button class="send" type="submit">
-            <span class="send__l">send it over</span>
-            <span class="send__a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          </button>
+          <div class="acts">
+            <a class="back" href="index.html">
+              <span class="back__a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H7M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="back__l">go back</span>
+            </a>
+            <button class="send" type="submit">
+              <span class="send__l">send it over</span>
+              <span class="send__a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </button>
+          </div>
           <p class="note">No pitch decks required. One reply either way.</p>
         </div>
       </form>
 
       <div class="done" id="done" role="status" aria-live="polite">
+        <p class="eyebrow">get in touch</p>
         <h2 class="done__h">thanks, we&rsquo;ll be in <span class="hl">touch.</span></h2>
         <p class="done__p">We read every one of these by hand, so give us a day or two. If it&rsquo;s a fit you&rsquo;ll hear from us quickly &mdash; and if it isn&rsquo;t, you&rsquo;ll hear that too.</p>
       </div>
@@ -342,7 +367,11 @@ form.is-off{display:none;}
        exactly what shape to expect; nothing is sent anywhere yet. */
     const payload = Object.fromEntries(new FormData(form).entries());
     console.info("apply.html — form payload (no endpoint wired yet):", payload);
+    /* the whole ask steps aside, not just the form — otherwise the confirmation reads as a
+       note appended under a form you have already sent. */
     form.classList.add("is-off");
+    document.querySelector(".chead").classList.add("is-off");
+    document.querySelector(".routes").classList.add("is-off");
     document.getElementById("done").classList.add("is-on");
     document.getElementById("done").scrollIntoView({ behavior:"smooth", block:"center" });
   });
