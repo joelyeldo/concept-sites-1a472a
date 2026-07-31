@@ -549,6 +549,12 @@ body.reg #regout{display:block;}
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script>
+/* A throw here leaves the page looking merely "broken" — CSS renders, nothing moves — with no
+   error surfaced anywhere obvious. Shout about it. */
+addEventListener("error", e => console.error(
+  "9x16 hero — SCRIPT DIED AT STARTUP:", e.message,
+  "\n(a `let` used by an early function but declared later will do exactly this)"));
+
 gsap.registerPlugin(ScrollTrigger);
 
 const reduce  = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -563,6 +569,13 @@ let lastP = 0;
    lastP: setAperture() reads it and runs during init, above the cycle section where this used
    to live — so it hit the temporal dead zone and took the whole script down with it. */
 let screenH0 = 0;
+
+/* Whether the reel currently owns input and the grid colour. Declared HERE, with the rest of
+   the mutable state, because setPhase() reads it and setPhase runs during init — far above
+   where the reel is set up. This is the third time a `let` used by an early function has been
+   declared next to the code that owns it instead of up here, and each time the temporal dead
+   zone killed the whole script at startup. All shared mutable state lives in this block. */
+let reelActive = false;
 const bodies  = [...document.querySelectorAll(".body")];
 const props   = [...document.querySelectorAll(".prop")];
 const apEl    = document.getElementById("aperture");
@@ -1000,7 +1013,6 @@ function reelTo(i){
    step, with a lockout for the length of the slide. At the first section scrolling up, and the
    last scrolling down, we do NOT preventDefault — the page takes over again so you can get
    back into the hero or out of the reel. */
-let reelActive = false;
 /* GESTURE DETECTION, not a silence timer.
    Waiting for the wheel to go quiet does stop one flick double-stepping, but the inertia tail
    runs for a second or more — so a quick second flick lands inside it and gets swallowed, and
