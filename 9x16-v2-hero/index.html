@@ -384,6 +384,108 @@ body.reg #regout{display:block;}
 
 .cue{position:absolute; left:50%; bottom:1.8rem; transform:translateX(-50%); z-index:6; font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); font-weight:600;}
 
+/* ── BUILT SECTIONS 2–8 ───────────────────────────────────────────────────────────────
+   All sit on the white screen (only slide 0 is orange) and ride .rs--built's band-safe
+   padding + the --sec-* scale. Card sections reuse .card/.sec; trust, dashboard and footer
+   carry their own layout because the brief (D18) asks for a specific treatment. Copy is a
+   DRAFT off the locked voice — narrative is the Writer's, every string swaps in one place. */
+
+/* 2 · TRUST — wordmark bands, angled and CRISS-CROSSED (not a parallel logo strip): each
+   band tilts the opposite way and bleeds past the screen edges, which the aperture clips.
+   Logos are PLACEHOLDER slots (Acme/Contoso/… = the universal "this is fake" names) — swap
+   for real client marks. */
+.trust{flex-direction:column; justify-content:center; gap:var(--sec-gap,18px); overflow:hidden;}
+/* ── TRUST BANDS ──────────────────────────────────────────────────────────────────────
+   Real client marks from the live site, in three bands that actually CRISS-CROSS. Three
+   near-parallel rows at -5/4/-3deg only read as "slightly wonky"; the crossings come from
+   the DIFFERENCE between angles plus overlapping vertical positions, so the spread is wide
+   (-14 / +11 / -6) and the bands sit on top of each other rather than stacking.
+   Each band is 240% of screen width so its ends never rotate into view.
+   The marquees run on CSS animation, independent of scroll, so the section is alive while
+   it just sits there. Two identical halves make the -50% keyframe loop seamlessly. */
+.trust__k{position:relative; z-index:2; margin:0 auto; text-align:center; max-width:26ch;
+  background:var(--snow); border:1px solid var(--line);
+  box-shadow:0 26px 60px -22px rgba(16,12,8,.28); padding:var(--card-pad,34px);}
+.trust__bands{position:absolute; inset:0; z-index:0; overflow:hidden;}
+.band{
+  position:absolute; left:50%; width:240%; height:var(--band-h,92px);
+  display:flex; align-items:center; overflow:hidden;
+  background:var(--snow); border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  box-shadow:0 18px 40px -30px rgba(16,12,8,.4);
+}
+.band--a{top:14%; transform:translateX(-50%) rotate(-14deg);}
+.band--b{top:42%; transform:translateX(-50%) rotate(11deg);}
+.band--c{top:70%; transform:translateX(-50%) rotate(-6deg);}
+.btrack{display:flex; align-items:center; height:100%; width:max-content;
+  animation:bscroll var(--dur,46s) linear infinite;}
+.btrack--rev{animation-direction:reverse;}
+@keyframes bscroll{ to { transform:translateX(-50%); } }
+.logo{flex:none; display:grid; place-items:center; height:100%;
+  padding:0 calc(var(--band-h,92px)*.30); border-right:1px solid var(--line);}
+.logo img{height:calc(var(--band-h,92px)*.30); width:auto;
+  max-width:calc(var(--band-h,92px)*1.9); object-fit:contain; opacity:.9;}
+.logo img.sq{height:calc(var(--band-h,92px)*.42); max-width:calc(var(--band-h,92px)*1.0);}
+@media (prefers-reduced-motion:reduce){ .btrack{animation:none;} }
+
+/* 3 · DASHBOARD — phone-native. A stat header + ONE area chart, then nothing: the live
+   version kept going (gauge, trailing stats) until it overflowed the 437px column. Cut after
+   the graph, per the brief. Cardless — reads as an app view. Numbers are PLACEHOLDER slots. */
+.dash{flex-direction:column; justify-content:center; gap:var(--card-gap,22px);}
+.dash__stats{display:grid; grid-template-columns:repeat(3,1fr); gap:.5rem;}
+.stat__v{font-family:"Clash Display",sans-serif; font-weight:600; letter-spacing:-.02em; line-height:1;
+  font-size:calc(var(--sec-head,32px)*.6);}
+.stat__l{font-size:calc(var(--sec-body,14px)*.7); color:var(--mute); letter-spacing:.03em; margin-top:.3em;}
+.stat__d{color:#1a7f37; font-weight:600;}
+.chart{width:100%; height:auto; display:block;}
+.chart__line{fill:none; stroke:var(--orange); stroke-width:2.5; stroke-linejoin:round; stroke-linecap:round;}
+.chart__x{font-size:8px; fill:var(--mute); font-family:"Switzer",sans-serif;}
+.chart__base{stroke:var(--line); stroke-width:1;}
+
+/* 4 · CREATIVE — the card + a row of 9:16 poster slots for the real work. */
+.work{display:grid; grid-template-columns:repeat(3,1fr); gap:calc(var(--card-gap,22px)*.35); margin-top:.1rem;}
+.work__t{width:100%; aspect-ratio:9/16; background:var(--paper); border:1px solid var(--line);
+  display:grid; place-items:center; overflow:hidden;}
+.work__t span{font-size:8px; color:var(--mute); letter-spacing:.12em; text-transform:uppercase;}
+.work__t img{width:100%; height:100%; object-fit:cover;}
+
+/* 5 · UNRELATED — card, lighter register; a short "reading list" of slot titles. */
+.list{display:flex; flex-direction:column; margin:0 calc(-1 * var(--card-pad,34px));}
+.list a{display:flex; justify-content:space-between; align-items:baseline; gap:1rem;
+  padding:.7em var(--card-pad,34px); border-top:1px solid var(--line); text-decoration:none; color:inherit;}
+.list a:last-child{border-bottom:1px solid var(--line);}
+.list__t{font-weight:600;}
+.list__n{font-size:calc(var(--sec-body,14px)*.72); color:var(--mute); flex:none;}
+
+/* 6 · FOUNDER — portrait slot + credit line. */
+.founder__row{display:flex; gap:calc(var(--card-gap,22px)*.7); align-items:center;}
+.founder__ph{flex:none; width:34%; aspect-ratio:4/5; background:var(--paper); border:1px solid var(--line);
+  display:grid; place-items:center; overflow:hidden;}
+.founder__ph span{font-size:8px; color:var(--mute); text-transform:uppercase; letter-spacing:.12em;}
+.founder__ph img{width:100%; height:100%; object-fit:cover;}
+.founder__name{font-family:"Clash Display",sans-serif; font-weight:600; letter-spacing:-.02em;}
+.founder__role{font-size:calc(var(--sec-body,14px)*.8); color:var(--mute); margin-top:.1em;}
+
+/* 7 · TOGETHER — no scarcity, no pricing (D18). The reason to act is a concrete, low-friction
+   next step, not a counter running down. */
+.cta{align-self:flex-start; display:inline-flex; align-items:center; gap:.5em;
+  font-family:"Clash Display",sans-serif; font-weight:500; text-transform:lowercase; font-size:var(--sec-body,15px);
+  color:var(--snow); background:var(--pitch); padding:.78em 1.3em; border-radius:var(--r-pill);
+  text-decoration:none; transition:background-color .3s var(--ease-out);}
+.cta:hover{background:var(--orange);}
+.next{font-size:calc(var(--sec-body,14px)*.8); color:var(--mute);}
+
+/* 8 · FOOTER — terminal slide: sign-off + contact + the 24×7 gag on the real opening hours. */
+.foot{flex-direction:column; justify-content:flex-end; gap:var(--card-gap,20px);}
+.foot__mark{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  letter-spacing:-.03em; line-height:1; font-size:var(--sec-head,34px);}
+.foot__mark .hl{background:var(--orange); color:var(--snow); padding:0 .08em;}
+.foot__hours{font-size:var(--sec-body,14px); color:var(--slate); line-height:1.5; max-width:30ch;}
+.foot__c{display:flex; flex-direction:column; gap:.18rem; font-size:calc(var(--sec-body,14px)*.9); color:var(--slate);}
+.foot__c a{color:inherit; text-decoration:none; border-bottom:1px solid var(--line);}
+.foot__social{display:flex; gap:1rem; font-size:calc(var(--sec-body,14px)*.85); text-transform:lowercase; color:var(--mute);}
+.foot__social a{color:inherit; text-decoration:none;}
+.foot__legal{font-size:calc(var(--sec-body,14px)*.72); color:var(--mute); letter-spacing:.02em;}
+
 @media (prefers-reduced-motion:reduce){ .hero{height:auto;} .pin{position:relative;} }
 </style>
 </head>
@@ -491,13 +593,110 @@ body.reg #regout{display:block;}
             <p class="sec__b">We only build for where they are actually looking.</p>
           </div></div>
         </section>
-        <section class="rs" data-s="trust" style="top:200%"><p class="rs__n">2 / 8</p><h2 class="rs__t">trusted by</h2><p class="rs__todo">3 logo bands, angled and criss-crossed</p></section>
-        <section class="rs" data-s="dashboard" style="top:300%"><p class="rs__n">3 / 8</p><h2 class="rs__t">live dashboard</h2><p class="rs__todo">from live, cut everything after the graph</p></section>
-        <section class="rs" data-s="creative" style="top:400%"><p class="rs__n">4 / 8</p><h2 class="rs__t">the work</h2><p class="rs__todo">main display of what we made</p></section>
-        <section class="rs" data-s="unrelated" style="top:500%"><p class="rs__n">5 / 8</p><h2 class="rs__t">completely unrelated</h2></section>
-        <section class="rs" data-s="founder" style="top:600%"><p class="rs__n">6 / 8</p><h2 class="rs__t">the founder</h2></section>
-        <section class="rs" data-s="together" style="top:700%"><p class="rs__n">7 / 8</p><h2 class="rs__t">work together</h2><p class="rs__todo">no scarcity, no pricing</p></section>
-        <section class="rs" data-s="footer" style="top:800%"><p class="rs__n">8 / 8</p><h2 class="rs__t">footer</h2><p class="rs__todo">24x7 joke on the opening hours</p></section>
+        <!-- 2 · TRUST — angled, criss-crossed wordmark bands. Logos are PLACEHOLDER slots. -->
+        <section class="rs rs--built trust" data-s="trust" style="top:200%">
+          <div class="trust__k">
+            <p class="sec__eyebrow">the proof</p>
+            <h2 class="sec__h">brands who needed to be <span class="hl">believed.</span></h2>
+          </div>
+          <div class="trust__bands" aria-label="Client logos">
+            <div class="band band--a"><div class="btrack" style="--dur:46s"><span class="logo"><img class="sq" alt="Netflix" src="assets/brands/netflix.svg"></span><span class="logo"><img class="sq" alt="Amazon" src="assets/brands/amazon.svg"></span><span class="logo"><img class="" alt="Samsung" src="assets/brands/samsung.svg"></span><span class="logo"><img class="sq" alt="Pepsi" src="assets/brands/pepsi.svg"></span><span class="logo"><img class="" alt="Red Bull" src="assets/brands/redbull.svg"></span><span class="logo"><img class="sq" alt="Spotify" src="assets/brands/spotify.svg"></span><span class="logo"><img class="sq" alt="Swiggy" src="assets/brands/swiggy.svg"></span><span class="logo"><img class="" alt="Kreo" src="assets/brands/kreo.png"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Netflix" src="assets/brands/netflix.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Amazon" src="assets/brands/amazon.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Samsung" src="assets/brands/samsung.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Pepsi" src="assets/brands/pepsi.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Red Bull" src="assets/brands/redbull.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Spotify" src="assets/brands/spotify.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Swiggy" src="assets/brands/swiggy.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Kreo" src="assets/brands/kreo.png"></span></div></div>
+            <div class="band band--b"><div class="btrack btrack--rev" style="--dur:40s"><span class="logo"><img class="sq" alt="Flipkart" src="assets/brands/flipkart.svg"></span><span class="logo"><img class="" alt="Paytm" src="assets/brands/paytm.svg"></span><span class="logo"><img class="" alt="Cashify" src="assets/brands/cashify.png"></span><span class="logo"><img class="" alt="Lifelong" src="assets/brands/lifelong.svg"></span><span class="logo"><img class="" alt="Asus ROG" src="assets/brands/asus.svg"></span><span class="logo"><img class="" alt="Equal" src="assets/brands/equal.svg"></span><span class="logo"><img class="sq" alt="MSI" src="assets/brands/msi.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Flipkart" src="assets/brands/flipkart.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Paytm" src="assets/brands/paytm.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Cashify" src="assets/brands/cashify.png"></span><span class="logo"><img class="" aria-hidden="true" alt="Lifelong" src="assets/brands/lifelong.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Asus ROG" src="assets/brands/asus.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Equal" src="assets/brands/equal.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="MSI" src="assets/brands/msi.svg"></span></div></div>
+            <div class="band band--c"><div class="btrack" style="--dur:51s"><span class="logo"><img class="" alt="Acer" src="assets/brands/acer.svg"></span><span class="logo"><img class="" alt="Armor" src="assets/brands/armor.png"></span><span class="logo"><img class="" alt="Amazon Prime Video" src="assets/brands/primevideo.svg"></span><span class="logo"><img class="sq" alt="Jio Studios" src="assets/brands/jio.svg"></span><span class="logo"><img class="" alt="Acer" src="assets/brands/acer.svg"></span><span class="logo"><img class="" alt="Armor" src="assets/brands/armor.png"></span><span class="logo"><img class="" alt="Amazon Prime Video" src="assets/brands/primevideo.svg"></span><span class="logo"><img class="sq" alt="Jio Studios" src="assets/brands/jio.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Acer" src="assets/brands/acer.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Armor" src="assets/brands/armor.png"></span><span class="logo"><img class="" aria-hidden="true" alt="Amazon Prime Video" src="assets/brands/primevideo.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Jio Studios" src="assets/brands/jio.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Acer" src="assets/brands/acer.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Armor" src="assets/brands/armor.png"></span><span class="logo"><img class="" aria-hidden="true" alt="Amazon Prime Video" src="assets/brands/primevideo.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Jio Studios" src="assets/brands/jio.svg"></span></div></div>
+          </div>
+        </section>
+
+        <!-- 3 · DASHBOARD — phone-native. Stat header + one area chart, then nothing. Numbers PLACEHOLDER. -->
+        <section class="rs rs--built dash" data-s="dashboard" style="top:300%">
+          <div>
+            <p class="sec__eyebrow">you've already watched us work</p>
+            <h2 class="sec__h">about <span class="hl">63%</span> of you, statistically.</h2>
+          </div>
+          <div class="dash__stats">
+            <div><p class="stat__v">1.8B</p><p class="stat__l">views earned <span class="stat__d">▲</span></p></div>
+            <div><p class="stat__v">190M</p><p class="stat__l">reach / mo</p></div>
+            <div><p class="stat__v">5.3M</p><p class="stat__l">followers</p></div>
+          </div>
+          <!-- schematic trend — real series to be wired from the live dashboard data -->
+          <svg class="chart" viewBox="0 0 300 128" role="img" aria-label="Views trend, up and to the right">
+            <defs><linearGradient id="dashFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#FF7B00" stop-opacity=".26"/><stop offset="1" stop-color="#FF7B00" stop-opacity="0"/>
+            </linearGradient></defs>
+            <line class="chart__base" x1="8" y1="110" x2="292" y2="110"/>
+            <path fill="url(#dashFill)" d="M8,94 L55,80 L102,86 L149,60 L196,66 L243,40 L290,20 L290,110 L8,110 Z"/>
+            <path class="chart__line" d="M8,94 L55,80 L102,86 L149,60 L196,66 L243,40 L290,20"/>
+            <text class="chart__x" x="8" y="124">jan</text><text class="chart__x" x="149" y="124" text-anchor="middle">apr</text><text class="chart__x" x="290" y="124" text-anchor="end">jul</text>
+          </svg>
+        </section>
+
+        <!-- 4 · CREATIVE — card + a row of 9:16 work slots. -->
+        <section class="rs rs--built" data-s="creative" style="top:400%">
+          <div class="card"><div class="sec">
+            <p class="sec__eyebrow">the work</p>
+            <h2 class="sec__h">things people actually <span class="hl">stop for.</span></h2>
+            <div class="work" aria-label="Selected work">
+              <figure class="work__t"><span>reel 01</span></figure>
+              <figure class="work__t"><span>reel 02</span></figure>
+              <figure class="work__t"><span>reel 03</span></figure>
+            </div>
+            <p class="sec__b">Not the scroll-past kind. The kind a thumb stops on, holds, and sends to someone.</p>
+          </div></div>
+        </section>
+
+        <!-- 5 · UNRELATED — card, lighter; a short slot list. -->
+        <section class="rs rs--built" data-s="unrelated" style="top:500%">
+          <div class="card"><div class="sec">
+            <p class="sec__eyebrow">for no reason</p>
+            <h2 class="sec__h">completely <span class="hl">unrelated.</span></h2>
+            <p class="sec__b">Things we think about when we're not making things. No pitch attached.</p>
+            <nav class="list" aria-label="Notes">
+              <a href="#"><span class="list__t">why vertical won</span><span class="list__n">note</span></a>
+              <a href="#"><span class="list__t">the death of the billboard</span><span class="list__n">note</span></a>
+              <a href="#"><span class="list__t">trust doesn't scale. or does it?</span><span class="list__n">note</span></a>
+            </nav>
+          </div></div>
+        </section>
+
+        <!-- 6 · FOUNDER — card with portrait slot + credit. -->
+        <section class="rs rs--built" data-s="founder" style="top:600%">
+          <div class="card"><div class="sec">
+            <p class="sec__eyebrow">who's behind it</p>
+            <h2 class="sec__h">built by someone who <span class="hl">earned it first.</span></h2>
+            <div class="founder__row">
+              <figure class="founder__ph"><span>portrait</span></figure>
+              <div>
+                <p class="founder__name">Arsalan</p>
+                <p class="founder__role">founder · four years inside the networks before building 9x16</p>
+              </div>
+            </div>
+          </div></div>
+        </section>
+
+        <!-- 7 · TOGETHER — no scarcity, no pricing. Reason to act = a concrete next step. -->
+        <section class="rs rs--built" data-s="together" style="top:700%">
+          <div class="card"><div class="sec">
+            <p class="sec__eyebrow">work with us</p>
+            <h2 class="sec__h">let's put it to <span class="hl">work.</span></h2>
+            <p class="sec__b">No retainer you don't need, no package you can't use. You tell us who you're trying to reach — we'll tell you, honestly, whether the trust transfers.</p>
+            <a class="cta" href="#">tell us who you're reaching →</a>
+            <p class="next">One reply, usually same week. No pitch deck required.</p>
+          </div></div>
+        </section>
+
+        <!-- 8 · FOOTER — terminal slide: sign-off + contact + the 24×7 gag. -->
+        <section class="rs rs--built foot" data-s="footer" style="top:800%">
+          <p class="foot__mark">trust turned <span class="hl">vertical.</span></p>
+          <p class="foot__hours">open 24×7. (fine — Mon to Sat, 11 to 7. but the work never really clocks off.)</p>
+          <div class="foot__c">
+            <a href="mailto:arsi@9x16.studio">arsi@9x16.studio</a>
+            <a href="tel:+918369325960">+91 83693 25960</a>
+            <span>Mumbai, India</span>
+          </div>
+          <nav class="foot__social" aria-label="Social">
+            <a href="#">instagram</a><a href="#">youtube</a><a href="#">linkedin</a>
+          </nav>
+          <p class="foot__legal">© 2026 9x16 Media. Native to the flip.</p>
+        </section>
       </div>
     </div>
 
@@ -860,6 +1059,7 @@ function sizeSections(){
   root.style.setProperty("--sec-body",    gsap.utils.clamp(12, 17, w * 0.034) + "px");
   root.style.setProperty("--card-pad",    gsap.utils.clamp(22, 42, w * 0.078) + "px");
   root.style.setProperty("--card-gap",    gsap.utils.clamp(16, 34, w * 0.060) + "px");
+  root.style.setProperty("--band-h",      gsap.utils.clamp(54, 118, w * 0.205) + "px");
 }
 function sizeHeadlines(){
   root.style.setProperty("--hls-land",  gsap.utils.clamp(28, 68, (screenH0 || 500) * 0.118) + "px");
