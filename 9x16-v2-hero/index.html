@@ -368,6 +368,11 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* stroke-width and font-size are in viewBox USER UNITS, not px — the svg scales with the
    screen, so hard px here would grow and shrink out of step with the ribbon it sits on. */
 .cband__ribbon{fill:none; stroke:var(--pitch); stroke-width:20; stroke-linecap:round;}
+/* dominant-baseline:central centres the EM box, which carries descender space these mostly
+   x-height words never use — measured by pixel-scanning the rendered band, that left 7.50
+   units of ribbon above the ink and 6.19 below. baseline-shift 0.66 (positive raises) puts
+   the ink itself on the centreline. Re-measure if the phrase or the font size changes: a
+   phrase with no descenders sits differently. */
 .cband__t{fill:var(--snow); font-family:"Switzer",sans-serif; font-weight:600;
   font-size:11px; letter-spacing:.16em; text-transform:lowercase;}
 .cband__sq{fill:var(--orange);}
@@ -851,7 +856,7 @@ body.reg #regout{display:block;}
               <svg viewBox="0 0 400 700" preserveAspectRatio="xMidYMid slice">
                 <defs><path id="cbp" d="M -60,100 C 130,20 340,160 320,320 S 90,470 95,590 S 300,700 470,650"/></defs>
                 <use href="#cbp" class="cband__ribbon"/>
-                <text class="cband__t" dominant-baseline="central"><textPath href="#cbp" startOffset="0" id="cbText"><tspan id="cbPhrase">shot tall <tspan class="cband__sq">&#9642;</tspan> cut tight <tspan class="cband__sq">&#9642;</tspan> watched twice <tspan class="cband__sq">&#9642;</tspan> skipped never <tspan class="cband__sq">&#9642;</tspan> </tspan>shot tall <tspan class="cband__sq">&#9642;</tspan> cut tight <tspan class="cband__sq">&#9642;</tspan> watched twice <tspan class="cband__sq">&#9642;</tspan> skipped never <tspan class="cband__sq">&#9642;</tspan> shot tall <tspan class="cband__sq">&#9642;</tspan> cut tight <tspan class="cband__sq">&#9642;</tspan> watched twice <tspan class="cband__sq">&#9642;</tspan> skipped never <tspan class="cband__sq">&#9642;</tspan> shot tall <tspan class="cband__sq">&#9642;</tspan> cut tight <tspan class="cband__sq">&#9642;</tspan> watched twice <tspan class="cband__sq">&#9642;</tspan> skipped never <tspan class="cband__sq">&#9642;</tspan> <animate id="cbAnim" attributeName="startOffset" from="0" to="-560" dur="24s" repeatCount="indefinite"/></textPath></text>
+                <text class="cband__t" dominant-baseline="central"><textPath href="#cbp" startOffset="0" id="cbText" baseline-shift="0.66"><tspan id="cbPhrase">shot tall <tspan class="cband__sq">&#9642;</tspan> cut tight <tspan class="cband__sq">&#9642;</tspan> watched twice <tspan class="cband__sq">&#9642;</tspan> skipped never <tspan class="cband__sq">&#9642;</tspan> </tspan>shot tall <tspan class="cband__sq">&#9642;</tspan> cut tight <tspan class="cband__sq">&#9642;</tspan> watched twice <tspan class="cband__sq">&#9642;</tspan> skipped never <tspan class="cband__sq">&#9642;</tspan> shot tall <tspan class="cband__sq">&#9642;</tspan> cut tight <tspan class="cband__sq">&#9642;</tspan> watched twice <tspan class="cband__sq">&#9642;</tspan> skipped never <tspan class="cband__sq">&#9642;</tspan> shot tall <tspan class="cband__sq">&#9642;</tspan> cut tight <tspan class="cband__sq">&#9642;</tspan> watched twice <tspan class="cband__sq">&#9642;</tspan> skipped never <tspan class="cband__sq">&#9642;</tspan> <animate id="cbAnim" attributeName="startOffset" from="0" to="-560" dur="24s" repeatCount="indefinite"/></textPath></text>
               </svg>
             </div>
             <div class="card"><div class="sec">
