@@ -854,6 +854,31 @@ body.reg #regout{display:block;}
         <img src="assets/hero-04.jpg" alt="">
       </figure>
 
+      <!-- 05-09 · registration MEASURED, not estimated: the screen in each source PNG was
+           found by connected-component detection on the bright, low-saturation region and
+           its bounding box converted to % of the photo. Screen ratios come out 1.57 / 1.52 /
+           1.78 / 2.01 / 2.00 — the narrow two are real formats, not a mis-measure, and the
+           aperture will visibly narrow on them. Press R to correct any of these by eye. -->
+      <figure class="body" data-body="frame-05" style="--sw:44.76; --sh:42.70; --sx:49.52; --sy:41.64;">
+        <img src="assets/hero-05.jpg" alt="">
+      </figure>
+
+      <figure class="body" data-body="frame-06" style="--sw:67.14; --sh:50.41; --sx:50.00; --sy:50.14;">
+        <img src="assets/hero-06.jpg" alt="">
+      </figure>
+
+      <figure class="body" data-body="frame-07" style="--sw:70.00; --sh:66.53; --sx:50.00; --sy:44.15;">
+        <img src="assets/hero-07.jpg" alt="">
+      </figure>
+
+      <figure class="body" data-body="frame-08" style="--sw:66.43; --sh:50.92; --sx:49.40; --sy:47.44;">
+        <img src="assets/hero-08.jpg" alt="">
+      </figure>
+
+      <figure class="body" data-body="frame-09" style="--sw:66.67; --sh:35.53; --sx:50.48; --sy:53.55;">
+        <img src="assets/hero-09.jpg" alt="">
+      </figure>
+
       <!-- the one that is not on the ground. Registration measured off the cut-out, not guessed:
            screen is 94.4% of the photo's width, dead centre both axes. -->
       <figure class="body" data-body="phone" style="--sw:94.4; --sx:50.1; --sy:50.0;">
@@ -1419,8 +1444,8 @@ const tl = gsap.timeline({
 /* derived from the markup, not hard-coded to four — drop another plate in and it joins the loop */
 const LANDSCAPE = bodies.filter(b => b.dataset.body !== "phone");
 const PHONE     = bodies.find(b => b.dataset.body === "phone");
-const HOLD_MS   = 1100;      /* how long each format holds */
-const FADE_S    = 0.32;      /* cross-fade */
+const HOLD_MS   = 600;       /* how long each format holds */
+const FADE_S    = 0.32;      /* still used by the landscape→phone hand-off on the morph */
 let cyc = 0, timer = null, onPhone = false;
 
 /* NO DIP CROSS-FADE.
@@ -1539,14 +1564,16 @@ function showLandscape(i){
   const incoming = LANDSCAPE[i];
   LANDSCAPE.forEach((b, j) => { b.style.zIndex = j === i ? 2 : 1; });
   gsap.killTweensOf(LANDSCAPE);
-  gsap.to(incoming, {
-    opacity:1, duration:FADE_S, ease:"power1.inOut",
-    onComplete(){ LANDSCAPE.forEach((b, j) => { if (j !== i) gsap.set(b, { opacity:0 }); }); }
-  });
-  /* the grid follows the plate's screen on the same curve as the cross-fade */
+  /* DIRECT CUT, no dissolve. The incoming plate goes opaque and the rest go transparent on
+     the SAME frame — it is already on top and every plate covers the viewport, so there is
+     no frame where two are half-visible. */
+  gsap.set(incoming, { opacity:1 });
+  LANDSCAPE.forEach((b, j) => { if (j !== i) gsap.set(b, { opacity:0 }); });
+  /* the crop box cuts with the plate. These screens run 1.52 to 2.38, so easing the
+     aperture while the photo cuts would leave the box visibly chasing the frame it crops. */
   const g = plateGeom(incoming);
   curPlate = g;
-  if (lastP < MORPH_AT) tweenAperture(g.w, g.h, FADE_S);
+  if (lastP < MORPH_AT) tweenAperture(g.w, g.h, 0);
 }
 function startCycle(){
   if (timer || reduce) return;
@@ -1985,6 +2012,11 @@ function atEdge(dir){
   return reelIdx === 0 && dir < 0;
 }
 addEventListener("wheel", e => {
+  /* A menu is a modal: nothing behind it moves. Without this the reel kept stepping
+     underneath an open menu, so closing it revealed a different section than the one you
+     opened it on. preventDefault here (unlike the chat, which has its own scrollable log)
+     because the menu has nothing to scroll and the hero above the reel is not pinned. */
+  if (navEl.classList.contains("is-open")) { e.preventDefault(); return; }
   if (!reelActive) return;
   /* the chat log scrolls on its own; letting the reel eat those deltas would flick the
      slide out from under an open conversation. No preventDefault — that would block the
@@ -2000,6 +2032,7 @@ addEventListener("wheel", e => {
 
 addEventListener("keydown", e => {
   if (chatOpen()) { if (e.key === "Escape") closeChat(); return; }
+  if (navEl.classList.contains("is-open")) return;   /* Escape is handled by the menu's own listener */
   if (!reelActive) return;
   const dir = /Down|Right|PageDown| /.test(e.key) ? 1 : /Up|Left|PageUp/.test(e.key) ? -1 : 0;
   if (!dir || atEdge(dir)) return;
