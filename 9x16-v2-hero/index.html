@@ -667,7 +667,11 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    Black ground with its OWN grid: two verticals framing the column and a hairline under
    each block. Not the page's 6-column grid — this one is structural, per the reference. */
 .rs--pitchbg{background:var(--pitch);}
-.foot{position:relative; z-index:1; width:100%; display:flex; flex-direction:column;}
+/* full-bleed HERE, not on the blocks. Percentage padding resolves against the containing
+   block, so `9%` set on a block inside the padded .foot meant 9% of 340px, not of the 398px
+   section the verticals are drawn on — the text landed 5px short and crossed every rule. */
+.foot{position:relative; z-index:1; width:100%; display:flex; flex-direction:column;
+  margin:0 calc(-1 * var(--sec-pad,26px));}
 /* The live footer's two rules — 9% and 91% — running the full height of the black fill,
    top edge to bottom edge. On the SECTION, not the inner column, so they span the whole
    fill rather than just the text block. */
@@ -680,8 +684,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* Full-bleed so each rule crosses the two verticals, but the CONTENT is inset to exactly
    9%/91% — the same places the verticals sit. Any other padding and the text either crosses
    a rule or floats off it; tying both to one number keeps them locked together. */
-.foot__b{margin:0 calc(-1 * var(--sec-pad,26px));
-  padding:calc(var(--card-pad,34px)*.34) 9%;
+.foot__b{padding:calc(var(--card-pad,34px)*.34) 9%;
   border-bottom:1px solid rgba(255,255,255,.16); display:flex; flex-direction:column;
   gap:calc(var(--card-gap,26px)*.22);}
 .foot__b:last-child{border-bottom:none;}
