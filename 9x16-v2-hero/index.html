@@ -677,8 +677,11 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* pulled out by the section's own padding so each rule runs the full width of the black
    fill and crosses the two verticals — three lines that actually form a grid, rather than
    horizontals stopping short of the uprights. */
+/* Full-bleed so each rule crosses the two verticals, but the CONTENT is inset to exactly
+   9%/91% — the same places the verticals sit. Any other padding and the text either crosses
+   a rule or floats off it; tying both to one number keeps them locked together. */
 .foot__b{margin:0 calc(-1 * var(--sec-pad,26px));
-  padding:calc(var(--card-pad,34px)*.34) calc(var(--sec-pad,26px) + var(--card-pad,34px)*.14);
+  padding:calc(var(--card-pad,34px)*.34) 9%;
   border-bottom:1px solid rgba(255,255,255,.16); display:flex; flex-direction:column;
   gap:calc(var(--card-gap,26px)*.22);}
 .foot__b:last-child{border-bottom:none;}
