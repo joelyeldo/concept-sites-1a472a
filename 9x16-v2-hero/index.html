@@ -613,13 +613,14 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* full-bleed inside the card: pulled out by the card's own padding so it meets both edges
    instead of floating inset from them */
 .sec__rule{height:1px; background:var(--line); margin:0 calc(-1 * var(--card-pad,34px));}
-/* the story animation. Sized by HEIGHT, not width: it is 9:16, so at card width it would be
-   576px tall in a 609px content box and there would be no room left for the copy. */
-.sec__vid{display:flex; justify-content:center;}
-.sec__vid video{height:var(--story-vid,200px); aspect-ratio:9/16; display:block;
-  object-fit:cover; background:var(--paper);}
-/* the Writer asked for +10px of card height on this slide — 5px each side of the block */
-[data-s="story"] .card{padding-block:calc(var(--card-pad,34px) + 5px);}
+/* The source is a 9:16 frame whose animation only lives in the BOTTOM BAND — measured by
+   sampling frames to a canvas, the content sits in rows 293-355 of 356, i.e. the last 17.7%.
+   The rest is empty, so the clip runs full card width and the box crops to that band:
+   2000/720 is 20.2% of the source height, the content plus a sliver of air above it.
+   object-position 50% 100% anchors the crop to the bottom. Re-measure if the clip changes. */
+.sec__vid{width:100%; aspect-ratio:2000 / 720; overflow:hidden;}
+.sec__vid video{width:100%; height:100%; display:block;
+  object-fit:cover; object-position:50% 100%; background:transparent;}
 
 /* stationary and centred, independent of whatever the aperture is currently doing */
 /* --apy is the crop box's offset from viewport centre. The headline rides it, otherwise it
@@ -1552,7 +1553,6 @@ function sizeSections(){
   root.style.setProperty("--card-pad",    gsap.utils.clamp(22, 42, w * 0.078) + "px");
   root.style.setProperty("--card-gap",    gsap.utils.clamp(16, 34, w * 0.060) + "px");
   root.style.setProperty("--band-h",      gsap.utils.clamp(54, 118, w * 0.205) + "px");
-  root.style.setProperty("--story-vid",   gsap.utils.clamp(140, 250, w * 0.58) + "px");
   /* the pavement either side of the phone, measured off the PHOTO not the screen — the
      mockup's bezel is wider than the glass, and a card that respects the glass instead of
      the body would ride onto the phone. The gutter clips size and sit off this. */
