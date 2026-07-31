@@ -625,8 +625,12 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    bottom edge rather than sitting on a strip of padding. Reclaiming that bottom padding also
    takes the card back under the slide height; it was overflowing, and the aperture was
    cutting the bottom off the animation. */
+/* 2000/925 shows the bottom 26% of the source. Measured on ALPHA alone (the earlier pass
+   also filtered near-white and so missed the light character entirely, which is why the band
+   was cut too tight): content occupies 81.9%-100%, so 26% leaves ~8% of clear air above him.
+   He reads as walking ALONG the card's bottom border rather than jammed against it. */
 .sec__vid{margin:0 calc(-1 * var(--card-pad,34px)) calc(-1 * var(--card-pad,34px));
-  aspect-ratio:2000 / 720; overflow:hidden;}
+  aspect-ratio:2000 / 925; overflow:hidden;}
 .sec__vid video{width:100%; height:100%; display:block;
   object-fit:cover; object-position:50% 100%; background:transparent;}
 
@@ -1234,6 +1238,7 @@ let dashPeriod = "monthly";
    chat block further down would have evaluated its own declaration. */
 let chatOpener = null;
 let trackIdx = 0;          /* which song the player card is on — same hoisting rule */
+let storyCue = 0;          /* pending "play the story clip" timer; storyArm cancels it */
 /* the UNCAPPED shared screen height. The hero headline is sized off this, not off the capped
    screenH0, so capping the crop box does not silently shrink type the Writer already tuned. */
 let screenH0Nat = 0;
@@ -1729,12 +1734,9 @@ function reelTo(i){
   setReelPhase(i);
   gsap.to(reelProxy, {
     y: i, duration: 0.5, ease: "power3.out", overwrite: true,   /* ease-OUT: moves at once */
-    onUpdate(){ root.style.setProperty("--reel-y", reelProxy.y.toFixed(4)); },
-    /* on LANDING, not on departure — the clip is 2.33s and the slide takes 0.5s, so starting
-       it any earlier throws away a fifth of it behind a moving section. overwrite:true means
-       a fast flick past this slide kills the tween before it completes, so a skipped-through
-       story slide never fires. */
-    onComplete(){ if (REEL[i] && REEL[i].dataset.s === "story") storyPlay(); }
+    onUpdate(){ root.style.setProperty("--reel-y", reelProxy.y.toFixed(4)); }
+    /* the story clip is cued from setReelPhase on a timer, not from here: overwrite:true
+       kills this tween on a fast flick and its onComplete would never fire. */
   });
 }
 
@@ -1799,7 +1801,9 @@ function setReelPhase(i){
   gridEl.style.setProperty("--grid-c", onOrange ? GRID_LIGHT : GRID_DARK);
   hlVert.style.visibility = onOrange ? "visible" : "hidden";
   workCards(REEL[i].dataset.s === "creative");
-  storyArm();     /* rewound and held; reelTo starts it when the slide has landed */
+  storyArm();     /* rewound and held... */
+  /* ...then cued to start as the slide lands. 520ms = the reel tween's 0.5s plus a frame. */
+  if (REEL[i].dataset.s === "story") storyCueIn(520);
   const onUnrel = REEL[i].dataset.s === "unrelated";
   playerLive(onUnrel);
   if (!onUnrel) closeChat();      /* a modal must never outlive the slide that opened it */
@@ -1848,20 +1852,34 @@ workClips().forEach(v => v.addEventListener("loadeddata", () => v.closest(".vc")
    below gives the same beat as arriving from the hero above — the animation IS the section's
    opening line, and a half-played one reads as a glitch. Declared as a function, and every
    lookup is lazy, because setReelPhase runs during init. */
-/* Armed on every phase change, played only once the slide has actually LANDED. Starting it
-   inside setReelPhase meant playback began the instant the reel started moving, so a third of
-   a 2.33s clip was spent behind a sliding section. Split in two: arm rewinds and holds on
-   frame 0, play runs it. Lazy lookups — setReelPhase runs during init. */
+/* Armed on every phase change, played once the slide has LANDED — but cued on a plain
+   setTimeout, NOT a GSAP tween callback. Hanging it off the reel tween's onComplete means the
+   clip silently never plays whenever that callback does not fire (a tween overwritten by a
+   fast flick, a throttled ticker in a backgrounded tab). A timer is independent of all that.
+   Lazy lookups — setReelPhase runs during init. */
 function storyArm(){
+  clearTimeout(storyCue); storyCue = 0;
   const v = document.getElementById("storyVid"); if (!v) return;
   v.pause();
   try { v.currentTime = 0; } catch (e) {}
 }
+function storyCueIn(ms){
+  clearTimeout(storyCue);
+  storyCue = setTimeout(storyPlay, ms);
+}
 function storyPlay(){
   const v = document.getElementById("storyVid"); if (!v) return;
   try { v.currentTime = 0; } catch (e) {}
-  v.play().catch(() => {});         /* muted + playsinline, so no gesture is required */
+  const p = v.play();               /* muted + playsinline, so no gesture is required */
+  /* do NOT swallow this. A rejected play() is the difference between "the animation is
+     broken" and "this browser cannot decode an alpha MP4", and we need to be able to tell. */
+  if (p && p.catch) p.catch(err => console.warn("story clip refused to play:", err && err.name, err && err.message));
 }
+addEventListener("DOMContentLoaded", () => {
+  const v = document.getElementById("storyVid");
+  v && v.addEventListener("error", () => console.warn("story clip failed to load/decode:",
+    v.error && v.error.code, v.currentSrc));
+});
 
 /* ── COMPLETELY UNRELATED · chat, cursor, player ──────────────────────────────────────
    Threads and quips are the live build's, verbatim. Same lazy-lookup rule as the work
