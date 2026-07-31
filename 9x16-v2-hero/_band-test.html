@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8">
+<title>band centring test</title>
+<style>
+  @font-face{font-family:"Switzer";src:url("https://joelyeldo.github.io/concept-sites-1a472a/9x16-v2-hero/assets/Switzer-Variable.woff2") format("woff2");font-weight:100 900;font-display:block;}
+  body{margin:0;background:#FAFAFA;font-family:system-ui;}
+  .row{padding:8px 12px;}
+  h3{font:600 12px/1 system-ui;margin:0 0 4px;color:#666;letter-spacing:.08em;text-transform:uppercase;}
+  svg{display:block;background:#fff;border:1px solid #eee;}
+  .rib{fill:none;stroke:#100C08;stroke-width:20;stroke-linecap:round;}
+  .mid{fill:none;stroke:#FF3B30;stroke-width:.6;stroke-dasharray:4 4;}
+  .t{fill:#FAFAFA;font-family:"Switzer",sans-serif;font-weight:600;font-size:11px;letter-spacing:.16em;}
+  .sq{fill:#FF7B00;}
+</style>
+<div class="row"><h3>as shipped &mdash; dominant-baseline: central &middot; red dashes = ribbon centreline</h3>
+<svg viewBox="0 0 400 700" width="380" height="665">
+  <defs><path id="p1" d="M -60,100 C 130,20 340,160 320,320 S 90,470 95,590 S 300,700 470,650"/></defs>
+  <use href="#p1" class="rib"/>
+  <text class="t" dominant-baseline="central"><textPath href="#p1" startOffset="4%">shot tall <tspan class="sq">&#9642;</tspan> cut tight <tspan class="sq">&#9642;</tspan> watched twice <tspan class="sq">&#9642;</tspan> skipped never <tspan class="sq">&#9642;</tspan> shot tall <tspan class="sq">&#9642;</tspan> cut tight <tspan class="sq">&#9642;</tspan> watched twice</textPath></text>
+  <use href="#p1" class="mid"/>
+</svg></div>
+
+<div class="row"><h3>candidate &mdash; baseline-shift -1.2 (text pushed down 1.2 units)</h3>
+<svg viewBox="0 0 400 700" width="380" height="665">
+  <defs><path id="p2" d="M -60,100 C 130,20 340,160 320,320 S 90,470 95,590 S 300,700 470,650"/></defs>
+  <use href="#p2" class="rib"/>
+  <text class="t" dominant-baseline="central"><textPath href="#p2" startOffset="4%" baseline-shift="-1.2">shot tall <tspan class="sq">&#9642;</tspan> cut tight <tspan class="sq">&#9642;</tspan> watched twice <tspan class="sq">&#9642;</tspan> skipped never <tspan class="sq">&#9642;</tspan> shot tall <tspan class="sq">&#9642;</tspan> cut tight <tspan class="sq">&#9642;</tspan> watched twice</textPath></text>
+  <use href="#p2" class="mid"/>
+</svg></div>
