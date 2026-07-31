@@ -426,6 +426,7 @@ body.reg #regout{display:block;}
 /* vertical positions are COMPUTED (see placeTrustLines) — a fixed percentage cannot work:
    the usable gap depends on the band's angle, its thickness AND the width of the fragment,
    because a rotated band climbs across the text's own width. */
+.tw{display:inline-block;}   /* the measurable text box — .tline itself is full-width */
 .tline .hl{background:var(--orange); color:var(--snow);}
 .trust__bands{position:absolute; inset:0; z-index:1; overflow:hidden;}
 .band{
@@ -617,9 +618,9 @@ body.reg #regout{display:block;}
         <!-- 2 · TRUST — angled, criss-crossed wordmark bands. Logos are PLACEHOLDER slots. -->
         <section class="rs rs--built rs--dark trust" data-s="trust" style="top:200%">
           <h2 class="trust__k">
-            <span class="tline tline--1">you&rsquo;ve already</span>
-            <span class="tline tline--2"><span class="hl">scrolled past</span></span>
-            <span class="tline tline--3">our work.</span>
+            <span class="tline tline--1"><span class="tw">you&rsquo;ve already</span></span>
+            <span class="tline tline--2"><span class="tw"><span class="hl">scrolled past</span></span></span>
+            <span class="tline tline--3"><span class="tw">our work.</span></span>
           </h2>
           <div class="trust__bands" aria-label="Client logos">
             <div class="band band--a"><div class="btrack" style="--dur:46s"><span class="logo"><img class="sq" alt="Netflix" src="assets/brands/netflix.svg"></span><span class="logo"><img class="sq" alt="Amazon" src="assets/brands/amazon.svg"></span><span class="logo"><img class="" alt="Samsung" src="assets/brands/samsung.svg"></span><span class="logo"><img class="sq" alt="Pepsi" src="assets/brands/pepsi.svg"></span><span class="logo"><img class="" alt="Red Bull" src="assets/brands/redbull.svg"></span><span class="logo"><img class="sq" alt="Spotify" src="assets/brands/spotify.svg"></span><span class="logo"><img class="sq" alt="Swiggy" src="assets/brands/swiggy.svg"></span><span class="logo"><img class="" alt="Kreo" src="assets/brands/kreo.png"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Netflix" src="assets/brands/netflix.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Amazon" src="assets/brands/amazon.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Samsung" src="assets/brands/samsung.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Pepsi" src="assets/brands/pepsi.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Red Bull" src="assets/brands/redbull.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Spotify" src="assets/brands/spotify.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Swiggy" src="assets/brands/swiggy.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Kreo" src="assets/brands/kreo.png"></span></div></div>
@@ -1079,7 +1080,7 @@ function plateGeom(b){
 function placeTrustLines(){
   const sec = document.querySelector('[data-s="trust"]');
   if (!sec) return;
-  const H = sec.getBoundingClientRect().height;
+  const H = sec.clientHeight;          /* padding box — absolute children are placed against it */
   if (!H) return;
   const bands = [...sec.querySelectorAll(".band")].map(b => {
     const cs = getComputedStyle(b);
@@ -1090,8 +1091,10 @@ function placeTrustLines(){
   }).sort((a, b) => a.mid - b.mid);
 
   [...sec.querySelectorAll(".tline")].forEach((line, i) => {
-    const glyph = line.firstElementChild || line;
-    const tilt  = glyph.getBoundingClientRect().width / 2;
+    /* measure the TEXT, not the row. .tline is full-width, so using it made the tilt
+       allowance half the section width and the computed midpoint meaningless. */
+    const tw   = line.querySelector(".tw");
+    const tilt = (tw ? tw.getBoundingClientRect().width : 0) / 2;
     const above = bands[i - 1];
     const below = bands[i];
     const lo = above ? above.mid + above.half + above.tan * tilt : 0;
