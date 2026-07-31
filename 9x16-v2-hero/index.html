@@ -459,7 +459,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* natural height again — the card no longer stretches, so neither should the blocks */
 .ucard{flex:0 0 auto; display:flex; gap:.75em; align-items:flex-start; cursor:pointer;
   background:transparent; border:none; box-shadow:none;
-  padding:calc(var(--card-pad,34px)*.55) calc(var(--card-pad,34px)*.62);
+  padding:calc(var(--card-pad,34px)*.55 + 2px) calc(var(--card-pad,34px)*.62);
   transition:background-color .3s var(--ease-out);}
 .ucard:hover, .ucard:focus-visible{background:var(--orange); outline:none;}
 .ucard:hover p, .ucard:focus-visible p{color:#fff;}
@@ -475,7 +475,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* no margin-top:auto — that parked the player at the bottom and pooled every spare pixel
    into one dead gap above it. The jokes absorb the slack instead. */
 .pcard{flex:0 0 auto; background:transparent; border:none; box-shadow:none;
-  padding:calc(var(--card-pad,34px)*.62) calc(var(--card-pad,34px)*.62);}
+  padding:calc(var(--card-pad,34px)*.62 + 2px) calc(var(--card-pad,34px)*.62);}
 .pcard__lab{font-family:"Switzer",sans-serif; font-weight:600; color:var(--mute); margin:0 0 .7em;
   font-size:var(--sec-eyebrow,11px); letter-spacing:.18em; text-transform:uppercase;}
 .pcard__row{display:flex; gap:.85em; align-items:center;}
