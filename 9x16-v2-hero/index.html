@@ -642,14 +642,15 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    The tail also drops the nav-band reservation: it never comes to rest, so content passing
    under the navbar mid-scroll is correct — that is how a normal page behaves. Founder keeps
    the full reservation because it IS a rest position, the last snapped slide. */
-.rs.rs--cont{align-items:stretch; padding-top:var(--sec-pad,26px); padding-bottom:var(--sec-pad,26px);}
-.rs[data-s="founder"]{align-items:stretch; padding-bottom:8px;}
-/* the footer's block stays its natural height and centres — the reference has it as one
-   packed column on black, not a stretched panel */
-.rs[data-s="footer"]{align-items:center;
-  padding-bottom:calc(var(--sec-pad,26px) + var(--home-band,0px));}
-/* stretched, the card is the full slide — its content still reads centred */
-.rs--cont > .card{display:flex; flex-direction:column; justify-content:center;}
+/* THE TAIL IS NOT MADE OF SLIDES. Stretching the cards to fill a full-height slide only
+   moved the emptiness inside the card; centring them put it between the cards. Both are
+   symptoms of the same thing — a fixed one-screen height for sections that scroll past
+   continuously and never come to rest. So these two size to their CONTENT and are placed
+   in px by layoutTail(), immediately after the founder's card instead of on the next
+   screen boundary. Founder itself stays a full slide: it is the last snap target. */
+.rs.rs--cont{height:auto; align-items:stretch;
+  padding-top:var(--sec-pad,26px); padding-bottom:var(--sec-pad,26px);}
+.rs[data-s="footer"]{padding-bottom:calc(var(--sec-pad,26px) + var(--home-band,0px));}
 
 /* ── FOOTER ───────────────────────────────────────────────────────────────────────────
    Black ground with its OWN grid: two verticals framing the column and a hairline under
@@ -1446,6 +1447,7 @@ let leftVia = "top";
    for the same reason as the rest of this block — the wheel handler and reelTo both
    touch it and either can run before the reel section has been evaluated. */
 let contPos = 0;
+let contEnd = 0;   /* how far the continuous tail may scroll, in slide units */
 /* the UNCAPPED shared screen height. The hero headline is sized off this, not off the capped
    screenH0, so capping the crop box does not silently shrink type the Writer already tuned. */
 let screenH0Nat = 0;
@@ -1808,7 +1810,7 @@ function sizePlates(){
   LANDSCAPE.forEach(b => b.style.setProperty("--plate-w", plateGeom(b).plateW + "px"));
   sizeHeadlines();
   sizeSections();
-  requestAnimationFrame(placeTrustLines);   /* after the new type sizes have applied */
+  requestAnimationFrame(() => { placeTrustLines(); layoutTail(); });   /* after the new type sizes have applied */
 }
 
 let curPlate = null;                 /* the screen rect currently on show — the morph's start */
@@ -2341,6 +2343,24 @@ function atEdge(dir){
 /* From this slide down the reel stops snapping and scrolls continuously: founder ->
    work together -> footer read as one run rather than three flicks. */
 function contFrom(){ return REEL.findIndex(x => x.dataset.s === "founder"); }
+
+/* Places the content-height tail sections directly after the founder's card, in px, and
+   returns how far the reel may scroll. Everything is expressed in SLIDE UNITS because that
+   is what --reel-y speaks; a slide unit is one aperture height. */
+const TAIL_GAP = 30;
+function layoutTail(){
+  const apH = apEl.getBoundingClientRect().height; if (!apH) return;
+  const cf  = contFrom();
+  const fndCard = document.querySelector('[data-s="founder"] .fnd');
+  const cardH   = fndCard ? fndCard.getBoundingClientRect().height : apH * 0.7;
+  /* the founder card is centred in its own full-height slide, so its bottom sits here */
+  let y = cf * apH + (apH + cardH) / 2 + TAIL_GAP;
+  document.querySelectorAll('.rs--cont').forEach(sec => {
+    sec.style.top = y + "px";
+    y += sec.getBoundingClientRect().height + TAIL_GAP;
+  });
+  contEnd = Math.max(cf, (y - TAIL_GAP - apH) / apH);
+}
 addEventListener("wheel", e => {
   /* A menu is a modal: nothing behind it moves. Without this the reel kept stepping
      underneath an open menu, so closing it revealed a different section than the one you
@@ -2376,11 +2396,18 @@ addEventListener("wheel", e => {
   const cf = contFrom();
   if (reelIdx >= cf && !(contPos <= cf + 0.002 && dir < 0)){
     const apH = apEl.getBoundingClientRect().height || innerHeight;
-    contPos = gsap.utils.clamp(cf, REEL.length - 1, contPos + e.deltaY / apH);
+    contPos = gsap.utils.clamp(cf, contEnd || cf, contPos + e.deltaY / apH);
     gsap.killTweensOf(reelProxy);
     reelProxy.y = contPos;
     root.style.setProperty("--reel-y", contPos.toFixed(4));
-    const near = Math.round(contPos);
+    /* which section is actually under the aperture — rounding the index cannot answer this
+       once the tail sections no longer sit on screen boundaries */
+    const mid = contPos * apH + apH / 2;
+    let near = cf;
+    REEL.forEach((sec, k) => {
+      const t = parseFloat(sec.style.top) || (k * apH);
+      if (mid >= t) near = k;
+    });
     if (near !== reelIdx){ reelIdx = near; setReelPhase(near); }   /* keeps the navbar in step */
     return;
   }
