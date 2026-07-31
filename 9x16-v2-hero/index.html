@@ -474,10 +474,11 @@ body.reg #regout{display:block;}
    the bands are the section, and a card would just cover them. Each fragment is centred in
    its own gap; positions are tuned to the band tops (14 / 42 / 70%). */
 .trust__k{position:absolute; inset:0; z-index:2; pointer-events:none;}
+/* one block now, not three fragments — its top is computed into the gap under strip 1 */
 .tline{position:absolute; left:0; right:0; text-align:center;
   font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
-  font-size:var(--sec-head,36px); line-height:1; letter-spacing:-.025em; color:var(--snow);
-  padding:0 var(--sec-pad,26px);}
+  font-size:var(--sec-head,36px); line-height:1.14; letter-spacing:-.025em; color:var(--snow);
+  padding:0 calc(var(--sec-pad,26px) * 1.4);}
 /* vertical positions are COMPUTED (see placeTrustLines) — a fixed percentage cannot work:
    the usable gap depends on the band's angle, its thickness AND the width of the fragment,
    because a rotated band climbs across the text's own width. */
@@ -490,9 +491,13 @@ body.reg #regout{display:block;}
   background:var(--snow); border-top:1px solid var(--line); border-bottom:1px solid var(--line);
   box-shadow:0 18px 40px -30px rgba(16,12,8,.4);
 }
-.band--a{top:14%; transform:translateX(-50%) rotate(-14deg);}
-.band--b{top:42%; transform:translateX(-50%) rotate(11deg);}
-.band--c{top:70%; transform:translateX(-50%) rotate(-6deg);}
+/* Strip 1 up top, the whole statement in the gap under it, then strips 2 and 3 pushed down
+   together so the last one sits just above the home bar. 2 and 3 are 17deg apart and close,
+   so they genuinely CROSS in view — which is the point of the idea, rather than three
+   near-parallel diagonals with text wedged between them. */
+.band--a{top:13%; transform:translateX(-50%) rotate(-14deg);}
+.band--b{top:57%; transform:translateX(-50%) rotate(11deg);}
+.band--c{top:73%; transform:translateX(-50%) rotate(-6deg);}
 .btrack{display:flex; align-items:center; height:100%; width:max-content;
   animation:bscroll var(--dur,46s) linear infinite;}
 .btrack--rev{animation-direction:reverse;}
@@ -673,9 +678,7 @@ body.reg #regout{display:block;}
         <!-- 2 · TRUST — angled, criss-crossed wordmark bands. Logos are PLACEHOLDER slots. -->
         <section class="rs rs--built rs--dark trust" data-s="trust" style="top:200%">
           <h2 class="trust__k">
-            <span class="tline tline--1"><span class="tw">you&rsquo;ve already</span></span>
-            <span class="tline tline--2"><span class="tw"><span class="hl">seen</span></span></span>
-            <span class="tline tline--3"><span class="tw">our work.</span></span>
+            <span class="tline"><span class="tw">you&rsquo;ve already <span class="hl">seen</span> our work.</span></span>
           </h2>
           <div class="trust__bands" aria-label="Client logos">
             <div class="band band--a"><div class="btrack" style="--dur:46s"><span class="logo"><img class="sq" alt="Netflix" src="assets/brands/netflix.svg"></span><span class="logo"><img class="sq" alt="Amazon" src="assets/brands/amazon.svg"></span><span class="logo"><img class="" alt="Samsung" src="assets/brands/samsung.svg"></span><span class="logo"><img class="sq" alt="Pepsi" src="assets/brands/pepsi.svg"></span><span class="logo"><img class="" alt="Red Bull" src="assets/brands/redbull.svg"></span><span class="logo"><img class="sq" alt="Spotify" src="assets/brands/spotify.svg"></span><span class="logo"><img class="sq" alt="Swiggy" src="assets/brands/swiggy.svg"></span><span class="logo"><img class="" alt="Kreo" src="assets/brands/kreo.png"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Netflix" src="assets/brands/netflix.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Amazon" src="assets/brands/amazon.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Samsung" src="assets/brands/samsung.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Pepsi" src="assets/brands/pepsi.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Red Bull" src="assets/brands/redbull.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Spotify" src="assets/brands/spotify.svg"></span><span class="logo"><img class="sq" aria-hidden="true" alt="Swiggy" src="assets/brands/swiggy.svg"></span><span class="logo"><img class="" aria-hidden="true" alt="Kreo" src="assets/brands/kreo.png"></span></div></div>
@@ -1093,32 +1096,28 @@ function plateGeom(b){
 function placeTrustLines(){
   const sec = document.querySelector('[data-s="trust"]');
   if (!sec) return;
+  const line = sec.querySelector(".tline");
   const cs = getComputedStyle(sec);
-  /* .trust__k is inset:0 on the PADDING box, so the section's own padding is inside the area
-     we place into — the last fragment was landing in the bottom pad, under the home bar. */
   const padT = parseFloat(cs.paddingTop), padB = parseFloat(cs.paddingBottom);
   const H = sec.clientHeight - padB;
-  if (H <= padT) return;
+  if (!line || H <= padT) return;
+
+  /* Sit the whole statement in the gap between strip 1 and strip 2. A band's centreline at
+     the section's horizontal centre is just top + h/2, but it climbs by (textWidth/2)·tan(angle)
+     across the text — so that climb is taken off both sides of the gap before centring. */
   const bands = [...sec.querySelectorAll(".band")].map(b => {
-    const cs = getComputedStyle(b);
-    const m  = cs.transform.match(/matrix\(([-\d.]+),\s*([-\d.]+)/);
+    const bs = getComputedStyle(b);
+    const m  = bs.transform.match(/matrix\(([-\d.]+),\s*([-\d.]+)/);
     const th = m ? Math.atan2(+m[2], +m[1]) : 0;
-    const h  = parseFloat(cs.height);
+    const h  = parseFloat(bs.height);
     return { mid: b.offsetTop + h / 2, half: (h / 2) / Math.cos(th), tan: Math.abs(Math.tan(th)) };
   }).sort((a, b) => a.mid - b.mid);
 
-  [...sec.querySelectorAll(".tline")].forEach((line, i) => {
-    /* measure the TEXT, not the row. .tline is full-width, so using it made the tilt
-       allowance half the section width and the computed midpoint meaningless. */
-    const tw   = line.querySelector(".tw");
-    const tilt = (tw ? tw.getBoundingClientRect().width : 0) / 2;
-    /* start at the SECOND gap: the first sits high enough that the nav covers it */
-    const above = bands[i];
-    const below = bands[i + 1];
-    const lo = above ? above.mid + above.half + above.tan * tilt : padT;
-    const hi = below ? below.mid - below.half - below.tan * tilt : H;
-    line.style.top = ((lo + hi) / 2 - line.offsetHeight / 2) + "px";
-  });
+  const tw   = line.querySelector(".tw");
+  const tilt = (tw ? tw.getBoundingClientRect().width : 0) / 2;
+  const lo = bands[0] ? bands[0].mid + bands[0].half + bands[0].tan * tilt : padT;
+  const hi = bands[1] ? bands[1].mid - bands[1].half - bands[1].tan * tilt : H;
+  line.style.top = ((lo + hi) / 2 - line.offsetHeight / 2) + "px";
 }
 
 function sizeSections(){
