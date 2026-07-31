@@ -354,27 +354,78 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .dash__key .k2 i{border:1px solid var(--pitch);}
 
 
-/* ── OUR WORK ─────────────────────────────────────────────────────────────────────────
-   A horizontal rail of 9:16 cards. Native scroll-snap rather than a JS carousel: the
-   browser already does momentum, snapping, keyboard and touch correctly, and the reel's
-   wheel takeover only ever consumes VERTICAL deltas, so a sideways drag passes straight
-   through to this. Cards are labelled slots until real clips land. */
-.work{display:flex; flex-direction:column; gap:var(--card-gap,26px); height:100%; min-height:0;}
-.work__hd{flex:none;}
-.work__rail{flex:1 1 auto; min-height:0; display:flex; gap:calc(var(--sec-pad,26px)*.5);
-  overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory;
-  margin:0 calc(-1 * var(--sec-pad,26px)); padding:0 var(--sec-pad,26px);
-  scrollbar-width:none;}
-.work__rail::-webkit-scrollbar{display:none;}
-.wcard{flex:0 0 auto; scroll-snap-align:start; height:100%; aspect-ratio:9/16;
-  background:var(--paper); border:1px solid var(--line); position:relative; overflow:hidden;
-  display:grid; place-content:center; gap:.3rem; text-align:center; padding:1rem;}
-.wcard b{font-family:"Switzer",sans-serif; font-weight:600; font-size:calc(var(--sec-body,15px)*.72);
-  letter-spacing:.14em; text-transform:uppercase; color:var(--slate);}
-.wcard span{font-size:calc(var(--sec-body,15px)*.68); color:var(--mute);}
-.wcard__tag{position:absolute; left:0; top:0; background:var(--pitch); color:var(--snow);
-  font-family:"Switzer",sans-serif; font-weight:600; font-size:calc(var(--sec-body,15px)*.62);
-  letter-spacing:.12em; text-transform:uppercase; padding:.35em .6em;}
+/* ── OUR WORK · inside the phone ──────────────────────────────────────────────────────
+   Type only. The clips are NOT in here — a lateral rail inside a vertically-gesture-
+   captured feed fights the reel for the same input, so the work moved out to the gutters
+   (.vgut below) and this slide keeps the band, the eyebrow, the title and the sub. */
+.work{position:relative; height:100%; display:flex; flex-direction:column;
+  justify-content:center; gap:calc(var(--card-gap,26px)*.42);}
+.work__band{position:absolute; inset:0; z-index:0; pointer-events:none;}
+.work__band svg{width:100%; height:100%; display:block; overflow:visible;}
+/* stroke-width and font-size are in viewBox USER UNITS, not px — the svg scales with the
+   screen, so hard px here would grow and shrink out of step with the ribbon it sits on. */
+.cband__ribbon{fill:none; stroke:var(--pitch); stroke-width:24;}
+.cband__t{fill:var(--snow); font-family:"Switzer",sans-serif; font-weight:600;
+  font-size:11px; letter-spacing:.16em; text-transform:lowercase;}
+.cband__sq{fill:var(--orange);}
+.work__hd{position:relative; z-index:1;}
+/* the title and the sub sit ON the band — they need their own ground or the black ribbon
+   eats them. Snow slab, no border: reads as a caption card, not another UI panel. */
+.work__hd, .work__sub{background:var(--snow); padding:calc(var(--sec-pad,26px)*.42) var(--sec-pad,26px);
+  margin:0 calc(-1 * var(--sec-pad,26px));}
+.work__sub{position:relative; z-index:1; font-family:"Switzer",sans-serif;
+  font-size:var(--sec-body,15px); line-height:1.5; color:var(--slate);}
+
+/* ── OUR WORK · the gutters ───────────────────────────────────────────────────────────
+   Eight 9:16 clips on the pavement either side of the phone. This is the job the brief
+   wanted for the gutters. --gx is the fraction ACROSS the gutter (0 = viewport edge,
+   1 = flush to the phone), so the cards stay in the gutter at any width instead of being
+   pinned to vw percentages that would ride over the phone on a narrow screen. */
+.vgut{position:absolute; inset:0; z-index:4; pointer-events:none;}
+.vc{
+  position:absolute; width:var(--vcw); aspect-ratio:9/16; overflow:hidden;
+  background:var(--pitch); box-shadow:0 18px 44px rgba(16,12,8,.20);
+  pointer-events:none; opacity:0;
+  /* never from scale(0) — nothing in the real world appears out of nothing. The cards
+     start just inside the phone and settle outward, so the work reads as thrown out of
+     the screen rather than fading in on top of the page. */
+  transform:translate(var(--vdx),16px) scale(.94);
+  transition:opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
+  will-change:transform,opacity;
+}
+.vgut.is-on .vc{
+  opacity:1; pointer-events:auto; transform:translate(0,0) scale(1) rotate(var(--rot,0deg));
+  transition-duration:420ms; transition-delay:calc(var(--i) * 55ms);
+}
+.vc--l{left:calc(var(--gx) * (var(--gut,0px) - var(--vcw))); --vdx:52px;}
+.vc--r{right:calc(var(--gx) * (var(--gut,0px) - var(--vcw))); --vdx:-52px;}
+/* exit is the base rule: 200ms, no stagger. Leaving should be quicker than arriving, and
+   an exit stagger would leave stragglers hanging over the next slide. */
+.vc__v{width:100%; height:100%; object-fit:cover; display:block;}
+.vc__slot{position:absolute; inset:0; display:grid; place-content:center; gap:.35rem;
+  text-align:center; padding:.8rem; color:var(--snow);}
+.vc.has-clip .vc__slot{display:none;}
+.vc__slot b{font-family:"Switzer",sans-serif; font-weight:600; font-size:11px;
+  letter-spacing:.14em; text-transform:uppercase;}
+.vc__slot span{font-size:10px; color:rgba(255,255,255,.45);}
+.vc__ui{position:absolute; left:8px; bottom:8px; display:flex; gap:6px;
+  opacity:0; transition:opacity 160ms var(--ease-out);}
+.vc:hover .vc__ui, .vc:focus-within .vc__ui{opacity:1;}
+@media (hover:none){ .vc__ui{opacity:1;} }
+.vbtn{width:28px; height:28px; display:grid; place-items:center; cursor:pointer;
+  border:none; padding:0; color:var(--snow); background:rgba(16,12,8,.55);
+  -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+  transition:transform 160ms var(--ease-out);}
+.vbtn:active{transform:scale(.9);}   /* it has to feel like it heard the press */
+.vbtn svg{width:13px; height:13px; fill:currentColor;}
+.vc .i-pause, .vc.is-paused .i-play{display:block;}
+.vc .i-play,  .vc.is-paused .i-pause{display:none;}
+.vc .i-mute,  .vc.is-loud .i-loud{display:block;}
+.vc .i-loud,  .vc.is-loud .i-mute{display:none;}
+@media (prefers-reduced-motion:reduce){
+  .vc{transition:opacity 120ms linear; transform:none;}
+  .vgut.is-on .vc{transform:none; transition-delay:0ms;}
+}
 
 /* ── THE REEL ─────────────────────────────────────────────────────────────────────────
    Once the hero lands, the whole site plays inside the phone screen: each section is one
@@ -668,6 +719,55 @@ body.reg #regout{display:block;}
       </figure>
     </div>
 
+    <!-- 2b · WORK CLIPS — the gutters finally get their job. Eight 9:16 clips on the
+         pavement either side of the phone, revealed only on the creative slide. They are
+         out here rather than on a rail inside the screen because a sideways rail inside a
+         vertical gesture feed asks the user to fight the reel for the same input.
+         --gx = fraction across the gutter, --gy = top as % of the pin, --i = stagger order
+         (nearest the phone first, alternating sides, so the work reads as thrown outward). -->
+    <div class="vgut" id="vgut" style="--vcw:clamp(112px, calc(var(--gut,0px) * .26), 230px)">
+      <figure class="vc vc--l" style="--gx:.743; --gy:17.4%; --i:0; --rot:-1.4deg; top:17.4%">
+        <video class="vc__v" muted loop playsinline preload="none"><source src="assets/work-1.mp4" type="video/mp4"></video>
+        <figcaption class="vc__slot"><b>Netflix</b><span>assets/work-1.mp4</span></figcaption>
+        <div class="vc__ui"><button class="vbtn" data-a="play" type="button" aria-label="Play or pause"><svg class="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button><button class="vbtn" data-a="mute" type="button" aria-label="Mute or unmute"><svg class="i-mute" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6m0-6-5 6" stroke="currentColor" stroke-width="2" fill="none"/></svg><svg class="i-loud" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
+      </figure>
+      <figure class="vc vc--r" style="--gx:.839; --gy:5%; --i:1; --rot:1.5deg; top:5%">
+        <video class="vc__v" muted loop playsinline preload="none"><source src="assets/work-2.mp4" type="video/mp4"></video>
+        <figcaption class="vc__slot"><b>Safe Pro Fire</b><span>assets/work-2.mp4</span></figcaption>
+        <div class="vc__ui"><button class="vbtn" data-a="play" type="button" aria-label="Play or pause"><svg class="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button><button class="vbtn" data-a="mute" type="button" aria-label="Mute or unmute"><svg class="i-mute" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6m0-6-5 6" stroke="currentColor" stroke-width="2" fill="none"/></svg><svg class="i-loud" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
+      </figure>
+      <figure class="vc vc--l" style="--gx:.743; --gy:63.3%; --i:2; --rot:1.6deg; top:63.3%">
+        <video class="vc__v" muted loop playsinline preload="none"><source src="assets/work-3.mp4" type="video/mp4"></video>
+        <figcaption class="vc__slot"><b>GigaByte AORUS</b><span>assets/work-3.mp4</span></figcaption>
+        <div class="vc__ui"><button class="vbtn" data-a="play" type="button" aria-label="Play or pause"><svg class="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button><button class="vbtn" data-a="mute" type="button" aria-label="Mute or unmute"><svg class="i-mute" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6m0-6-5 6" stroke="currentColor" stroke-width="2" fill="none"/></svg><svg class="i-loud" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
+      </figure>
+      <figure class="vc vc--r" style="--gx:.707; --gy:45.6%; --i:3; --rot:-1.7deg; top:45.6%">
+        <video class="vc__v" muted loop playsinline preload="none"><source src="assets/work-4.mp4" type="video/mp4"></video>
+        <figcaption class="vc__slot"><b>Hyderabad Hydras</b><span>assets/work-4.mp4</span></figcaption>
+        <div class="vc__ui"><button class="vbtn" data-a="play" type="button" aria-label="Play or pause"><svg class="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button><button class="vbtn" data-a="mute" type="button" aria-label="Mute or unmute"><svg class="i-mute" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6m0-6-5 6" stroke="currentColor" stroke-width="2" fill="none"/></svg><svg class="i-loud" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
+      </figure>
+      <figure class="vc vc--l" style="--gx:.176; --gy:9%; --i:4; --rot:1.8deg; top:9%">
+        <video class="vc__v" muted loop playsinline preload="none"><source src="assets/work-5.mp4" type="video/mp4"></video>
+        <figcaption class="vc__slot"><b>Kreo</b><span>assets/work-5.mp4</span></figcaption>
+        <div class="vc__ui"><button class="vbtn" data-a="play" type="button" aria-label="Play or pause"><svg class="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button><button class="vbtn" data-a="mute" type="button" aria-label="Mute or unmute"><svg class="i-mute" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6m0-6-5 6" stroke="currentColor" stroke-width="2" fill="none"/></svg><svg class="i-loud" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
+      </figure>
+      <figure class="vc vc--r" style="--gx:.165; --gy:20%; --i:5; --rot:-1.3deg; top:20%">
+        <video class="vc__v" muted loop playsinline preload="none"><source src="assets/work-6.mp4" type="video/mp4"></video>
+        <figcaption class="vc__slot"><b>Swiggy</b><span>assets/work-6.mp4</span></figcaption>
+        <div class="vc__ui"><button class="vbtn" data-a="play" type="button" aria-label="Play or pause"><svg class="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button><button class="vbtn" data-a="mute" type="button" aria-label="Mute or unmute"><svg class="i-mute" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6m0-6-5 6" stroke="currentColor" stroke-width="2" fill="none"/></svg><svg class="i-loud" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
+      </figure>
+      <figure class="vc vc--l" style="--gx:.243; --gy:46%; --i:6; --rot:-1.2deg; top:46%">
+        <video class="vc__v" muted loop playsinline preload="none"><source src="assets/work-7.mp4" type="video/mp4"></video>
+        <figcaption class="vc__slot"><b>Red Bull</b><span>assets/work-7.mp4</span></figcaption>
+        <div class="vc__ui"><button class="vbtn" data-a="play" type="button" aria-label="Play or pause"><svg class="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button><button class="vbtn" data-a="mute" type="button" aria-label="Mute or unmute"><svg class="i-mute" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6m0-6-5 6" stroke="currentColor" stroke-width="2" fill="none"/></svg><svg class="i-loud" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
+      </figure>
+      <figure class="vc vc--r" style="--gx:.122; --gy:64%; --i:7; --rot:1.4deg; top:64%">
+        <video class="vc__v" muted loop playsinline preload="none"><source src="assets/work-8.mp4" type="video/mp4"></video>
+        <figcaption class="vc__slot"><b>Asus ROG</b><span>assets/work-8.mp4</span></figcaption>
+        <div class="vc__ui"><button class="vbtn" data-a="play" type="button" aria-label="Play or pause"><svg class="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button><button class="vbtn" data-a="mute" type="button" aria-label="Mute or unmute"><svg class="i-mute" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6m0-6-5 6" stroke="currentColor" stroke-width="2" fill="none"/></svg><svg class="i-loud" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" fill="none"/></svg></button></div>
+      </figure>
+    </div>
+
     <!-- 3 · CROP — permanent chrome, present on 16:9 and 9:16 alike -->
     <div class="crop" id="crop" aria-hidden="true">
       <span class="crop__c crop__c--tl"></span><span class="crop__c crop__c--tr"></span>
@@ -740,21 +840,21 @@ body.reg #regout{display:block;}
           </div>
         </section>
 
-        <!-- 4 · CREATIVE — card + a row of 9:16 work slots. -->
+        <!-- 4 · CREATIVE — type + the band only. The clips live in the gutters (#vgut). -->
         <section class="rs rs--built work-sec" data-s="creative" style="top:400%">
           <div class="work">
+            <div class="work__band" aria-hidden="true">
+              <svg viewBox="0 0 400 700" preserveAspectRatio="xMidYMid slice">
+                <defs><path id="cbp" d="M -20,120 C 60,30 195,45 240,180 C 275,285 150,300 130,425 C 115,515 235,535 430,470"/></defs>
+                <use href="#cbp" class="cband__ribbon"/>
+                <text class="cband__t" dominant-baseline="central"><textPath href="#cbp" startOffset="0" id="cbText"><tspan id="cbPhrase">off the billboard <tspan class="cband__sq">&#9642;</tspan> onto the phone <tspan class="cband__sq">&#9642;</tspan> borrowed the trust <tspan class="cband__sq">&#9642;</tspan> never spent it <tspan class="cband__sq">&#9642;</tspan> </tspan>off the billboard <tspan class="cband__sq">&#9642;</tspan> onto the phone <tspan class="cband__sq">&#9642;</tspan> borrowed the trust <tspan class="cband__sq">&#9642;</tspan> never spent it <tspan class="cband__sq">&#9642;</tspan> off the billboard <tspan class="cband__sq">&#9642;</tspan> onto the phone <tspan class="cband__sq">&#9642;</tspan> borrowed the trust <tspan class="cband__sq">&#9642;</tspan> never spent it <tspan class="cband__sq">&#9642;</tspan> <animate id="cbAnim" attributeName="startOffset" from="0" to="-560" dur="24s" repeatCount="indefinite"/></textPath></text>
+              </svg>
+            </div>
             <div class="work__hd">
               <p class="sec__eyebrow">creative marketing naturals</p>
-              <h2 class="sec__h">here&rsquo;s <span class="hl">last month.</span></h2>
+              <h2 class="sec__h">one month. <span class="hl">zero landscape.</span></h2>
             </div>
-            <div class="work__rail" tabindex="0" aria-label="Recent work, scroll sideways">
-              <article class="wcard"><span class="wcard__tag">Netflix</span><b>Squid Game</b><span>assets/work-1.mp4 &middot; 9:16 clip</span></article>
-              <article class="wcard"><span class="wcard__tag">Safe Pro Fire</span><b>launch</b><span>assets/work-2.mp4 &middot; 9:16 clip</span></article>
-              <article class="wcard"><span class="wcard__tag">GigaByte AORUS</span><b>hardware</b><span>assets/work-3.mp4 &middot; 9:16 clip</span></article>
-              <article class="wcard"><span class="wcard__tag">Hyderabad Hydras</span><b>matchday</b><span>assets/work-4.mp4 &middot; 9:16 clip</span></article>
-              <article class="wcard"><span class="wcard__tag">Kreo</span><b>product drop</b><span>assets/work-5.mp4 &middot; 9:16 clip</span></article>
-              <article class="wcard"><span class="wcard__tag">Swiggy</span><b>brand film</b><span>assets/work-6.mp4 &middot; 9:16 clip</span></article>
-            </div>
+            <p class="work__sub">Short-form built to earn the watch, not dodge the skip. Check out a few.</p>
           </div>
         </section>
 
@@ -1168,6 +1268,10 @@ function sizeSections(){
   root.style.setProperty("--card-pad",    gsap.utils.clamp(22, 42, w * 0.078) + "px");
   root.style.setProperty("--card-gap",    gsap.utils.clamp(16, 34, w * 0.060) + "px");
   root.style.setProperty("--band-h",      gsap.utils.clamp(54, 118, w * 0.205) + "px");
+  /* the pavement either side of the phone, measured off the PHOTO not the screen — the
+     mockup's bezel is wider than the glass, and a card that respects the glass instead of
+     the body would ride onto the phone. The gutter clips size and sit off this. */
+  root.style.setProperty("--gut", Math.max(0, (G.vw - G.photoW) / 2) + "px");
 }
 function sizeHeadlines(){
   root.style.setProperty("--hls-land",  gsap.utils.clamp(28, 68, (screenH0 || 500) * 0.118) + "px");
@@ -1376,7 +1480,55 @@ function setReelPhase(i){
   whiteEl.style.opacity = onOrange ? 0 : 1;
   gridEl.style.setProperty("--grid-c", onOrange ? GRID_LIGHT : GRID_DARK);
   hlVert.style.visibility = onOrange ? "visible" : "hidden";
+  workCards(REEL[i].dataset.s === "creative");
+  /* A solid white slab on a black slide reads as a sticker, not as the phone's own chrome.
+     Only touched while the reel owns the screen — above the reel the morph is the authority
+     on the bar, and two writers on one class is how the grid broke. */
+  if (reelActive) navEl.classList.toggle("is-glass", REEL[i].classList.contains("rs--dark"));
 }
+
+/* ── WORK CLIPS in the gutters ────────────────────────────────────────────────────────
+   Every lookup is lazy rather than a module-level const: setReelPhase runs during init,
+   and a `const` declared further down the file is in its TDZ at that moment. That exact
+   mistake killed this page three times. */
+function workClips(){ return [...document.querySelectorAll("#vgut video")]; }
+function workCards(on){
+  const g = document.getElementById("vgut");
+  if (!g) return;
+  g.classList.toggle("is-on", on);
+  workClips().forEach(v => {
+    const card = v.closest(".vc");
+    if (on){ if (!card.dataset.paused) v.play().catch(() => {}); }
+    else   { v.pause(); v.muted = true; card.classList.remove("is-loud"); }
+  });
+}
+document.getElementById("vgut")?.addEventListener("click", e => {
+  const b = e.target.closest(".vbtn"); if (!b) return;
+  const card = b.closest(".vc"), v = card.querySelector("video");
+  if (b.dataset.a === "play"){
+    if (v.paused){ v.play().catch(() => {}); delete card.dataset.paused; }
+    else { v.pause(); card.dataset.paused = "1"; }   /* remembered, so re-entry respects it */
+    card.classList.toggle("is-paused", v.paused);
+  } else {
+    v.muted = !v.muted;
+    card.classList.toggle("is-loud", !v.muted);
+    /* eight clips shouting at once is not a portfolio, it is a fire alarm — solo the one
+       the user actually asked to hear. */
+    if (!v.muted) workClips().forEach(o => {
+      if (o !== v){ o.muted = true; o.closest(".vc").classList.remove("is-loud"); }
+    });
+  }
+});
+/* the labelled slot only steps aside once a real file actually decodes */
+workClips().forEach(v => v.addEventListener("loadeddata", () => v.closest(".vc").classList.add("has-clip")));
+
+/* the band loops seamlessly only if it shifts by EXACTLY one phrase. Measured after the
+   webfont lands, not guessed — the advance width is font-dependent, and a guess shows up
+   as a visible jump every cycle. */
+addEventListener("load", () => {
+  const ph = document.getElementById("cbPhrase"), an = document.getElementById("cbAnim");
+  if (ph && an && ph.getComputedTextLength) an.setAttribute("to", -ph.getComputedTextLength());
+});
 
 function reelStep(dir){
   const next = reelIdx + dir;
