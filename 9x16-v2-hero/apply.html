@@ -44,79 +44,79 @@ a{color:inherit;}
 .grid{position:fixed; inset:0; z-index:0; pointer-events:none;}
 .grid span{position:absolute; top:0; bottom:0; width:1px; background:var(--line);}
 
-/* ── APPLY ─────────────────────────────────────────────────────────────────────────────── */
-.apply{position:relative; z-index:1; padding:clamp(3rem,9vw,7rem) 0 clamp(4rem,10vw,8rem);}
+/* ── APPLY ─────────────────────────────────────────────────────────────────────────────
+   ONE card, partitioned. Every block — header, route tabs, each field — is a cell in a
+   1px-gap grid over a --line background, so the hairlines draw themselves and stay correct
+   when a cell spans both columns. Borders per cell would need a nth-child rule per span. */
+.apply{position:relative; z-index:1; padding:clamp(2rem,5vw,4rem) 0 clamp(4rem,9vw,7rem);}
+.card{background:var(--line); border:1px solid var(--line); display:flex; flex-direction:column; gap:1px;}
+.chead{background:var(--snow); padding:clamp(1.8rem,4vw,3rem) clamp(1.4rem,3vw,2.6rem);}
 .eyebrow{font-weight:600; font-size:11px; letter-spacing:.18em; text-transform:uppercase;
-  color:var(--mute); margin:0 0 .9rem;}
+  color:var(--orange); margin:0 0 .9rem;}
 .h1{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
-  font-size:clamp(2.6rem,7vw,5rem); line-height:1.02; letter-spacing:-.035em; margin:0;}
-.lede{font-size:clamp(1rem,1.4vw,1.18rem); line-height:1.55; color:var(--slate);
-  max-width:46ch; margin:1.1rem 0 0;}
+  font-size:clamp(2.2rem,5.4vw,3.9rem); line-height:1.04; letter-spacing:-.035em; margin:0;}
+.lede{font-size:clamp(.98rem,1.3vw,1.12rem); line-height:1.55; color:var(--slate);
+  max-width:44ch; margin:1.1rem 0 0;}
 
-/* the three routes. Tabs, not a dropdown: the whole point is that you self-identify in one
-   click and only ever see your own fields. */
-.routes{display:flex; flex-wrap:wrap; gap:0; margin:clamp(2rem,4vw,3rem) 0 0;
-  box-shadow:inset 0 0 0 1px var(--line); width:fit-content;}
-.route{appearance:none; border:none; cursor:pointer; background:transparent; color:var(--pitch);
+/* the three routes — one row of the card, active cell filled orange */
+.routes{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; background:var(--line);}
+.route{appearance:none; border:none; cursor:pointer; background:var(--snow); color:var(--pitch);
   font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
-  font-size:clamp(1rem,1.5vw,1.2rem); padding:.85em 1.4em;
+  font-size:clamp(.95rem,1.4vw,1.15rem); padding:1.1em .8em;
   transition:background-color .22s var(--ease-out), color .22s var(--ease-out);}
-.route + .route{box-shadow:inset 1px 0 0 var(--line);}
 .route:hover{background:var(--paper);}
-.route[aria-selected="true"]{background:var(--pitch); color:var(--snow);}
+.route[aria-selected="true"]{background:var(--orange); color:#fff;}
 
-form{margin:clamp(2rem,4vw,3rem) 0 0; max-width:760px;}
-fieldset{border:none; margin:0; padding:0;}
+form{display:flex; flex-direction:column; gap:1px;}
+fieldset{border:none; margin:0; padding:0; display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; background:var(--line);}
 fieldset[hidden]{display:none;}
-.legend{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
-  font-size:1.35rem; letter-spacing:-.02em; margin:2.4rem 0 1.2rem;
-  padding-top:1.4rem; border-top:1px solid var(--line);}
-.row{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.1rem;}
-@media (max-width:640px){ .row{grid-template-columns:1fr;} }
-.f{display:flex; flex-direction:column; gap:.45rem; margin:0 0 1.1rem;}
-.f--wide{grid-column:1 / -1;}
-.f > label{font-weight:600; font-size:.82rem; letter-spacing:.02em;}
-.f > label .opt{font-weight:400; color:var(--mute);}
-.f input[type=text], .f input[type=email], .f input[type=tel], .f input[type=url], .f textarea{
-  font-family:"Switzer",sans-serif; font-size:1rem; color:var(--pitch); background:#fff;
-  border:none; box-shadow:inset 0 0 0 1px var(--line); padding:.85rem .9rem; width:100%;
-  transition:box-shadow .18s var(--ease-out);}
-.f textarea{min-height:120px; resize:vertical;}
-.f input:focus, .f textarea:focus{outline:none; box-shadow:inset 0 0 0 2px var(--orange);}
-.f input::placeholder, .f textarea::placeholder{color:#B4AEA8;}
+.cell{background:var(--snow); padding:clamp(1.1rem,2.2vw,1.6rem) clamp(1.4rem,3vw,2.6rem);
+  display:flex; flex-direction:column; gap:.7rem; justify-content:center;}
+.cell--wide{grid-column:1 / -1;}
+.cell > label, .cell > .lbl{font-weight:600; font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--slate);}
+.cell .opt{font-weight:400; text-transform:none; letter-spacing:.01em; color:var(--mute);}
+.cell input[type=text], .cell input[type=email], .cell input[type=tel],
+.cell input[type=url], .cell textarea{
+  font-family:"Switzer",sans-serif; font-size:1rem; color:var(--pitch); background:var(--paper);
+  border:none; padding:.85rem .9rem; width:100%; transition:box-shadow .18s var(--ease-out);}
+.cell textarea{min-height:110px; resize:vertical;}
+.cell input:focus, .cell textarea:focus{outline:none; box-shadow:inset 0 0 0 2px var(--orange);}
+.cell input::placeholder, .cell textarea::placeholder{color:#B4AEA8;}
 
-/* radio groups render as a row of chips — one tap, no dropdown */
-.chips{display:flex; flex-wrap:wrap; gap:0; box-shadow:inset 0 0 0 1px var(--line); width:fit-content; max-width:100%;}
-.chips label{cursor:pointer; padding:.7em 1.05em; font-size:.92rem; white-space:nowrap;
-  transition:background-color .2s var(--ease-out), color .2s var(--ease-out);}
-.chips label + label{box-shadow:inset 1px 0 0 var(--line);}
+/* radio groups are their own partitioned strip, edge to edge in the cell */
+.chips{display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:1px;
+  background:var(--line); margin:0 calc(-1 * clamp(1.4rem,3vw,2.6rem)) calc(-1 * clamp(1.1rem,2.2vw,1.6rem));
+  margin-top:.2rem; border-top:1px solid var(--line);}
+@media (max-width:640px){ .chips{grid-auto-flow:row; grid-auto-columns:auto;} }
+.chips label{cursor:pointer; background:var(--snow); text-align:center;
+  padding:1em .7em; font-size:.94rem; transition:background-color .2s var(--ease-out), color .2s var(--ease-out);}
 .chips input{position:absolute; opacity:0; pointer-events:none;}
 .chips label:hover{background:var(--paper);}
-.chips input:checked + span{}
 .chips label:has(input:checked){background:var(--pitch); color:var(--snow);}
 .chips label:has(input:focus-visible){outline:2px solid var(--orange); outline-offset:-2px;}
 
-/* same slab as the site's CTA — text block, hairline, 9:16 arrow tile */
-.send{align-self:flex-start; display:inline-flex; align-items:stretch; height:52px; margin-top:2.2rem;
+.cell--send{flex-direction:row; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;}
+.send{display:inline-flex; align-items:stretch; height:52px;
   background:var(--pitch); color:var(--snow); border:none; padding:0; cursor:pointer;
   transition:background-color .22s var(--ease-out), transform .16s var(--ease-out);}
 .send:hover{background:var(--orange);}
 .send:active{transform:scale(.985);}
 .send__l{display:flex; align-items:center; padding:0 1.3rem; white-space:nowrap;
   font-family:"Switzer",sans-serif; font-weight:600; font-size:1rem;}
-.send__a{align-self:stretch; width:30px; display:flex; align-items:center; justify-content:center;
+.send__a{align-self:stretch; width:32px; display:flex; align-items:center; justify-content:center;
   border-left:1px solid rgba(255,255,255,.4);}
 .send__a svg{width:16px; height:16px; transform:rotate(-45deg); transition:transform .3s var(--ease-out);}
 .send:hover .send__a svg{transform:rotate(0deg);}
-.note{font-size:.82rem; color:var(--mute); margin:1rem 0 0;}
+.note{font-size:.86rem; color:var(--mute); margin:0;}
 
-/* success state replaces the form in place — no navigation, no lost context */
-.done{display:none; padding:clamp(2rem,5vw,4rem) 0;}
+.done{display:none; background:var(--snow); padding:clamp(2.4rem,5vw,4rem) clamp(1.4rem,3vw,2.6rem);}
 .done.is-on{display:block;}
 form.is-off{display:none;}
 .done__h{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
-  font-size:clamp(2rem,5vw,3.4rem); line-height:1.05; letter-spacing:-.03em; margin:0;}
-.done__p{color:var(--slate); margin:1rem 0 0; max-width:44ch;}
+  font-size:clamp(1.9rem,4.4vw,3rem); line-height:1.05; letter-spacing:-.03em; margin:0;}
+.done__p{color:var(--slate); margin:1rem 0 0; max-width:44ch; line-height:1.55;}
 
 /* ── FOOTER — full width, black, its own two rules ─────────────────────────────────────── */
 .foot{position:relative; background:var(--pitch); color:var(--snow); z-index:1;}
@@ -167,113 +167,114 @@ form.is-off{display:none;}
 
 <main class="wrap">
   <section class="apply">
-    <p class="eyebrow">get in touch</p>
-    <h1 class="h1">let&rsquo;s work <span class="hl">together.</span></h1>
-    <p class="lede">Tell us who you are and we&rsquo;ll take it from there. We read every one of these by hand.</p>
-
-    <!-- One click to self-identify, then you only ever see your own fields. Radios rather
-         than buttons so the choice submits with the form and survives without JS. -->
-    <div class="routes" role="tablist" aria-label="What describes you">
-      <button class="route" type="button" role="tab" data-route="brand"   aria-selected="true">i&rsquo;m a brand</button>
-      <button class="route" type="button" role="tab" data-route="creator" aria-selected="false">i&rsquo;m a creator</button>
-      <button class="route" type="button" role="tab" data-route="agency"  aria-selected="false">i&rsquo;m an agency</button>
-    </div>
-
-    <form id="applyForm" novalidate>
-      <input type="hidden" name="route" id="routeField" value="brand">
-
-      <p class="legend">the basics</p>
-      <div class="row">
-        <div class="f"><label for="name">your name</label>
-          <input id="name" name="name" type="text" autocomplete="name" required placeholder="Arsalan"></div>
-        <div class="f"><label for="email">email</label>
-          <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@company.com"></div>
-        <div class="f"><label for="phone">phone <span class="opt">(optional)</span></label>
-          <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="+91"></div>
+    <div class="card">
+      <div class="chead">
+        <p class="eyebrow">get in touch</p>
+        <h1 class="h1">let&rsquo;s work <span class="hl">together.</span></h1>
+        <p class="lede">Tell us who you are and we&rsquo;ll take it from there. We read every one of these by hand.</p>
       </div>
 
-      <!-- BRAND ------------------------------------------------------------------------- -->
-      <fieldset data-panel="brand">
-        <p class="legend">about the brand</p>
-        <div class="row">
-          <div class="f"><label for="company">company name</label>
+      <!-- One click to self-identify, then you only ever see your own fields. -->
+      <div class="routes" role="tablist" aria-label="What describes you">
+        <button class="route" type="button" role="tab" data-route="brand"   aria-selected="true">i&rsquo;m a brand</button>
+        <button class="route" type="button" role="tab" data-route="creator" aria-selected="false">i&rsquo;m a creator</button>
+        <button class="route" type="button" role="tab" data-route="agency"  aria-selected="false">i&rsquo;m an agency</button>
+      </div>
+
+      <form id="applyForm" novalidate>
+        <input type="hidden" name="route" id="routeField" value="brand">
+
+        <fieldset>
+          <div class="cell"><label for="name">your name</label>
+            <input id="name" name="name" type="text" autocomplete="name" required placeholder="Arsalan"></div>
+          <div class="cell"><label for="email">email</label>
+            <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@company.com"></div>
+        </fieldset>
+
+        <!-- BRAND ----------------------------------------------------------------------- -->
+        <fieldset data-panel="brand">
+          <div class="cell"><label for="phone">phone <span class="opt">(optional)</span></label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="+91"></div>
+          <div class="cell"><label for="company">company name</label>
             <input id="company" name="company" type="text" placeholder="Company"></div>
-          <div class="f"><label for="website">company website <span class="opt">(if any)</span></label>
+          <div class="cell cell--wide"><label for="website">company website <span class="opt">(if any)</span></label>
             <input id="website" name="website" type="url" placeholder="https://"></div>
-        </div>
-        <div class="f"><label>annual revenue</label>
-          <div class="chips">
-            <label><input type="radio" name="revenue" value="u10"><span>under &#8377;10 Cr</span></label>
-            <label><input type="radio" name="revenue" value="10-50"><span>&#8377;10&ndash;50 Cr</span></label>
-            <label><input type="radio" name="revenue" value="50-100"><span>&#8377;50&ndash;100 Cr</span></label>
-            <label><input type="radio" name="revenue" value="100+"><span>&#8377;100 Cr+</span></label>
+          <div class="cell cell--wide"><span class="lbl">annual revenue</span>
+            <div class="chips">
+              <label><input type="radio" name="revenue" value="u10"><span>under &#8377;10 Cr</span></label>
+              <label><input type="radio" name="revenue" value="10-50"><span>&#8377;10&ndash;50 Cr</span></label>
+              <label><input type="radio" name="revenue" value="50-100"><span>&#8377;50&ndash;100 Cr</span></label>
+              <label><input type="radio" name="revenue" value="100+"><span>&#8377;100 Cr+</span></label>
+            </div>
           </div>
-        </div>
-        <div class="f f--wide"><label for="promote">what are you looking to promote?</label>
-          <textarea id="promote" name="promote" placeholder="The product, the goal, and roughly when."></textarea></div>
-      </fieldset>
+          <div class="cell cell--wide"><label for="promote">what are you looking to promote?</label>
+            <textarea id="promote" name="promote" placeholder="The product, the goal, and roughly when."></textarea></div>
+        </fieldset>
 
-      <!-- CREATOR ----------------------------------------------------------------------- -->
-      <fieldset data-panel="creator" hidden>
-        <p class="legend">about you</p>
-        <div class="f f--wide"><label for="handle">main platform + handle</label>
-          <input id="handle" name="handle" type="text" placeholder="Instagram / @yourhandle"></div>
-        <div class="f"><label>audience size</label>
-          <div class="chips">
-            <label><input type="radio" name="audience" value="u100k"><span>under 100K</span></label>
-            <label><input type="radio" name="audience" value="100-500k"><span>100K&ndash;500K</span></label>
-            <label><input type="radio" name="audience" value="500k-1m"><span>500K&ndash;1M</span></label>
-            <label><input type="radio" name="audience" value="1m+"><span>1M+</span></label>
+        <!-- CREATOR --------------------------------------------------------------------- -->
+        <fieldset data-panel="creator" hidden>
+          <div class="cell"><label for="cphone">phone <span class="opt">(optional)</span></label>
+            <input id="cphone" name="phone" type="tel" autocomplete="tel" placeholder="+91"></div>
+          <div class="cell"><label for="handle">main platform + handle</label>
+            <input id="handle" name="handle" type="text" placeholder="Instagram / @yourhandle"></div>
+          <div class="cell cell--wide"><span class="lbl">audience size</span>
+            <div class="chips">
+              <label><input type="radio" name="audience" value="u100k"><span>under 100K</span></label>
+              <label><input type="radio" name="audience" value="100-500k"><span>100K&ndash;500K</span></label>
+              <label><input type="radio" name="audience" value="500k-1m"><span>500K&ndash;1M</span></label>
+              <label><input type="radio" name="audience" value="1m+"><span>1M+</span></label>
+            </div>
           </div>
-        </div>
-        <div class="f"><label>your niche</label>
-          <div class="chips">
-            <label><input type="radio" name="niche" value="tech"><span>tech</span></label>
-            <label><input type="radio" name="niche" value="gaming"><span>gaming</span></label>
-            <label><input type="radio" name="niche" value="broad"><span>broad</span></label>
-            <label><input type="radio" name="niche" value="other"><span>other</span></label>
+          <div class="cell cell--wide"><span class="lbl">your niche</span>
+            <div class="chips">
+              <label><input type="radio" name="niche" value="tech"><span>tech</span></label>
+              <label><input type="radio" name="niche" value="gaming"><span>gaming</span></label>
+              <label><input type="radio" name="niche" value="broad"><span>broad</span></label>
+              <label><input type="radio" name="niche" value="other"><span>other</span></label>
+            </div>
           </div>
-        </div>
-        <div class="f"><label>what do you need?</label>
-          <div class="chips">
-            <label><input type="radio" name="need" value="management"><span>management</span></label>
-            <label><input type="radio" name="need" value="deals"><span>brand deals</span></label>
-            <label><input type="radio" name="need" value="growth"><span>growth</span></label>
-            <label><input type="radio" name="need" value="all"><span>all of it</span></label>
+          <div class="cell cell--wide"><span class="lbl">what do you need?</span>
+            <div class="chips">
+              <label><input type="radio" name="need" value="management"><span>management</span></label>
+              <label><input type="radio" name="need" value="deals"><span>brand deals</span></label>
+              <label><input type="radio" name="need" value="growth"><span>growth</span></label>
+              <label><input type="radio" name="need" value="all"><span>all of it</span></label>
+            </div>
           </div>
-        </div>
-      </fieldset>
+        </fieldset>
 
-      <!-- AGENCY ------------------------------------------------------------------------ -->
-      <fieldset data-panel="agency" hidden>
-        <p class="legend">about the agency</p>
-        <div class="row">
-          <div class="f"><label for="agency">agency name</label>
+        <!-- AGENCY ---------------------------------------------------------------------- -->
+        <fieldset data-panel="agency" hidden>
+          <div class="cell"><label for="aphone">phone <span class="opt">(optional)</span></label>
+            <input id="aphone" name="phone" type="tel" autocomplete="tel" placeholder="+91"></div>
+          <div class="cell"><label for="agency">agency name</label>
             <input id="agency" name="agency" type="text" placeholder="Agency"></div>
-          <div class="f"><label for="agencyWeb">agency website</label>
+          <div class="cell cell--wide"><label for="agencyWeb">agency website</label>
             <input id="agencyWeb" name="agencyWeb" type="url" placeholder="https://"></div>
-        </div>
-        <div class="f"><label>what do you need the tech-creator wing for?</label>
-          <div class="chips">
-            <label><input type="radio" name="wing" value="campaign"><span>a specific campaign</span></label>
-            <label><input type="radio" name="wing" value="roster"><span>ongoing roster access</span></label>
-            <label><input type="radio" name="wing" value="brief"><span>one brief</span></label>
+          <div class="cell cell--wide"><span class="lbl">what do you need the tech-creator wing for?</span>
+            <div class="chips">
+              <label><input type="radio" name="wing" value="campaign"><span>a specific campaign</span></label>
+              <label><input type="radio" name="wing" value="roster"><span>ongoing roster access</span></label>
+              <label><input type="radio" name="wing" value="brief"><span>one brief</span></label>
+            </div>
           </div>
+          <div class="cell cell--wide"><label for="client">client or brand <span class="opt">(if you can share)</span></label>
+            <input id="client" name="client" type="text" placeholder="Who it&rsquo;s for"></div>
+        </fieldset>
+
+        <div class="cell cell--send">
+          <button class="send" type="submit">
+            <span class="send__l">send it over</span>
+            <span class="send__a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <p class="note">No pitch decks required. One reply either way.</p>
         </div>
-        <div class="f f--wide"><label for="client">client or brand <span class="opt">(if you can share)</span></label>
-          <input id="client" name="client" type="text" placeholder="Who it's for"></div>
-      </fieldset>
+      </form>
 
-      <button class="send" type="submit">
-        <span class="send__l">send it over</span>
-        <span class="send__a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      </button>
-      <p class="note">No pitch decks required. One reply either way.</p>
-    </form>
-
-    <div class="done" id="done" role="status" aria-live="polite">
-      <h2 class="done__h">thanks, we&rsquo;ll be in <span class="hl">touch.</span></h2>
-      <p class="done__p">We read every one of these by hand, so give us a day or two. If it&rsquo;s a fit you&rsquo;ll hear from us quickly &mdash; and if it isn&rsquo;t, you&rsquo;ll hear that too.</p>
+      <div class="done" id="done" role="status" aria-live="polite">
+        <h2 class="done__h">thanks, we&rsquo;ll be in <span class="hl">touch.</span></h2>
+        <p class="done__p">We read every one of these by hand, so give us a day or two. If it&rsquo;s a fit you&rsquo;ll hear from us quickly &mdash; and if it isn&rsquo;t, you&rsquo;ll hear that too.</p>
+      </div>
     </div>
   </section>
 </main>
