@@ -443,7 +443,9 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .ubento{flex:1 1 auto; min-height:0; display:flex; flex-direction:column;
   background:var(--snow); border:1px solid var(--line);
   box-shadow:0 26px 60px -22px rgba(16,12,8,.28);}
-.ubento > * + *{border-top:1px solid var(--line);}
+/* :not(:first-child) rather than `* + *` on purpose — the blocks below set `border:none`,
+   and at equal specificity the later rule wins and the partitions vanish. */
+.ubento > *:not(:first-child){border-top:1px solid var(--line);}
 .ucard{flex:1 1 auto; display:flex; gap:.75em; align-items:center; cursor:pointer;
   background:transparent; border:none; box-shadow:none;
   padding:calc(var(--card-pad,34px)*.6) calc(var(--card-pad,34px)*.62);
