@@ -1026,8 +1026,13 @@ function reelStep(dir){
   if (next < 0 || next > REEL.length - 1) return;
   reelTo(next);
 }
+/* Only the TOP releases. Releasing at the bottom let the page scroll past the reel's range,
+   which deactivated the trigger — and deactivating reset the reel to slide 0, so the orange
+   reappeared after the footer and you were then stuck bouncing between the hero and the
+   orange. The footer is the last thing on the site, so there is nothing to scroll on to:
+   the reel is terminal downward and only ever hands back upward, into the hero. */
 function atEdge(dir){
-  return (reelIdx === 0 && dir < 0) || (reelIdx === REEL.length - 1 && dir > 0);
+  return reelIdx === 0 && dir < 0;
 }
 addEventListener("wheel", e => {
   if (!reelActive) return;
@@ -1073,6 +1078,8 @@ ScrollTrigger.create({
   onToggle: self => {
     reelActive = self.isActive;
     reelEl.style.opacity = self.isActive ? 1 : 0;
+    /* deactivation can now only mean "scrolled back up into the hero", so resetting to the
+       orange slide is correct — re-entering from the hero should land on it again. */
     if (!self.isActive) reelTo(0);
     setReelPhase(reelIdx);
   }
