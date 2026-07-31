@@ -635,13 +635,18 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 
 /* the continuous tail runs as one scroll, so mid-run slides do not each reserve the full
    nav + home bands — that was stacking ~250px of dead air between the founder and this. */
-/* Trimmed to the minimum that still clears the phone's own chrome. Note what is left is
-   almost entirely the chrome itself — status band + nav band ≈ 117px — not padding we chose;
-   below that the card would sit under the navbar when the section comes to rest. */
-.rs--cont{padding-top:calc(var(--status-band,0px) + var(--nav-band,0px) + 8px);
-  padding-bottom:8px;}
-[data-s="founder"]{padding-bottom:8px !important;}
+/* THE GAP WAS NOT PADDING — it was centring. .rs--built centres its content, so each card
+   left half its slack above and half below, and in a continuous run those halves stack:
+   founder's leftover + its padding + together's padding + together's leftover ≈ 380px of
+   orange. Stretching the cards to fill their slide removes the leftover entirely.
+   The tail also drops the nav-band reservation: it never comes to rest, so content passing
+   under the navbar mid-scroll is correct — that is how a normal page behaves. Founder keeps
+   the full reservation because it IS a rest position, the last snapped slide. */
+.rs--cont{align-items:stretch; padding-top:var(--sec-pad,26px); padding-bottom:var(--sec-pad,26px);}
+[data-s="founder"]{align-items:stretch; padding-bottom:8px !important;}
 [data-s="footer"]{padding-bottom:calc(var(--sec-pad,26px) + var(--home-band,0px));}
+/* stretched, the card is the full slide — its content still reads from the top */
+.rs--cont > .card{display:flex; flex-direction:column; justify-content:center;}
 
 /* ── FOOTER ───────────────────────────────────────────────────────────────────────────
    Black ground with its OWN grid: two verticals framing the column and a hairline under
@@ -650,9 +655,9 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .foot{position:relative; z-index:1; width:100%; display:flex; flex-direction:column;}
 .foot__v{position:absolute; top:0; bottom:0; width:1px; background:rgba(255,255,255,.16);}
 .foot__v--l{left:0;} .foot__v--r{right:0;}
-.foot__b{padding:calc(var(--card-pad,34px)*.52) calc(var(--card-pad,34px)*.5);
+.foot__b{padding:calc(var(--card-pad,34px)*.34) calc(var(--card-pad,34px)*.5);
   border-bottom:1px solid rgba(255,255,255,.16); display:flex; flex-direction:column;
-  gap:calc(var(--card-gap,26px)*.3);}
+  gap:calc(var(--card-gap,26px)*.22);}
 .foot__b:last-child{border-bottom:none;}
 .foot__b--soc{flex-direction:row; gap:.55em;}
 .foot__b--end{flex-direction:row; justify-content:space-between; align-items:center;
