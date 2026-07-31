@@ -1012,6 +1012,19 @@ function holdUntilQuiet(){
   idleT = setTimeout(() => { reelLock = false; }, QUIET_MS);
 }
 
+/* HARD SCROLL LOCK.
+   preventDefault on wheel does not reliably cancel momentum that is already running, so the
+   page kept creeping while the reel was active. The reel's range is only ~790px, so a few
+   flicks' worth of drift ran off the end of it, the trigger deactivated, and deactivating
+   resets to slide 0 — which is the "jumps back to the orange and stops progressing".
+   Pinning the scroll position removes the drift entirely instead of trying to out-run it. */
+let lockY = 0, scrollLocked = false;
+function lockScroll(){ lockY = scrollY; scrollLocked = true; }
+function unlockScroll(){ scrollLocked = false; }
+addEventListener("scroll", () => {
+  if (scrollLocked && scrollY !== lockY) window.scrollTo(0, lockY);
+}, { passive: true });
+
 /* Slide 0 is the orange hero screen; every slide after it is white with the dark grid. The
    grid is driven WHITE for the orange, so it has to flip back or it is white-on-white. */
 function setReelPhase(i){
@@ -1038,8 +1051,9 @@ addEventListener("wheel", e => {
   if (!reelActive) return;
   if (Math.abs(e.deltaY) < 2) return;          /* ignore wheel noise */
   const dir = e.deltaY > 0 ? 1 : -1;
-  if (atEdge(dir)) return;                     /* release to the page at both ends */
+  if (atEdge(dir)) { unlockScroll(); return; } /* hand the page back, upward only */
   e.preventDefault();
+  if (!scrollLocked) lockScroll();             /* re-pin if we had released and came back */
   const wasLocked = reelLock;
   reelLock = true;
   holdUntilQuiet();                            /* the whole inertia tail keeps it held */
@@ -1078,6 +1092,7 @@ ScrollTrigger.create({
   onToggle: self => {
     reelActive = self.isActive;
     reelEl.style.opacity = self.isActive ? 1 : 0;
+    if (self.isActive) lockScroll(); else unlockScroll();
     /* deactivation can now only mean "scrolled back up into the hero", so resetting to the
        orange slide is correct — re-entering from the hero should land on it again. */
     if (!self.isActive) reelTo(0);
