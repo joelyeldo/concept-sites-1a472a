@@ -530,11 +530,15 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 
 /* team chat — inside the aperture, not over the viewport. Everything on this site happens
    on the phone screen; a full-page modal would be the one thing that escapes it. */
-.chat{position:absolute; inset:0; z-index:9; display:grid; place-items:center;
-  padding:calc(var(--sec-pad,26px)*.5); background:rgba(16,12,8,.55);}
+/* Parked in the band BETWEEN the phone's own chrome: below the navbar with 10px of air,
+   clear of the home indicator, and exactly as wide as the navbar so the two read as the same
+   piece of UI. --nav-w is published to :root for this (the nav is not an ancestor). */
+.chat{position:absolute; inset:0; z-index:9; display:grid; justify-items:center; align-items:stretch;
+  padding:calc(var(--status-band,0px) + var(--nav-band,0px) + 10px) 0 calc(var(--home-band,0px) + 10px);
+  background:rgba(16,12,8,.55);}
 .chat[hidden]{display:none;}
-.chat__box{width:100%; height:82%; display:flex; flex-direction:column; background:var(--snow);
-  box-shadow:0 30px 70px -24px rgba(16,12,8,.5);}
+.chat__box{width:var(--nav-w,88%); height:100%; min-height:0; display:flex; flex-direction:column;
+  background:var(--snow); box-shadow:0 30px 70px -24px rgba(16,12,8,.5);}
 .chat__head{display:flex; align-items:center; gap:.55rem; padding:.6rem .7rem;
   border-bottom:1px solid var(--line);}
 .chat__badge{display:inline-flex; align-items:center; gap:.32rem; background:var(--pitch);
@@ -578,6 +582,8 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
   background-size:var(--cell-w) 100%, 100% var(--cell-h);
   background-position:calc(50% + var(--cell-w)/2) 0, 0 calc(50% - .5px);}
 .fnd{position:relative; z-index:1; width:100%; display:flex; flex-direction:column;
+  background:var(--orange);          /* opaque: the white section grid was showing straight
+                                        through and reading as partitions that overshoot */
   border:1px solid rgba(255,255,255,.55);}
 .fnd > *:not(:first-child){border-top:1px solid rgba(255,255,255,.55);}
 .fnd__hd{padding:calc(var(--card-pad,34px)*.5);}
@@ -592,7 +598,9 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
   font-size:calc(var(--sec-body,15px)*.88); line-height:1.4;}
 /* photo left, stats stacked right — the reference's split */
 .fnd__body{display:flex; align-items:stretch;}
-.fnd__photo{position:relative; flex:0 0 46%; overflow:hidden; background:var(--pitch);
+.fnd__photo{position:relative; flex:0 0 46%; margin:0;   /* <figure> carries a UA margin —
+     that was the orange gutter around the portrait */
+  overflow:hidden; background:var(--pitch);
   border-right:1px solid rgba(255,255,255,.55);}
 .fnd__photo img{width:100%; height:100%; object-fit:cover; object-position:62% 50%; display:block;}
 /* the subject stands right-of-centre in the source, hence 62% — a plain centre crop cuts him */
@@ -609,6 +617,13 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
   text-transform:lowercase;}
 .fstat__l{font-family:"Switzer",sans-serif; color:rgba(255,255,255,.9); margin:.25em 0 0;
   font-size:calc(var(--sec-body,15px)*.72); line-height:1.25;}
+
+/* ── CONTINUOUS TAIL ──────────────────────────────────────────────────────────────────
+   Normal page sections below the hero. Placeholder styling until these are built. */
+.page{min-height:100dvh; display:flex; flex-direction:column; justify-content:center;
+  padding:clamp(2rem,7vw,6rem); background:var(--snow); border-top:1px solid var(--line);}
+.page .rs__t{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  font-size:clamp(2rem,6vw,4rem); letter-spacing:-.03em; margin:.2em 0 0;}
 
 /* ── THE REEL ─────────────────────────────────────────────────────────────────────────
    Once the hero lands, the whole site plays inside the phone screen: each section is one
@@ -677,7 +692,7 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    artwork in the export occupies rows 20-85 of 100 and touches NEITHER source edge, so
    nothing is being cropped by the file or by this box — what reads as clipping is the export
    having dead space above and below the frames. Tightening that is a re-export, not CSS. */
-.sec__vid{margin:0 calc(-1 * var(--card-pad,34px)) calc(-1 * var(--card-pad,34px) + 10px);
+.sec__vid{margin:0 calc(-1 * var(--card-pad,34px)) calc(-1 * var(--card-pad,34px) + 3px);
   aspect-ratio:2000 / 800; overflow:hidden;}
 /* contain, not cover: box and source share a ratio, so this is a 1:1 fit and guarantees the
    frames survive even if the export comes back a pixel off square.
@@ -1205,11 +1220,7 @@ body.reg #regout{display:block;}
           </div>
         </section>
 
-        <!-- 7 · TOGETHER — no scarcity, no pricing. Reason to act = a concrete next step. -->
-        <section class="rs" data-s="together" style="top:700%"><p class="rs__n">7 / 9</p><h2 class="rs__t">work together</h2><p class="rs__todo">no scarcity, no pricing</p></section>
 
-        <!-- 8 · FOOTER — terminal slide: sign-off + contact + the 24×7 gag. -->
-        <section class="rs" data-s="footer" style="top:800%"><p class="rs__n">8 / 9</p><h2 class="rs__t">footer</h2><p class="rs__todo">24x7 joke on the opening hours</p></section>
       </div>
 
       <!-- both of these live INSIDE the aperture on purpose: the cursor is clipped by the
@@ -1280,6 +1291,20 @@ body.reg #regout{display:block;}
   </div>
 </section>
 
+<!-- ── CONTINUOUS TAIL ──────────────────────────────────────────────────────────────────
+     Everything above plays inside the phone on a gesture-driven reel. From here down the
+     page scrolls normally: founder is the last reel step, and releasing past it hands
+     scrolling back to the browser. Coming back up re-arms the reel ON THE FOUNDER, not on
+     the hero, so the two mechanisms meet at one seam instead of fighting over the page. -->
+<section class="page" id="together" data-page="together">
+  <p class="rs__n">7 / 9</p><h2 class="rs__t">work together</h2>
+  <p class="rs__todo">no scarcity, no pricing</p>
+</section>
+<section class="page" id="contactfoot" data-page="footer">
+  <p class="rs__n">8 / 9</p><h2 class="rs__t">footer</h2>
+  <p class="rs__todo">24x7 joke on the opening hours</p>
+</section>
+
 <pre id="regout"></pre>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -1321,6 +1346,10 @@ let dashPeriod = "monthly";
 let chatOpener = null;
 let trackIdx = 0;          /* which song the player card is on — same hoisting rule */
 let storyCue = 0;          /* pending "play the story clip" timer; storyArm cancels it */
+/* which edge the reel was released at: "top" hands back to the hero, "bottom" hands on to
+   the continuous sections. Up here because the morph's onUpdate reads it and can fire
+   during init — the same TDZ shape that has killed this script before. */
+let leftVia = "top";
 /* the UNCAPPED shared screen height. The hero headline is sized off this, not off the capped
    screenH0, so capping the crop box does not silently shrink type the Writer already tuned. */
 let screenH0Nat = 0;
@@ -1496,7 +1525,9 @@ function setNav(p){
      layer pasted over the photo; inset reads as UI running ON the screen. */
   const endTop = G.screenTop + G.statusH + NAV_INSET;   /* below the glass status band */
   const navEndW = G.screenW - G.screenW * NAV_PAD * 2;   /* narrower than the crop box */
-  navEl.style.setProperty("--nav-w",   gsap.utils.interpolate(startW, navEndW, p) + "px");
+  const navWpx = gsap.utils.interpolate(startW, navEndW, p);
+  navEl.style.setProperty("--nav-w", navWpx + "px");
+  root.style.setProperty("--nav-w",  navWpx + "px");   /* the chat matches the navbar */
   /* published so every section we add inside the frame shares one gutter with the nav */
   root.style.setProperty("--screen-pad", (G.screenW * SCREEN_PAD) + "px");
   navEl.style.setProperty("--nav-top", gsap.utils.interpolate(PHONE_TOP, endTop, p) + "px");
@@ -1753,7 +1784,7 @@ tl.to(morph, {
                 gsap.utils.interpolate(from.h, G.endH, p), p);
     setNav(p);   /* the bar shrinks onto the phone on the same curve */
     if (p >= 0.999 && !leftReel) enterReel();
-    if (p < 0.97) { leftReel = false; if (reelActive) exitReel(); }
+    if (p < 0.97) { leftReel = false; leftVia = "top"; if (reelActive) exitReel("top"); }
   }
 }, 0.05);
 
@@ -2190,7 +2221,7 @@ document.querySelectorAll("[data-go]").forEach(a => {
 function reelStep(dir){
   /* released here rather than in the wheel handler, so handing the page back costs a fresh
      gesture exactly like every other step does */
-  if (atEdge(dir)) { exitReel(); return; }
+  if (atEdge(dir)) { exitReel(dir > 0 ? "bottom" : "top"); return; }
   const next = reelIdx + dir;
   if (next < 0 || next > REEL.length - 1) return;
   reelTo(next);
@@ -2200,8 +2231,15 @@ function reelStep(dir){
    reappeared after the footer and you were then stuck bouncing between the hero and the
    orange. The footer is the last thing on the site, so there is nothing to scroll on to:
    the reel is terminal downward and only ever hands back upward, into the hero. */
+/* the scroll offset at which the hero's pin lets go */
+function heroEnd(){
+  const h = document.getElementById("hero");
+  return h.offsetTop + h.offsetHeight - innerHeight;
+}
+/* BOTH edges release now: the top hands back to the hero, the bottom hands on to the
+   continuous sections. Everything in between stays one-gesture-one-slide. */
 function atEdge(dir){
-  return reelIdx === 0 && dir < 0;
+  return (reelIdx === 0 && dir < 0) || (reelIdx === REEL.length - 1 && dir > 0);
 }
 addEventListener("wheel", e => {
   /* A menu is a modal: nothing behind it moves. Without this the reel kept stepping
@@ -2214,7 +2252,12 @@ addEventListener("wheel", e => {
        the top of the reel doesn't instantly re-grab the page — but keying it only to the
        morph being rewound meant that after releasing you had to scroll all the way up past
        the morph before the reel would take again. Scrolling down IS the intent to re-enter. */
-    if (e.deltaY > 0) leftReel = false;
+    if (leftVia === "bottom"){
+      /* came out of the bottom: scrolling back UP into the pin re-takes the reel on the very
+         slide we left. Handled here rather than off the morph's progress, because below the
+         morph's scroll range that callback has stopped firing. */
+      if (e.deltaY < 0 && scrollY <= heroEnd() + 4){ leftReel = false; enterReel(); e.preventDefault(); }
+    } else if (e.deltaY > 0) leftReel = false;
     return;
   }
   /* the chat log scrolls on its own; letting the reel eat those deltas would flick the
@@ -2272,13 +2315,22 @@ function enterReel(){
   lockScroll();
   setReelPhase(reelIdx);
 }
-function exitReel(){
+function exitReel(via){
   if (!reelActive) return;
   reelActive = false;
   leftReel = true;                 /* don't re-arm until the morph has actually been rewound */
-  reelEl.style.opacity = 0;
+  leftVia  = via || "top";
   unlockScroll();
-  setReelPhase(0);
+  if (leftVia === "top"){
+    reelEl.style.opacity = 0;
+    setReelPhase(0);
+  } else {
+    /* Bottom release: keep the founder ON the phone and keep the reel's index, so the slide
+       scrolls away with the pin instead of blanking, and coming back up restores where you
+       left rather than dumping you on the orange. Then push the page past the pin so the
+       continuous sections are what the next scroll actually moves. */
+    scrollTo({ top: heroEnd() + 2, behavior: "smooth" });
+  }
 }
 
 
