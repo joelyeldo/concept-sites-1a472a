@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>9x16 Media — let's work together</title>
+<meta name="description" content="Tell us who you are and we'll take it from there.">
+<style>
+@font-face { font-family:"Clash Display"; src:url("assets/fonts/clash-display-600.woff2") format("woff2"); font-weight:600; font-display:swap; }
+@font-face { font-family:"Switzer"; src:url("assets/fonts/switzer-400.woff2") format("woff2"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Switzer"; src:url("assets/fonts/switzer-600.woff2") format("woff2"); font-weight:600; font-display:swap; }
+@font-face { font-family:"Switzer"; src:url("assets/fonts/switzer-700.woff2") format("woff2"); font-weight:700; font-display:swap; }
+
+:root{
+  --snow:#FAFAFA; --paper:#F1EEE9; --pitch:#100C08; --orange:#FF7B00;
+  --mute:#6B6560; --slate:#3E3E3E; --line:rgba(16,12,8,.09);
+  --ease-out:cubic-bezier(.23,1,.32,1);
+  --pad:clamp(1.25rem,4vw,4rem);
+  /* the 9:16 column positions, same six as the main page */
+  --gutter:9%;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{margin:0; background:var(--snow); color:var(--pitch);
+  font-family:"Switzer",sans-serif; -webkit-font-smoothing:antialiased;}
+a{color:inherit;}
+.hl{background:var(--orange); color:var(--snow); padding:0 .1em;}
+
+/* ── NAV — full width here, no constriction: this page has no phone to constrict into ──── */
+.nav{position:sticky; top:0; z-index:50; display:flex; justify-content:center;
+  width:100%; padding:16px var(--pad) 0; pointer-events:none;}
+.nav__inner{width:min(1180px,100%); display:flex; align-items:center; justify-content:space-between;
+  padding:.7rem .9rem .7rem 1.4rem; background:#fff; pointer-events:auto;
+  box-shadow:inset 0 0 0 1px rgba(16,12,8,.10), 0 12px 38px rgba(16,12,8,.08);}
+.nav__logo{height:56px; width:auto; display:block;}
+.nav__links{display:flex; align-items:center; gap:clamp(1.1rem,2.4vw,2.1rem); padding-right:.7rem;}
+.nav__links a{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  text-decoration:none; font-size:1.12rem; opacity:.9;}
+.nav__links a:hover{opacity:1;}
+@media (max-width:640px){ .nav__links{display:none;} .nav__logo{height:44px;} }
+
+/* ── PAGE GRID ─────────────────────────────────────────────────────────────────────────── */
+.wrap{position:relative; width:min(1180px,100%); margin:0 auto; padding:0 var(--pad);}
+.grid{position:fixed; inset:0; z-index:0; pointer-events:none;}
+.grid span{position:absolute; top:0; bottom:0; width:1px; background:var(--line);}
+
+/* ── APPLY ─────────────────────────────────────────────────────────────────────────────── */
+.apply{position:relative; z-index:1; padding:clamp(3rem,9vw,7rem) 0 clamp(4rem,10vw,8rem);}
+.eyebrow{font-weight:600; font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--mute); margin:0 0 .9rem;}
+.h1{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  font-size:clamp(2.6rem,7vw,5rem); line-height:1.02; letter-spacing:-.035em; margin:0;}
+.lede{font-size:clamp(1rem,1.4vw,1.18rem); line-height:1.55; color:var(--slate);
+  max-width:46ch; margin:1.1rem 0 0;}
+
+/* the three routes. Tabs, not a dropdown: the whole point is that you self-identify in one
+   click and only ever see your own fields. */
+.routes{display:flex; flex-wrap:wrap; gap:0; margin:clamp(2rem,4vw,3rem) 0 0;
+  box-shadow:inset 0 0 0 1px var(--line); width:fit-content;}
+.route{appearance:none; border:none; cursor:pointer; background:transparent; color:var(--pitch);
+  font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  font-size:clamp(1rem,1.5vw,1.2rem); padding:.85em 1.4em;
+  transition:background-color .22s var(--ease-out), color .22s var(--ease-out);}
+.route + .route{box-shadow:inset 1px 0 0 var(--line);}
+.route:hover{background:var(--paper);}
+.route[aria-selected="true"]{background:var(--pitch); color:var(--snow);}
+
+form{margin:clamp(2rem,4vw,3rem) 0 0; max-width:760px;}
+fieldset{border:none; margin:0; padding:0;}
+fieldset[hidden]{display:none;}
+.legend{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  font-size:1.35rem; letter-spacing:-.02em; margin:2.4rem 0 1.2rem;
+  padding-top:1.4rem; border-top:1px solid var(--line);}
+.row{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.1rem;}
+@media (max-width:640px){ .row{grid-template-columns:1fr;} }
+.f{display:flex; flex-direction:column; gap:.45rem; margin:0 0 1.1rem;}
+.f--wide{grid-column:1 / -1;}
+.f > label{font-weight:600; font-size:.82rem; letter-spacing:.02em;}
+.f > label .opt{font-weight:400; color:var(--mute);}
+.f input[type=text], .f input[type=email], .f input[type=tel], .f input[type=url], .f textarea{
+  font-family:"Switzer",sans-serif; font-size:1rem; color:var(--pitch); background:#fff;
+  border:none; box-shadow:inset 0 0 0 1px var(--line); padding:.85rem .9rem; width:100%;
+  transition:box-shadow .18s var(--ease-out);}
+.f textarea{min-height:120px; resize:vertical;}
+.f input:focus, .f textarea:focus{outline:none; box-shadow:inset 0 0 0 2px var(--orange);}
+.f input::placeholder, .f textarea::placeholder{color:#B4AEA8;}
+
+/* radio groups render as a row of chips — one tap, no dropdown */
+.chips{display:flex; flex-wrap:wrap; gap:0; box-shadow:inset 0 0 0 1px var(--line); width:fit-content; max-width:100%;}
+.chips label{cursor:pointer; padding:.7em 1.05em; font-size:.92rem; white-space:nowrap;
+  transition:background-color .2s var(--ease-out), color .2s var(--ease-out);}
+.chips label + label{box-shadow:inset 1px 0 0 var(--line);}
+.chips input{position:absolute; opacity:0; pointer-events:none;}
+.chips label:hover{background:var(--paper);}
+.chips input:checked + span{}
+.chips label:has(input:checked){background:var(--pitch); color:var(--snow);}
+.chips label:has(input:focus-visible){outline:2px solid var(--orange); outline-offset:-2px;}
+
+/* same slab as the site's CTA — text block, hairline, 9:16 arrow tile */
+.send{align-self:flex-start; display:inline-flex; align-items:stretch; height:52px; margin-top:2.2rem;
+  background:var(--pitch); color:var(--snow); border:none; padding:0; cursor:pointer;
+  transition:background-color .22s var(--ease-out), transform .16s var(--ease-out);}
+.send:hover{background:var(--orange);}
+.send:active{transform:scale(.985);}
+.send__l{display:flex; align-items:center; padding:0 1.3rem; white-space:nowrap;
+  font-family:"Switzer",sans-serif; font-weight:600; font-size:1rem;}
+.send__a{align-self:stretch; width:30px; display:flex; align-items:center; justify-content:center;
+  border-left:1px solid rgba(255,255,255,.4);}
+.send__a svg{width:16px; height:16px; transform:rotate(-45deg); transition:transform .3s var(--ease-out);}
+.send:hover .send__a svg{transform:rotate(0deg);}
+.note{font-size:.82rem; color:var(--mute); margin:1rem 0 0;}
+
+/* success state replaces the form in place — no navigation, no lost context */
+.done{display:none; padding:clamp(2rem,5vw,4rem) 0;}
+.done.is-on{display:block;}
+form.is-off{display:none;}
+.done__h{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  font-size:clamp(2rem,5vw,3.4rem); line-height:1.05; letter-spacing:-.03em; margin:0;}
+.done__p{color:var(--slate); margin:1rem 0 0; max-width:44ch;}
+
+/* ── FOOTER — full width, black, its own two rules ─────────────────────────────────────── */
+.foot{position:relative; background:var(--pitch); color:var(--snow); z-index:1;}
+.foot::before, .foot::after{content:""; position:absolute; top:0; bottom:0; width:1px;
+  background:rgba(255,255,255,.26);}
+.foot::before{left:9%;} .foot::after{left:91%;}
+.foot__in{position:relative; z-index:2; width:min(1180px,100%); margin:0 auto; padding:0 var(--pad);}
+.foot__b{padding:clamp(1.6rem,3vw,2.4rem) 0; border-bottom:1px solid rgba(255,255,255,.16);
+  display:flex; flex-direction:column; gap:.55rem;}
+.foot__b:last-child{border-bottom:none;}
+.foot__tag{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  font-size:clamp(2rem,5vw,3.4rem); line-height:1.06; letter-spacing:-.03em; margin:0;}
+.foot__note{color:rgba(255,255,255,.68); margin:0; max-width:38ch; line-height:1.5;}
+.foot__email{font-family:"Clash Display",sans-serif; font-weight:600; font-size:clamp(1.2rem,2.4vw,1.8rem);
+  letter-spacing:-.02em; text-decoration:none; align-self:flex-start;}
+.foot__email:hover{color:var(--orange);}
+.foot__addr, .foot__hours{color:rgba(255,255,255,.62); margin:0; line-height:1.5; font-size:.94rem;}
+.foot__addr a{text-decoration:none;}
+.foot__b--soc{flex-direction:row; gap:.6rem;}
+.foot__ic{width:38px; height:38px; display:grid; place-items:center;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.24); transition:background-color .2s var(--ease-out);}
+.foot__ic svg{width:18px; height:18px;}
+.foot__ic:hover{background:var(--orange); box-shadow:none;}
+.foot__b--end{flex-direction:row; justify-content:space-between; align-items:center;
+  font-size:.8rem; color:rgba(255,255,255,.42);}
+@media (max-width:560px){ .foot__b--end{flex-direction:column; align-items:flex-start; gap:.4rem;} }
+
+@media (prefers-reduced-motion:reduce){ *{transition:none !important;} html{scroll-behavior:auto;} }
+</style>
+</head>
+<body>
+
+<div class="grid" aria-hidden="true">
+  <span style="left:9%"></span><span style="left:25.5%"></span><span style="left:41.8%"></span>
+  <span style="left:58.2%"></span><span style="left:74.5%"></span><span style="left:91%"></span>
+</div>
+
+<header class="nav">
+  <div class="nav__inner">
+    <a class="nav__brand" href="index.html" aria-label="9x16 Media, home">
+      <img class="nav__logo" src="assets/logo.svg" alt="9x16 Media">
+    </a>
+    <nav class="nav__links" aria-label="Primary">
+      <a href="index.html">our story</a><a href="index.html">our work</a><a href="apply.html">work with us</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="apply">
+    <p class="eyebrow">get in touch</p>
+    <h1 class="h1">let&rsquo;s work <span class="hl">together.</span></h1>
+    <p class="lede">Tell us who you are and we&rsquo;ll take it from there. We read every one of these by hand.</p>
+
+    <!-- One click to self-identify, then you only ever see your own fields. Radios rather
+         than buttons so the choice submits with the form and survives without JS. -->
+    <div class="routes" role="tablist" aria-label="What describes you">
+      <button class="route" type="button" role="tab" data-route="brand"   aria-selected="true">i&rsquo;m a brand</button>
+      <button class="route" type="button" role="tab" data-route="creator" aria-selected="false">i&rsquo;m a creator</button>
+      <button class="route" type="button" role="tab" data-route="agency"  aria-selected="false">i&rsquo;m an agency</button>
+    </div>
+
+    <form id="applyForm" novalidate>
+      <input type="hidden" name="route" id="routeField" value="brand">
+
+      <p class="legend">the basics</p>
+      <div class="row">
+        <div class="f"><label for="name">your name</label>
+          <input id="name" name="name" type="text" autocomplete="name" required placeholder="Arsalan"></div>
+        <div class="f"><label for="email">email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@company.com"></div>
+        <div class="f"><label for="phone">phone <span class="opt">(optional)</span></label>
+          <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="+91"></div>
+      </div>
+
+      <!-- BRAND ------------------------------------------------------------------------- -->
+      <fieldset data-panel="brand">
+        <p class="legend">about the brand</p>
+        <div class="row">
+          <div class="f"><label for="company">company name</label>
+            <input id="company" name="company" type="text" placeholder="Company"></div>
+          <div class="f"><label for="website">company website <span class="opt">(if any)</span></label>
+            <input id="website" name="website" type="url" placeholder="https://"></div>
+        </div>
+        <div class="f"><label>annual revenue</label>
+          <div class="chips">
+            <label><input type="radio" name="revenue" value="u10"><span>under &#8377;10 Cr</span></label>
+            <label><input type="radio" name="revenue" value="10-50"><span>&#8377;10&ndash;50 Cr</span></label>
+            <label><input type="radio" name="revenue" value="50-100"><span>&#8377;50&ndash;100 Cr</span></label>
+            <label><input type="radio" name="revenue" value="100+"><span>&#8377;100 Cr+</span></label>
+          </div>
+        </div>
+        <div class="f f--wide"><label for="promote">what are you looking to promote?</label>
+          <textarea id="promote" name="promote" placeholder="The product, the goal, and roughly when."></textarea></div>
+      </fieldset>
+
+      <!-- CREATOR ----------------------------------------------------------------------- -->
+      <fieldset data-panel="creator" hidden>
+        <p class="legend">about you</p>
+        <div class="f f--wide"><label for="handle">main platform + handle</label>
+          <input id="handle" name="handle" type="text" placeholder="Instagram / @yourhandle"></div>
+        <div class="f"><label>audience size</label>
+          <div class="chips">
+            <label><input type="radio" name="audience" value="u100k"><span>under 100K</span></label>
+            <label><input type="radio" name="audience" value="100-500k"><span>100K&ndash;500K</span></label>
+            <label><input type="radio" name="audience" value="500k-1m"><span>500K&ndash;1M</span></label>
+            <label><input type="radio" name="audience" value="1m+"><span>1M+</span></label>
+          </div>
+        </div>
+        <div class="f"><label>your niche</label>
+          <div class="chips">
+            <label><input type="radio" name="niche" value="tech"><span>tech</span></label>
+            <label><input type="radio" name="niche" value="gaming"><span>gaming</span></label>
+            <label><input type="radio" name="niche" value="broad"><span>broad</span></label>
+            <label><input type="radio" name="niche" value="other"><span>other</span></label>
+          </div>
+        </div>
+        <div class="f"><label>what do you need?</label>
+          <div class="chips">
+            <label><input type="radio" name="need" value="management"><span>management</span></label>
+            <label><input type="radio" name="need" value="deals"><span>brand deals</span></label>
+            <label><input type="radio" name="need" value="growth"><span>growth</span></label>
+            <label><input type="radio" name="need" value="all"><span>all of it</span></label>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- AGENCY ------------------------------------------------------------------------ -->
+      <fieldset data-panel="agency" hidden>
+        <p class="legend">about the agency</p>
+        <div class="row">
+          <div class="f"><label for="agency">agency name</label>
+            <input id="agency" name="agency" type="text" placeholder="Agency"></div>
+          <div class="f"><label for="agencyWeb">agency website</label>
+            <input id="agencyWeb" name="agencyWeb" type="url" placeholder="https://"></div>
+        </div>
+        <div class="f"><label>what do you need the tech-creator wing for?</label>
+          <div class="chips">
+            <label><input type="radio" name="wing" value="campaign"><span>a specific campaign</span></label>
+            <label><input type="radio" name="wing" value="roster"><span>ongoing roster access</span></label>
+            <label><input type="radio" name="wing" value="brief"><span>one brief</span></label>
+          </div>
+        </div>
+        <div class="f f--wide"><label for="client">client or brand <span class="opt">(if you can share)</span></label>
+          <input id="client" name="client" type="text" placeholder="Who it's for"></div>
+      </fieldset>
+
+      <button class="send" type="submit">
+        <span class="send__l">send it over</span>
+        <span class="send__a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </button>
+      <p class="note">No pitch decks required. One reply either way.</p>
+    </form>
+
+    <div class="done" id="done" role="status" aria-live="polite">
+      <h2 class="done__h">thanks, we&rsquo;ll be in <span class="hl">touch.</span></h2>
+      <p class="done__p">We read every one of these by hand, so give us a day or two. If it&rsquo;s a fit you&rsquo;ll hear from us quickly &mdash; and if it isn&rsquo;t, you&rsquo;ll hear that too.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot__in">
+    <div class="foot__b">
+      <h2 class="foot__tag">attention made <span class="hl">9x16</span></h2>
+      <p class="foot__note">Tell us what you&rsquo;re building. If it&rsquo;s a fit, you&rsquo;ll hear from us quickly.</p>
+    </div>
+    <div class="foot__b">
+      <a class="foot__email" href="mailto:arsi@9x16.studio">arsi@9x16.studio</a>
+      <p class="foot__addr"><a href="tel:+918369325960">+91 83693 25960</a></p>
+      <p class="foot__hours">Mon&ndash;Sat, 11&ndash;7 on paper. The scroll doesn&rsquo;t clock off, so mostly neither do we.</p>
+      <p class="foot__addr">Mumbai, India</p>
+    </div>
+    <div class="foot__b foot__b--soc">
+      <a class="foot__ic" href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg></a>
+      <a class="foot__ic" href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="5" width="20" height="14" rx="3.5"/><path d="M10.2 8.7l5 3.3-5 3.3z" fill="currentColor" stroke="none"/></svg></a>
+      <a class="foot__ic" href="#" aria-label="X"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 4l16 16M20 4L4 20"/></svg></a>
+    </div>
+    <div class="foot__b foot__b--end">
+      <span>&copy; 2026 9x16. All rights reserved.</span><span>9x16.studio</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const form   = document.getElementById("applyForm");
+  const routeF = document.getElementById("routeField");
+  const tabs   = [...document.querySelectorAll(".route")];
+  const panels = [...document.querySelectorAll("[data-panel]")];
+
+  function show(route){
+    tabs.forEach(t => t.setAttribute("aria-selected", String(t.dataset.route === route)));
+    /* hidden, not display:none in CSS alone — a hidden fieldset's inputs stay in the DOM but
+       we disable them so a half-filled creator panel can't ride along on a brand submission. */
+    panels.forEach(p => {
+      const on = p.dataset.panel === route;
+      p.hidden = !on;
+      p.querySelectorAll("input, textarea, select").forEach(el => { el.disabled = !on; });
+    });
+    routeF.value = route;
+  }
+  tabs.forEach(t => t.addEventListener("click", () => show(t.dataset.route)));
+  show("brand");
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    /* Only the shared fields are required; the route panels are all optional on purpose —
+       chasing a complete form on the highest-intent page in the site loses more leads than
+       the missing fields are worth. */
+    const name = form.name.value.trim(), email = form.email.value.trim();
+    if (!name || !/^\S+@\S+\.\S+$/.test(email)){
+      const bad = !name ? form.name : form.email;
+      bad.focus();
+      bad.style.boxShadow = "inset 0 0 0 2px var(--orange)";
+      return;
+    }
+    /* NO BACKEND WIRED. The payload is assembled and logged so whoever hooks this up can see
+       exactly what shape to expect; nothing is sent anywhere yet. */
+    const payload = Object.fromEntries(new FormData(form).entries());
+    console.info("apply.html — form payload (no endpoint wired yet):", payload);
+    form.classList.add("is-off");
+    document.getElementById("done").classList.add("is-on");
+    document.getElementById("done").scrollIntoView({ behavior:"smooth", block:"center" });
+  });
+})();
+</script>
+</body>
+</html>
