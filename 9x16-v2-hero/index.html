@@ -642,10 +642,13 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    The tail also drops the nav-band reservation: it never comes to rest, so content passing
    under the navbar mid-scroll is correct — that is how a normal page behaves. Founder keeps
    the full reservation because it IS a rest position, the last snapped slide. */
-.rs--cont{align-items:stretch; padding-top:var(--sec-pad,26px); padding-bottom:var(--sec-pad,26px);}
-[data-s="founder"]{align-items:stretch; padding-bottom:8px !important;}
-[data-s="footer"]{padding-bottom:calc(var(--sec-pad,26px) + var(--home-band,0px));}
-/* stretched, the card is the full slide — its content still reads from the top */
+.rs.rs--cont{align-items:stretch; padding-top:var(--sec-pad,26px); padding-bottom:var(--sec-pad,26px);}
+.rs[data-s="founder"]{align-items:stretch; padding-bottom:8px;}
+/* the footer's block stays its natural height and centres — the reference has it as one
+   packed column on black, not a stretched panel */
+.rs[data-s="footer"]{align-items:center;
+  padding-bottom:calc(var(--sec-pad,26px) + var(--home-band,0px));}
+/* stretched, the card is the full slide — its content still reads centred */
 .rs--cont > .card{display:flex; flex-direction:column; justify-content:center;}
 
 /* ── FOOTER ───────────────────────────────────────────────────────────────────────────
