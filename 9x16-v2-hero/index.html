@@ -623,18 +623,20 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    A plain white .card on the orange grid — the live mobile layout. Nothing bespoke here
    except the CTA, which borrows the rectangular-cursor treatment from the joke cards so the
    two read as the same gesture. */
-.cta{align-self:flex-start; display:inline-flex; align-items:stretch; height:38px;
+/* NOT .cta — a v1 `.cta` still lives further down this sheet and resets align-items to
+   center, which collapsed the separator to the height of the arrow. Own name, own rules. */
+.wcta{align-self:flex-start; display:inline-flex; align-items:stretch; height:38px;
   background:var(--pitch); color:var(--snow); text-decoration:none;
   transition:transform .16s var(--ease-out);}
-.cta:active{transform:scale(.97);}
-.cta__l{display:flex; align-items:center; padding:0 .9rem; white-space:nowrap;
+.wcta:active{transform:scale(.97);}
+.wcta__l{display:flex; align-items:center; padding:0 .9rem; white-space:nowrap;
   font-family:"Switzer",sans-serif; font-weight:600; font-size:calc(var(--sec-body,15px)*.86);}
-/* align-self:stretch so the rule runs border to border; explicit width instead of
-   aspect-ratio, which was sizing off the content box and leaving the arrow off-centre. */
-.cta__a{align-self:stretch; width:22px; display:flex; align-items:center; justify-content:center;
+/* stretch so the rule runs border to border, and a flex centre so the arrow sits dead
+   middle — the old aspect-ratio sized off the content box and pushed it off centre. */
+.wcta__a{align-self:stretch; width:24px; display:flex; align-items:center; justify-content:center;
   border-left:1px solid rgba(255,255,255,.4);}
-.cta__a svg{width:14px; height:14px; transform:rotate(-45deg); transition:transform .3s var(--ease-out);}
-.cta:hover .cta__a svg{transform:rotate(0deg);}
+.wcta__a svg{width:14px; height:14px; transform:rotate(-45deg); transition:transform .3s var(--ease-out);}
+.wcta:hover .wcta__a svg{transform:rotate(0deg);}
 
 /* the continuous tail runs as one scroll, so mid-run slides do not each reserve the full
    nav + home bands — that was stacking ~250px of dead air between the founder and this. */
@@ -1309,9 +1311,9 @@ body.reg #regout{display:block;}
             <h2 class="sec__h">let&rsquo;s make something <span class="hl">worth stopping for.</span></h2>
             <p class="sec__rule"></p>
             <p class="sec__b">One email, one reply. If we&rsquo;re right for it we&rsquo;ll say so — and if we&rsquo;re not, we&rsquo;ll say that too.</p>
-            <a class="cta" href="#apply">
-              <span class="cta__l">get in touch</span>
-              <span class="cta__a"><svg viewBox="0 0 24 24"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <a class="wcta" href="apply.html">
+              <span class="wcta__l">get in touch</span>
+              <span class="wcta__a"><svg viewBox="0 0 24 24"><path d="M5 12h12M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             </a>
           </div></div>
         </section>
