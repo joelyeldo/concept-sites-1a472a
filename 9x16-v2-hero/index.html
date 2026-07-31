@@ -2361,6 +2361,18 @@ function layoutTail(){
   });
   contEnd = Math.max(cf, (y - TAIL_GAP - apH) / apH);
 }
+
+/* The tail is positioned in PIXELS off the aperture, and the aperture changes size the whole
+   way through the morph — computing it once at init used the landscape screen (471px, not
+   850) and dropped `together` straight on top of the founder. Watching the aperture keeps
+   the two in step; rAF-coalesced so the morph's per-frame resizes cost one layout, not many. */
+let tailRaf = 0;
+if (window.ResizeObserver){
+  new ResizeObserver(() => {
+    if (tailRaf) return;
+    tailRaf = requestAnimationFrame(() => { tailRaf = 0; layoutTail(); });
+  }).observe(apEl);
+}
 addEventListener("wheel", e => {
   /* A menu is a modal: nothing behind it moves. Without this the reel kept stepping
      underneath an open menu, so closing it revealed a different section than the one you
