@@ -110,8 +110,11 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* v1 had to use a clip-path curtain because its menu was position:fixed and a translated
    fixed element escapes the body's containing block. Ours is absolute inside the pin, so a
    real translateX slide is safe — and it is unambiguously a slide, which is what was asked. */
+/* --scr-r is the phone screen's own corner radius, the same one .screenui clips to. Without
+   it the overlay had square corners and the orange punched out past the glass on all four. */
 .menu{position:absolute; left:50%; top:50%; transform:translate(-50%, calc(-50% + var(--apy, 0px)));
-      width:var(--apw); height:var(--aph); z-index:6; overflow:hidden;
+      width:var(--apw); height:var(--aph); z-index:6;
+      border-radius:var(--scr-r,0px); overflow:hidden;
       visibility:hidden; transition:visibility 0s linear .5s;}
 .menu.is-open{visibility:visible; transition:visibility 0s linear 0s;}
 .menu__panel{position:absolute; inset:0; background:var(--orange); will-change:transform;
