@@ -358,23 +358,16 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    Type only. The clips are NOT in here — a lateral rail inside a vertically-gesture-
    captured feed fights the reel for the same input, so the work moved out to the gutters
    (.vgut below) and this slide keeps the band, the eyebrow, the title and the sub. */
-.work{position:relative; height:100%; display:flex; flex-direction:column;
-  justify-content:center; gap:calc(var(--card-gap,26px)*.42);}
+.work{position:relative; height:100%; display:flex; align-items:center; justify-content:center;}
+.work .card{position:relative; z-index:1;}   /* the card rides ON the band, same card as every other slide */
 .work__band{position:absolute; inset:0; z-index:0; pointer-events:none;}
 .work__band svg{width:100%; height:100%; display:block; overflow:visible;}
 /* stroke-width and font-size are in viewBox USER UNITS, not px — the svg scales with the
    screen, so hard px here would grow and shrink out of step with the ribbon it sits on. */
-.cband__ribbon{fill:none; stroke:var(--pitch); stroke-width:24;}
+.cband__ribbon{fill:none; stroke:var(--pitch); stroke-width:24; stroke-linecap:round;}
 .cband__t{fill:var(--snow); font-family:"Switzer",sans-serif; font-weight:600;
   font-size:11px; letter-spacing:.16em; text-transform:lowercase;}
 .cband__sq{fill:var(--orange);}
-.work__hd{position:relative; z-index:1;}
-/* the title and the sub sit ON the band — they need their own ground or the black ribbon
-   eats them. Snow slab, no border: reads as a caption card, not another UI panel. */
-.work__hd, .work__sub{background:var(--snow); padding:calc(var(--sec-pad,26px)*.42) var(--sec-pad,26px);
-  margin:0 calc(-1 * var(--sec-pad,26px));}
-.work__sub{position:relative; z-index:1; font-family:"Switzer",sans-serif;
-  font-size:var(--sec-body,15px); line-height:1.5; color:var(--slate);}
 
 /* ── OUR WORK · the gutters ───────────────────────────────────────────────────────────
    Eight 9:16 clips on the pavement either side of the phone. This is the job the brief
@@ -841,18 +834,24 @@ body.reg #regout{display:block;}
         <!-- 4 · CREATIVE — type + the band only. The clips live in the gutters (#vgut). -->
         <section class="rs rs--built work-sec" data-s="creative" style="top:400%">
           <div class="work">
+            <!-- The path is one C followed by two S commands. S reflects the previous control
+                 point across the join automatically, so the tangent is continuous by
+                 construction — the old version chained three independent C segments whose
+                 handles were not collinear, and every join showed as a visible kink. It also
+                 runs y80→y600 of the 700 viewBox instead of dying in the middle third. -->
             <div class="work__band" aria-hidden="true">
               <svg viewBox="0 0 400 700" preserveAspectRatio="xMidYMid slice">
-                <defs><path id="cbp" d="M -20,120 C 60,30 195,45 240,180 C 275,285 150,300 130,425 C 115,515 235,535 430,470"/></defs>
+                <defs><path id="cbp" d="M -40,80 C 80,10 250,55 285,190 S 145,335 132,440 S 300,565 440,600"/></defs>
                 <use href="#cbp" class="cband__ribbon"/>
-                <text class="cband__t" dominant-baseline="central"><textPath href="#cbp" startOffset="0" id="cbText"><tspan id="cbPhrase">off the billboard <tspan class="cband__sq">&#9642;</tspan> onto the phone <tspan class="cband__sq">&#9642;</tspan> borrowed the trust <tspan class="cband__sq">&#9642;</tspan> never spent it <tspan class="cband__sq">&#9642;</tspan> </tspan>off the billboard <tspan class="cband__sq">&#9642;</tspan> onto the phone <tspan class="cband__sq">&#9642;</tspan> borrowed the trust <tspan class="cband__sq">&#9642;</tspan> never spent it <tspan class="cband__sq">&#9642;</tspan> off the billboard <tspan class="cband__sq">&#9642;</tspan> onto the phone <tspan class="cband__sq">&#9642;</tspan> borrowed the trust <tspan class="cband__sq">&#9642;</tspan> never spent it <tspan class="cband__sq">&#9642;</tspan> <animate id="cbAnim" attributeName="startOffset" from="0" to="-560" dur="24s" repeatCount="indefinite"/></textPath></text>
+                <text class="cband__t" dominant-baseline="central"><textPath href="#cbp" startOffset="0" id="cbText"><tspan id="cbPhrase">no rotate prompt <tspan class="cband__sq">&#9642;</tspan> no black bars <tspan class="cband__sq">&#9642;</tspan> no skip button <tspan class="cband__sq">&#9642;</tspan> no problem <tspan class="cband__sq">&#9642;</tspan> </tspan>no rotate prompt <tspan class="cband__sq">&#9642;</tspan> no black bars <tspan class="cband__sq">&#9642;</tspan> no skip button <tspan class="cband__sq">&#9642;</tspan> no problem <tspan class="cband__sq">&#9642;</tspan> no rotate prompt <tspan class="cband__sq">&#9642;</tspan> no black bars <tspan class="cband__sq">&#9642;</tspan> no skip button <tspan class="cband__sq">&#9642;</tspan> no problem <tspan class="cband__sq">&#9642;</tspan> no rotate prompt <tspan class="cband__sq">&#9642;</tspan> no black bars <tspan class="cband__sq">&#9642;</tspan> no skip button <tspan class="cband__sq">&#9642;</tspan> no problem <tspan class="cband__sq">&#9642;</tspan> <animate id="cbAnim" attributeName="startOffset" from="0" to="-560" dur="24s" repeatCount="indefinite"/></textPath></text>
               </svg>
             </div>
-            <div class="work__hd">
+            <div class="card"><div class="sec">
               <p class="sec__eyebrow">creative marketing naturals</p>
-              <h2 class="sec__h">one month. <span class="hl">zero landscape.</span></h2>
-            </div>
-            <p class="work__sub">Short-form built to earn the watch, not dodge the skip. Check out a few.</p>
+              <h2 class="sec__h">stuff we made while you were <span class="hl">scrolling.</span></h2>
+              <p class="sec__rule"></p>
+              <p class="sec__b">Short-form built to earn the watch, not dodge the skip. Check out a few.</p>
+            </div></div>
           </div>
         </section>
 
