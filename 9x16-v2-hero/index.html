@@ -1211,6 +1211,9 @@ let dashPeriod = "monthly";
    chat block further down would have evaluated its own declaration. */
 let chatOpener = null;
 let trackIdx = 0;          /* which song the player card is on — same hoisting rule */
+/* the UNCAPPED shared screen height. The hero headline is sized off this, not off the capped
+   screenH0, so capping the crop box does not silently shrink type the Writer already tuned. */
+let screenH0Nat = 0;
 const bodies  = [...document.querySelectorAll(".body")];
 const props   = [...document.querySelectorAll(".prop")];
 const apEl    = document.getElementById("aperture");
@@ -1478,12 +1481,19 @@ function coverGeom(b){
    screen simply reveals more columns instead of the whole grid re-flowing. The shared height
    is the largest any plate needs in order to cover, so normalising can only ever scale up —
    never below the coverage floor, which is what would put the background band back. */
+/* how wide a screen is relative to its own height, once the plate is on screen */
+function screenRatio(b){ const c = coverGeom(b); return c.n("sw") * c.ar / c.n("sh"); }
+
 function plateGeom(b){
   const c      = coverGeom(b);
   const target = screenH0 || c.screenH;
-  const plateH = target / (c.n("sh") / 100);
-  const plateW = plateH * c.ar;
-  return { plateW, w: plateW * c.n("sw") / 100, h: target };
+  /* The plate NEVER shrinks below what it takes to cover the viewport. When the shared
+     height is capped (see sizePlates) the plate holds its cover size and the crop box simply
+     sits INSIDE the screen rather than matching it edge to edge. That is invisible: the
+     screen is a blank white rectangle, so a box within it crops nothing but white. Tying
+     plate scale to the box height instead is what pushed the wide plates off the viewport. */
+  const plateW = Math.max(c.plateW, (target / (c.n("sh") / 100)) * c.ar);
+  return { plateW, w: target * screenRatio(b), h: target };
 }
 /* Headline boxes are viewport-derived only, so they never move during the morph or between
    plate swaps. Landscape size comes off screenH0 (locked); the phone box off the screen. */
@@ -1539,14 +1549,25 @@ function sizeSections(){
   document.getElementById("vgut")?.classList.toggle("is-tight", gut < 170);
 }
 function sizeHeadlines(){
-  root.style.setProperty("--hls-land",  gsap.utils.clamp(28, 68, (screenH0 || 500) * 0.118) + "px");
+  root.style.setProperty("--hls-land",  gsap.utils.clamp(28, 68, (screenH0Nat || screenH0 || 500) * 0.118) + "px");
   root.style.setProperty("--hlw-land",  Math.min(900, G.vw * 0.62) + "px");
   root.style.setProperty("--hls-phone", gsap.utils.clamp(22, 46, G.screenW * 0.098) + "px");
   root.style.setProperty("--hlw-phone", G.screenW * 0.84 + "px");
 }
+/* the widest crop box may take this much of the viewport width. Below 1 the box always has
+   air either side; at 1 the widest plate's box touches the window edges and reads as clipped
+   by the browser rather than framed. */
+const SCREEN_MAXW = 0.90;
+
 function sizePlates(){
-  screenH0 = 0;                                                    /* measure uncapped... */
-  screenH0 = Math.max(...LANDSCAPE.map(b => coverGeom(b).screenH)); /* ...then lock the height */
+  screenH0 = 0;                                                     /* measure uncapped... */
+  screenH0Nat = Math.max(...LANDSCAPE.map(b => coverGeom(b).screenH));
+  /* ...then cap it so the WIDEST screen still fits across the viewport. At a shared height H
+     the widest plate's box is H × its ratio; past the window that box is cut off at the
+     viewport edge, which is what was happening at the uncapped height. Coverage is not at
+     risk — plateGeom keeps every plate at cover size regardless of this number. */
+  const widest = Math.max(...LANDSCAPE.map(screenRatio));
+  screenH0 = Math.min(screenH0Nat, (G.vw * SCREEN_MAXW) / widest);
   LANDSCAPE.forEach(b => b.style.setProperty("--plate-w", plateGeom(b).plateW + "px"));
   sizeHeadlines();
   sizeSections();
