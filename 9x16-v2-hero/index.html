@@ -847,7 +847,10 @@ body.reg .body:not(.is-live){opacity:.18 !important;}
 }
 body.reg #regout{display:block;}
 
-.cue{position:absolute; left:50%; bottom:1.8rem; transform:translateX(-50%); z-index:6; font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); font-weight:600;}
+.cue{position:absolute; left:50%; bottom:1.8rem; transform:translateX(-50%); z-index:6; font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--snow); font-weight:600; transition:color .2s var(--ease-out);}
+/* the cue rides over the live plate's ground: white on dark plates, dark-grey on the light
+   ones (frames 02/03/04/08 — bright reflective floors). Toggled per plate in showLandscape. */
+.cue.on-light{color:#3a352f;}
 
 /* ── BUILT SECTIONS 2–8 ───────────────────────────────────────────────────────────────
    All sit on the white screen (only slide 0 is orange) and ride .rs--built's band-safe
@@ -1029,15 +1032,15 @@ body.reg #regout{display:block;}
         <img src="assets/hero-01.jpg" alt="">
       </figure>
 
-      <figure class="body" data-body="frame-02" style="--sw:52.86; --sh:33.57; --sx:49.89; --sy:47.70;">
+      <figure class="body" data-body="frame-02" data-tone="light" style="--sw:52.86; --sh:33.57; --sx:49.89; --sy:47.70;">
         <img src="assets/hero-02.jpg" alt="">
       </figure>
 
-      <figure class="body" data-body="frame-03" style="--sw:65.45; --sh:44.66; --sx:49.89; --sy:51.17;">
+      <figure class="body" data-body="frame-03" data-tone="light" style="--sw:65.45; --sh:44.66; --sx:49.89; --sy:51.17;">
         <img src="assets/hero-03.jpg" alt="">
       </figure>
 
-      <figure class="body" data-body="frame-04" style="--sw:64.48; --sh:42.90; --sx:49.87; --sy:48.69;">
+      <figure class="body" data-body="frame-04" data-tone="light" style="--sw:64.48; --sh:42.90; --sx:49.87; --sy:48.69;">
         <img src="assets/hero-04.jpg" alt="">
       </figure>
 
@@ -1058,7 +1061,7 @@ body.reg #regout{display:block;}
         <img src="assets/hero-07.jpg" alt="">
       </figure>
 
-      <figure class="body" data-body="frame-08" style="--sw:66.43; --sh:50.92; --sx:49.40; --sy:47.44;">
+      <figure class="body" data-body="frame-08" data-tone="light" style="--sw:66.43; --sh:50.92; --sx:49.40; --sy:47.44;">
         <img src="assets/hero-08.jpg" alt="">
       </figure>
 
@@ -1846,6 +1849,7 @@ function sizePlates(){
 
 let curPlate = null;                 /* the screen rect currently on show — the morph's start */
 const apProxy = { w:0, h:0 };
+const cueEl = document.getElementById("cue");   /* scroll cue — recoloured per plate tone below */
 function tweenAperture(w, h, dur){
   gsap.to(apProxy, { w, h, duration:dur, ease:"power1.inOut", overwrite:"auto",
     onUpdate(){ setAperture(apProxy.w, apProxy.h, 0); } });
@@ -1853,6 +1857,7 @@ function tweenAperture(w, h, dur){
 
 function showLandscape(i){
   const incoming = LANDSCAPE[i];
+  if (cueEl) cueEl.classList.toggle("on-light", incoming.dataset.tone === "light");
   LANDSCAPE.forEach((b, j) => { b.style.zIndex = j === i ? 2 : 1; });
   gsap.killTweensOf(LANDSCAPE);
   /* DIRECT CUT, no dissolve. The incoming plate goes opaque and the rest go transparent on
