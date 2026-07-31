@@ -433,14 +433,20 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    Header on the bare grid, then three stacked cards. Every other slide puts its type in
    one card, but this slide has three of them — a fourth around the header would read as a
    stack of panels instead of a feed, which is the opposite of what "unrelated" wants. */
-.unrel{height:100%; display:flex; flex-direction:column; justify-content:center;
-  gap:calc(var(--card-gap,26px)*.46);}
+.unrel{height:100%; display:flex; flex-direction:column; gap:calc(var(--card-gap,26px)*.7);}
 .unrel__hd{flex:none;}
 .unrel__sub{font-family:"Switzer",sans-serif; font-size:calc(var(--sec-body,15px)*.92);
   line-height:1.5; color:var(--slate); margin:.55em 0 0;}
-.ucard{display:flex; gap:.75em; align-items:flex-start; cursor:pointer;
-  background:var(--snow); border:1px solid var(--line); box-shadow:0 18px 44px -20px rgba(16,12,8,.22);
-  padding:calc(var(--card-pad,34px)*.52) calc(var(--card-pad,34px)*.58);
+/* ONE card, partitioned — not three stacked cards. Shared outer border and a single shadow;
+   the blocks are separated by hairlines, the way the bento boxes on the live site are. It
+   grows to fill the slide so the section is not mostly empty screen. */
+.ubento{flex:1 1 auto; min-height:0; display:flex; flex-direction:column;
+  background:var(--snow); border:1px solid var(--line);
+  box-shadow:0 26px 60px -22px rgba(16,12,8,.28);}
+.ubento > * + *{border-top:1px solid var(--line);}
+.ucard{flex:1 1 auto; display:flex; gap:.75em; align-items:center; cursor:pointer;
+  background:transparent; border:none; box-shadow:none;
+  padding:calc(var(--card-pad,34px)*.6) calc(var(--card-pad,34px)*.62);
   transition:background-color .3s var(--ease-out);}
 .ucard:hover, .ucard:focus-visible{background:var(--orange); outline:none;}
 .ucard:hover p, .ucard:focus-visible p{color:#fff;}
@@ -453,9 +459,8 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 
 /* the player. Compressed layout from the second reference — the square-art version is a
    third taller and this slide is already carrying three cards. */
-.pcard{background:var(--snow); border:1px solid var(--line);
-  box-shadow:0 18px 44px -20px rgba(16,12,8,.22);
-  padding:calc(var(--card-pad,34px)*.52) calc(var(--card-pad,34px)*.58);}
+.pcard{flex:0 0 auto; background:transparent; border:none; box-shadow:none;
+  padding:calc(var(--card-pad,34px)*.6) calc(var(--card-pad,34px)*.62);}
 .pcard__lab{font-family:"Switzer",sans-serif; font-weight:600; color:var(--mute); margin:0 0 .7em;
   font-size:var(--sec-eyebrow,11px); letter-spacing:.18em; text-transform:uppercase;}
 .pcard__row{display:flex; gap:.85em; align-items:center;}
@@ -471,13 +476,14 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .pcard__a{font-family:"Switzer",sans-serif; font-size:calc(var(--sec-body,15px)*.76);
   color:var(--mute); margin:.15em 0 .55em;}
 .pcard__bar{position:relative; height:3px; background:var(--line);}
-.pcard__fill{position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--orange);}
-/* a CSS animation rather than a rAF loop: pause is one class, and it costs the main thread
-   nothing while the slide is off screen. */
-@keyframes ptrack{from{width:0%} to{width:100%}}
-.pcard.is-live .pcard__fill{animation:ptrack 180s linear infinite;}
-.pcard.is-paused .pcard__fill{animation-play-state:paused;}
-@media (prefers-reduced-motion:reduce){ .pcard.is-live .pcard__fill{animation:none; width:34%;} }
+/* driven off the audio element's own timeupdate — the bar is a readout of real playback,
+   not a decoration that happens to look like one. */
+.pcard__bar{cursor:pointer;}
+.pcard__bar::before{content:""; position:absolute; inset:-7px 0;}  /* a 17px hit target on a 3px bar */
+.pcard__fill{position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--orange);
+  transition:width .12s linear;}
+.pcard__time{font-family:"Switzer",sans-serif; font-size:calc(var(--sec-body,15px)*.66);
+  color:var(--mute); margin-left:auto; font-variant-numeric:tabular-nums;}
 .pcard__ctl{display:flex; align-items:center; gap:.55em; margin-top:.55em;}
 .pbtn{width:24px; height:24px; display:grid; place-items:center; padding:0; cursor:pointer;
   background:none; border:none; color:var(--pitch); transition:transform .16s var(--ease-out);}
@@ -486,6 +492,8 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .pbtn--mute{margin-left:auto;}
 .pcard .i-pause{display:block;} .pcard .i-play{display:none;}
 .pcard.is-paused .i-pause{display:none;} .pcard.is-paused .i-play{display:block;}
+.pcard .i-mute{display:none;}  .pcard .i-loud{display:block;}
+.pcard.is-muted .i-mute{display:block;} .pcard.is-muted .i-loud{display:none;}
 
 /* the rectangular cursor from the live build, scoped INSIDE the aperture so it is clipped
    by the phone screen — a cursor that ran onto the pavement would break the illusion. */
@@ -991,6 +999,7 @@ body.reg #regout{display:block;}
               <p class="unrel__sub">None of this will help you decide. All of it is true.</p>
             </div>
 
+            <div class="ubento">
             <article class="ucard" data-chat="0" role="button" tabindex="0">
               <span class="ucard__sq" aria-hidden="true"></span>
               <p>Our founder does four-digit multiplication in his head and loses his phone twice a day.</p>
@@ -1001,25 +1010,39 @@ body.reg #regout{display:block;}
               <p>We own exactly one office plant. It is plastic. It is thriving.</p>
             </article>
 
-            <!-- SLOT · swap track + art weekly. This is the one card on the site whose whole
-                 point is that it is current, so it is markup, not a build-time constant. -->
-            <article class="pcard" id="pcard">
+            <!-- ────────────────────────────────────────────────────────────────────────
+                 WEEKLY SLOT — the only content on this site that is meant to go stale.
+                 To update: edit the <li>s below. Nothing else, no JS, no rebuild.
+                   data-src    audio file in assets/  (mp3 or m4a)
+                   data-art    cover image in assets/
+                   data-title / data-artist   what shows on the card
+                 One <li> is fine; prev/next simply wrap. Audio NEVER autoplays — it
+                 starts on the play button and stops when the slide leaves.
+                 ──────────────────────────────────────────────────────────────────────── -->
+            <article class="pcard is-paused" id="pcard">
               <p class="pcard__lab">what we&rsquo;re wildin with</p>
+              <audio id="paudio" preload="none" crossorigin="anonymous"></audio>
+              <ul class="pcard__list" id="plist" hidden>
+                <li data-src="assets/track-1.mp3" data-art="assets/track-1.jpg" data-title="track one" data-artist="artist name"></li>
+                <li data-src="assets/track-2.mp3" data-art="assets/track-2.jpg" data-title="track two" data-artist="artist name"></li>
+              </ul>
               <div class="pcard__row">
-                <div class="pcard__art"><span>slot<br>assets/track-art.jpg</span></div>
+                <div class="pcard__art" id="part"><span>slot<br>assets/track-1.jpg</span></div>
                 <div class="pcard__meta">
-                  <p class="pcard__t">track title</p>
-                  <p class="pcard__a">artist &middot; trending now</p>
-                  <div class="pcard__bar"><span class="pcard__fill" id="pfill"></span></div>
+                  <p class="pcard__t" id="ptitle">track one</p>
+                  <p class="pcard__a" id="partist">artist name</p>
+                  <div class="pcard__bar" id="pbar" role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="pcard__fill" id="pfill"></span></div>
                   <div class="pcard__ctl">
-                    <button class="pbtn" type="button" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="M7 6h2v12H7zM20 6v12l-9-6z"/></svg></button>
-                    <button class="pbtn" id="pplay" type="button" aria-label="Play or pause"><svg class="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
-                    <button class="pbtn" type="button" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M15 6h2v12h-2zM4 6l9 6-9 6z"/></svg></button>
-                    <button class="pbtn pbtn--mute" type="button" aria-label="Mute"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
+                    <button class="pbtn" id="pprev" type="button" aria-label="Previous track"><svg viewBox="0 0 24 24"><path d="M7 6h2v12H7zM20 6v12l-9-6z"/></svg></button>
+                    <button class="pbtn" id="pplay" type="button" aria-label="Play"><svg class="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+                    <button class="pbtn" id="pnext" type="button" aria-label="Next track"><svg viewBox="0 0 24 24"><path d="M15 6h2v12h-2zM4 6l9 6-9 6z"/></svg></button>
+                    <button class="pbtn pbtn--mute" id="pmute" type="button" aria-label="Mute"><svg class="i-loud" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" fill="none"/></svg><svg class="i-mute" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6m0-6-5 6" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
+                    <span class="pcard__time" id="ptime">0:00</span>
                   </div>
                 </div>
               </div>
             </article>
+            </div><!-- /.ubento -->
           </div>
         </section>
 
@@ -1140,6 +1163,7 @@ let dashPeriod = "monthly";
 /* same reason: setReelPhase calls closeChat, which reads this. reelTo() runs long before the
    chat block further down would have evaluated its own declaration. */
 let chatOpener = null;
+let trackIdx = 0;          /* which song the player card is on — same hoisting rule */
 const bodies  = [...document.querySelectorAll(".body")];
 const props   = [...document.querySelectorAll(".prop")];
 const apEl    = document.getElementById("aperture");
@@ -1818,16 +1842,83 @@ document.getElementById("chatBar")?.addEventListener("submit", e => {
   addEventListener("mouseup", () => box.classList.remove("is-click"));
 })();
 
-/* the player is a display card: the bar is a CSS animation, so pause/resume is one class
-   and nothing ticks on the main thread. No audio is wired — see the SLOT note in markup. */
-document.getElementById("pplay")?.addEventListener("click", () => {
-  document.getElementById("pcard").classList.toggle("is-paused");
-});
-function playerLive(on){
-  const p = document.getElementById("pcard"); if (!p) return;
-  p.classList.toggle("is-live", on);
-  if (!on) p.classList.remove("is-paused");     /* next visit starts clean */
+/* ── the player · real audio, never autoplayed ────────────────────────────────────────
+   Tracks come from the markup list so the weekly update is an HTML edit. preload="none"
+   means nothing is fetched until someone actually presses play — an audio file we might
+   never play is not worth a visitor's bandwidth. */
+function pEl(id){ return document.getElementById(id); }
+function pTracks(){ return [...document.querySelectorAll("#plist li")]; }
+function fmt(s){
+  if (!isFinite(s) || s < 0) s = 0;
+  return Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
 }
+function loadTrack(i, andPlay){
+  const list = pTracks(), a = pEl("paudio"); if (!list.length || !a) return;
+  trackIdx = (i + list.length) % list.length;            /* wraps, so one track is fine */
+  const t = list[trackIdx];
+  a.src = t.dataset.src;
+  pEl("ptitle").textContent  = t.dataset.title  || "track";
+  pEl("partist").textContent = t.dataset.artist || "";
+  const art = pEl("part"), src = t.dataset.art;
+  const slot = document.createElement("span");
+  slot.textContent = src ? "slot · " + src : "slot";   /* textContent: these are hand-edited weekly */
+  art.replaceChildren(slot);
+  if (src){
+    const img = new Image();
+    img.alt = "";
+    /* handlers before src, and the slot label only steps aside once the file really
+       decodes — a broken <img> is worse than an honest placeholder */
+    img.onload = () => art.replaceChildren(img);
+    img.src = src;
+  }
+  pEl("pfill").style.width = "0%";
+  pEl("ptime").textContent = "0:00";
+  if (andPlay) a.play().catch(() => {});
+}
+function playerLive(on){
+  const a = pEl("paudio"), p = pEl("pcard"); if (!a || !p) return;
+  if (!on){ a.pause(); p.classList.add("is-paused"); }   /* the song never outlives the slide */
+}
+(() => {
+  const a = pEl("paudio"), p = pEl("pcard"); if (!a || !p) return;
+  loadTrack(0, false);
+  pEl("pplay").addEventListener("click", () => {
+    if (a.paused){ if (!a.src) loadTrack(trackIdx, false); a.play().catch(() => {}); }
+    else a.pause();
+  });
+  a.addEventListener("play",  () => { p.classList.remove("is-paused"); pEl("pplay").setAttribute("aria-label", "Pause"); });
+  a.addEventListener("pause", () => { p.classList.add("is-paused");    pEl("pplay").setAttribute("aria-label", "Play"); });
+  a.addEventListener("ended", () => loadTrack(trackIdx + 1, true));
+  pEl("pprev").addEventListener("click", () => {
+    /* the standard behaviour: restart first, only skip back if you are already near the top */
+    if (a.currentTime > 3) { a.currentTime = 0; return; }
+    loadTrack(trackIdx - 1, !a.paused);
+  });
+  pEl("pnext").addEventListener("click", () => loadTrack(trackIdx + 1, !a.paused));
+  pEl("pmute").addEventListener("click", () => {
+    a.muted = !a.muted;
+    p.classList.toggle("is-muted", a.muted);
+    pEl("pmute").setAttribute("aria-label", a.muted ? "Unmute" : "Mute");
+  });
+  a.addEventListener("timeupdate", () => {
+    const d = a.duration;
+    const pc = isFinite(d) && d > 0 ? (a.currentTime / d) * 100 : 0;
+    pEl("pfill").style.width = pc + "%";
+    pEl("ptime").textContent = fmt(a.currentTime);
+    pEl("pbar").setAttribute("aria-valuenow", Math.round(pc));
+  });
+  const seek = clientX => {
+    const b = pEl("pbar").getBoundingClientRect();
+    if (isFinite(a.duration) && a.duration > 0)
+      a.currentTime = gsap.utils.clamp(0, 1, (clientX - b.left) / b.width) * a.duration;
+  };
+  pEl("pbar").addEventListener("click", e => seek(e.clientX));
+  pEl("pbar").addEventListener("keydown", e => {
+    if (!isFinite(a.duration)) return;
+    if (e.key === "ArrowRight"){ e.preventDefault(); a.currentTime = Math.min(a.duration, a.currentTime + 5); }
+    if (e.key === "ArrowLeft"){  e.preventDefault(); a.currentTime = Math.max(0, a.currentTime - 5); }
+  });
+})();
 
 /* the band loops seamlessly only if it shifts by EXACTLY one phrase. Measured after the
    webfont lands, not guessed — the advance width is font-dependent, and a guess shows up
