@@ -2844,7 +2844,10 @@ function mbGate(dir){
    The continuous tail and the hero seam are untouched, and desktop never runs it. */
 const DRAG_DAMP   = 0.62;  /* how much of the finger's travel the stack takes */
 const DRAG_MAX    = 0.60;  /* never expose more than this much of the next slide */
-const DRAG_COMMIT = 0.26;  /* past this fraction of a slide, release advances */
+/* Measured against the FINGER's travel, not the damped follow. Testing it against the damped
+   value meant a drag had to cross 0.26/0.62 = 42% of the screen to commit — a third of the
+   way down the phone still snapped back, which reads as the feed refusing you. */
+const DRAG_COMMIT = 0.18;  /* this fraction of the screen height, and release advances */
 const DRAG_FLICK  = 0.45;  /* ...or this fast (px/ms), however short the drag was */
 
 function dragSnapMove(total){
@@ -2865,7 +2868,7 @@ function dragSnapEnd(total){
   dragging = false;
   const apH = apEl.getBoundingClientRect().height || innerHeight;
   const cf  = contFrom();
-  const frac = Math.abs((total / apH) * DRAG_DAMP);
+  const frac = Math.abs(total / apH);          /* the finger's own travel — see DRAG_COMMIT */
   /* the two ways a feed decides you meant it: you dragged far enough, or you flicked hard */
   const commit = frac > DRAG_COMMIT || Math.abs(contVel) > DRAG_FLICK;
   const dir = total > 0 ? 1 : -1;
