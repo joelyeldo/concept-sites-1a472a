@@ -205,22 +205,13 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    so the geometry is right to build against — herringbone alternates 90°, so half the pavers
    read 9:16 and half read 16:9. The two formats, interlocked, under the whole site. */
 .ground{position:absolute; inset:0; z-index:1; overflow:hidden; background:var(--paper); opacity:0;}
-.ground img{width:100%; height:100%; object-fit:cover; display:block;}
-.ground--placeholder{
-  /* Paver cell 108 x 192px — exactly 9:16, and big enough to read as paving rather than
-     noise. Previously this drew FOUR gradients (45px and 80px on both axes), which is a
-     plaid, not a herringbone — that dense mesh over the page grid is what made the gutters
-     look like overlapping grids. Two layers, one cell size. TEMP; delete when the photo lands. */
-  background-color:#E9E5DF;
-  background-image:
-    repeating-linear-gradient(90deg, rgba(16,12,8,.10) 0 1px, transparent 1px 108px),
-    repeating-linear-gradient(0deg,  rgba(16,12,8,.10) 0 1px, transparent 1px 192px);
-}
-.ground__tag{
-  position:absolute; left:1.2rem; bottom:1.1rem; z-index:2;
-  font-size:.62rem; letter-spacing:.16em; text-transform:uppercase;
-  color:var(--mute); font-weight:600;
-}
+.ground img{width:100%; height:100%; object-fit:cover; display:block;
+  /* the pavement pans top->bottom as the reel runs slide 0 -> footer, so it scrolls past like
+     a walking POV. object-fit:cover keeps it gap-free at any viewport; --reel-end (the footer's
+     --reel-y, set in layoutTail) is the range, --reel-y the live position. */
+  object-position:50% calc(var(--reel-y, 0) / var(--reel-end, 8) * 100%);}
+/* .ground--placeholder (temp Swiss-grid pavers) and .ground__tag (slot label) removed —
+   the real pavement photo, ground-pavement.jpg, has landed. */
 
 /* PROP SLOTS — flyers, small products, paper planes carrying client branding.
    Each is an <img> with a transparent cut-out. Position is % of the viewport.
@@ -1006,9 +997,8 @@ body.reg #regout{display:block;}
     </div>
 
     <!-- 1 · GROUND ────────────────────────────────────────────────────────────────────── -->
-    <div class="ground ground--placeholder" id="ground">
-      <!-- <img src="assets/ground-pavement.jpg" alt=""> ← drop the pavement plate here -->
-      <span class="ground__tag">slot · ground-pavement.jpg — top-down, 9:16 pavers</span>
+    <div class="ground" id="ground">
+      <img src="assets/ground-pavement.jpg" alt="">
 
       <div class="props" id="props">
         <!-- PROP SLOTS · cut-out PNGs, campaign teasers. left/top are % of viewport. -->
@@ -2405,6 +2395,7 @@ function layoutTail(){
     y += sec.getBoundingClientRect().height;
   });
   contEnd = Math.max(cf, (y - apH) / apH);
+  root.style.setProperty("--reel-end", contEnd);   /* the pavement bg pans across 0 -> contEnd */
 }
 
 /* The tail is positioned in PIXELS off the aperture, and the aperture changes size the whole
