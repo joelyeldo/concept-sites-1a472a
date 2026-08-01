@@ -837,14 +837,18 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    --vh-c, the same value the vertical headline's own colour interpolates across, so the frame
    inverts with it on the orange. 2px against 1px grid hairlines is what makes it read as a
    frame laid ON the grid rather than part of it. */
-/* Nudged DOWN by half the top chrome. Centred on the headline it sat 4px ABOVE the navbar's
-   bottom edge — overlapping it — while leaving 110px of slack under the frame, because the
-   headline rides --apy and so sits above the screen's own centre. Expressed in the chrome
-   tokens rather than a fixed px, so it holds when those bands resize (and collapses to just
-   the nav band on mobile, where there is no status bar). */
+/* Centred in the CONTENT band — the screen minus its chrome at both ends. Offsetting by the
+   top chrome alone pushed the bottom border under the opaque home bar; offsetting by nothing
+   put the top border under the navbar. Netting the two (top chrome minus bottom chrome)
+   centres it between them, and it stays right when either band resizes — on mobile, where
+   both are 0, it collapses to the nav band alone.
+   The width multiplier is deliberately tight: the band is only ~50px taller than the frame,
+   so every extra unit of width costs 16/9 of it in height. It must still clear --hlw-phone,
+   or the headline would overflow its own frame. */
 .vfr{position:absolute; left:50%; top:50%;
-  transform:translate(-50%, calc(-50% + (var(--status-band,0px) + var(--nav-band,0px)) * .5));
-  width:calc(var(--hlw-phone,380px) * 1.06); aspect-ratio:9/16;
+  transform:translate(-50%, calc(-50%
+    + (var(--status-band,0px) + var(--nav-band,0px) - var(--home-band,0px)) * .5));
+  width:calc(var(--hlw-phone,380px) * 1.02); aspect-ratio:9/16;
   border:2px solid currentColor; color:var(--vh-c, var(--pitch));
   opacity:0; pointer-events:none; z-index:-1;}
 .vfr i{position:absolute; width:9px; height:9px; background:currentColor;}
