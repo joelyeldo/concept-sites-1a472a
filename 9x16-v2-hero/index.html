@@ -1061,8 +1061,12 @@ body.reg #regout{display:block;}
      .work is position:relative and only as tall as the copy, so anchoring the band to the
      SECTION (which is what is full-height) means taking .work out of the positioning chain. */
   .work-sec .work{position:static;}
+  /* height is MEASURED in fitWorkBand() — the band has to start below the copy and above the
+     clips, and both of those move with type size and viewport height, so any fixed vh
+     fraction is right on one screen and overlapping the copy on the next. The fallback here
+     only has to be safe until that first measurement lands. */
   .work-sec .work__band{
-    inset:auto 0 0 0; height:calc(var(--carou-h) + var(--sec-pad,26px) + 20vh);
+    inset:auto 0 0 0; height:calc(var(--carou-h) + var(--sec-pad,26px));
     overflow:hidden;
   }
 
@@ -1975,6 +1979,23 @@ function sizeSections(){
   /* on mobile there is no gutter to be tight IN — the clips move into a carousel instead,
      so the tight guard (which hides them) must never fire there */
   document.getElementById("vgut")?.classList.toggle("is-tight", !MB && gut < 170);
+  fitWorkBand();
+}
+
+/* MOBILE: the ribbon has to live in the space BETWEEN the copy row and the clip strip.
+   Both edges move — type is clamped against viewport width, the strip is sized off it, and
+   the copy wraps differently on every handset — so the top edge is measured, never assumed.
+   Offset geometry (not getBoundingClientRect) on purpose: the section is usually parked off
+   screen, where viewport-relative numbers are meaningless. */
+function fitWorkBand(){
+  const sec = document.querySelector(".work-sec");
+  if (!sec) return;
+  const band = sec.querySelector(".work__band");
+  const copy = sec.querySelector(".card");
+  if (!band || !copy) return;
+  if (!MB){ band.style.height = ""; return; }     /* desktop: the band owns the whole slide */
+  const top = copy.offsetTop + copy.offsetHeight + 10;   /* 10px of air under the copy */
+  band.style.height = Math.max(0, sec.offsetHeight - top) + "px";
 }
 function sizeHeadlines(){
   /* MOBILE: both headlines sit on the same full-viewport screen, so both size off the
@@ -2638,7 +2659,7 @@ if (window.ResizeObserver){
   document.querySelectorAll('.rs--cont, [data-s="founder"] .fnd').forEach(el => ro.observe(el));
 }
 /* fonts land after first paint and re-flow every measured height with them */
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => layoutTail());
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { layoutTail(); fitWorkBand(); });
 /* ── CONTINUOUS ZONE ────────────────────────────────────────────────────────────────
    From the founder down, input moves the reel by PIXELS instead of snapping a slide at a
    time, so founder -> work together -> footer reads as one continuous run inside the phone.
