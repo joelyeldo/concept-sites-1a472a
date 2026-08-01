@@ -27,7 +27,7 @@ a{color:inherit;}
 .hl{background:var(--orange); color:var(--snow); padding:0 .1em;}
 
 /* ── NAV — full width here, no constriction: this page has no phone to constrict into ──── */
-.nav{position:sticky; top:0; z-index:50; display:flex; justify-content:center;
+.nav{position:sticky; top:0; z-index:70; display:flex; justify-content:center;
   width:100%; padding:16px var(--pad) 0; pointer-events:none;}
 .nav__inner{width:min(1180px,100%); display:flex; align-items:center; justify-content:space-between;
   padding:.7rem .9rem .7rem 1.4rem; background:#fff; pointer-events:auto;
@@ -49,6 +49,8 @@ a{color:inherit;}
 
 /* the site's own overlay, same language as the landing page: orange, wipes in from the right,
    one link per row. visibility (not display) so the wipe can play out on close. */
+/* BELOW the nav (z-70): the burger has to stay tappable to close again — it animates into
+   an X — and there is no Escape key on a phone. Same layering as the landing page. */
 .menu{position:fixed; inset:0; z-index:60; visibility:hidden; transition:visibility 0s linear .5s;}
 .menu.is-open{visibility:visible; transition:visibility 0s linear 0s;}
 .menu__links{position:absolute; inset:0; background:var(--orange);
