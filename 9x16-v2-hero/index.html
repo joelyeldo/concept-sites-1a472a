@@ -995,13 +995,33 @@ body.reg #regout{display:block;}
 
   /* WORK CLIPS — no gutters to live in, so they become a lateral carousel on the creative
      slide, which is what the live mobile site does. Kept as ONE strip below the card. */
-  /* the strip is a FIXED height so the card above can reserve exactly that much room —
+  /* ── CREATIVE ────────────────────────────────────────────────────────────────────────
+     The copy comes OFF the card: on mobile it is a full-bleed row sitting straight on the
+     grid, partitioned by horizontal rules, with the clips running edge to edge beneath it.
+     A boxed card floating above a gapped carousel is the desktop idea and it did not
+     survive the narrow viewport. */
+  :root{--carou-h:40vh;}
+  .rs.work-sec{
+    padding-left:0; padding-right:0;                        /* the rules span the full width */
+    padding-bottom:calc(var(--carou-h) + var(--sec-pad,26px));
+  }
+  .work-sec .card{
+    width:100%; max-width:none; margin:0;
+    background:none; box-shadow:none;
+    border:0; border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:var(--sec-pad,26px) 0;
+  }
+  .work-sec .sec{padding:0 var(--sec-pad,26px);}
+  .work-sec .sec__eyebrow{color:var(--orange);}             /* orange, per the reference */
+  /* the rule was pulled out by the CARD's padding; the card has none horizontally now */
+  .work-sec .sec__rule{margin:0 calc(-1 * var(--sec-pad,26px));}
+
+  /* the strip is a FIXED height so the row above can reserve exactly that much room —
      absolutely-positioned clips over a flex-centred card is how they ended up on the copy */
   .vgut{
-    --carou-h:32vh;
-    inset:auto 0 var(--sec-pad,26px) 0; height:var(--carou-h); z-index:6;
-    display:flex; gap:10px; align-items:stretch;
-    padding:0 var(--sec-pad,26px);
+    inset:auto 0 0 0; height:var(--carou-h); z-index:6;
+    display:flex; gap:0; align-items:stretch;               /* clips butt, no gaps */
+    padding:0;                                              /* and run edge to edge */
     overflow-x:auto; overflow-y:hidden;
     scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
     scrollbar-width:none;
@@ -1009,14 +1029,12 @@ body.reg #regout{display:block;}
   .vgut::-webkit-scrollbar{display:none;}
   .vgut.is-on{pointer-events:auto;}
   .vgut.is-tight .vc{display:block;}     /* there is no gutter left to be "tight" in */
-  /* the creative card stops short of the strip instead of running under it */
-  .rs.work-sec{padding-bottom:calc(32vh + var(--sec-pad,26px) * 1.6);}
   /* inline top:X% and the --gx left/right rules are gutter geometry — all of it has to go */
   .vc, .vc--l, .vc--r{
     position:relative !important; left:auto !important; right:auto !important;
     top:auto !important; flex:0 0 auto;
     height:100%; width:auto; aspect-ratio:9/16;   /* size off the strip, stay 9:16 */
-    scroll-snap-align:center;
+    box-shadow:none; scroll-snap-align:start;
     transform:translate(0,14px) scale(.96);   /* keep the rise, drop the lateral throw */
   }
   .vgut.is-on .vc{transform:translate(0,0) scale(1);}   /* and drop the rotation in a row */
@@ -2506,11 +2524,22 @@ function layoutTail(){
    the two in step; rAF-coalesced so the morph's per-frame resizes cost one layout, not many. */
 let tailRaf = 0;
 if (window.ResizeObserver){
-  new ResizeObserver(() => {
+  const ro = new ResizeObserver(() => {
     if (tailRaf) return;
     tailRaf = requestAnimationFrame(() => { tailRaf = 0; layoutTail(); });
-  }).observe(apEl);
+  });
+  ro.observe(apEl);
+  /* The aperture is what changes size during the DESKTOP morph — but on mobile it never
+     resizes, so watching it alone meant layoutTail ran exactly once, before the founder
+     photo and the web fonts had landed. Both tail bugs came out of that single stale pass:
+     a not-yet-loaded photo measures a short card, so work-with-us was placed hard against
+     the founder with no air; and a tail section that settled to a different height
+     afterwards left the aperture's white base showing as a band above the footer.
+     So watch what actually changes size: the founder card and the tail sections. */
+  document.querySelectorAll('.rs--cont, [data-s="founder"] .fnd').forEach(el => ro.observe(el));
 }
+/* fonts land after first paint and re-flow every measured height with them */
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => layoutTail());
 /* ── CONTINUOUS ZONE ────────────────────────────────────────────────────────────────
    From the founder down, input moves the reel by PIXELS instead of snapping a slide at a
    time, so founder -> work together -> footer reads as one continuous run inside the phone.

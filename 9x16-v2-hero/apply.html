@@ -152,6 +152,14 @@ fieldset[hidden]{display:none;}
 .foot__b{border-bottom:1px solid rgba(255,255,255,.16);}
 .foot__c{width:min(1180px,100%); margin:0 auto; padding:clamp(1.6rem,3vw,2.4rem) var(--pad);
   display:flex; flex-direction:column; gap:.55rem;}
+/* On a wide viewport the centred 1180 column already starts well inside the 9%/91% rules.
+   Narrow, it does not: the column goes full-width and its --pad gutter sits INSIDE them, so
+   every line crossed the rules. Clear them the way the landing-page footer does — by 14px.
+   vw, NOT %: percentage padding resolves against the CONTAINER, which is what made this
+   same footer wrong twice before. */
+@media (max-width:1024px){
+  .foot__c{padding-left:calc(9vw + 14px); padding-right:calc(9vw + 14px);}
+}
 .foot__b:last-child{border-bottom:none;}
 .foot__tag{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
   font-size:clamp(2rem,5vw,3.4rem); line-height:1.06; letter-spacing:-.03em; margin:0;}
