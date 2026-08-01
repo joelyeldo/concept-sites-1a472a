@@ -655,8 +655,13 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 /* top-aligned rather than centred, so the air under the navbar is a number we set instead of
    whatever half the leftover happens to be. The tail follows this card, so moving it moves
    work-with-us and the footer with it. */
+/* A flat 100px under the nav band left a slab of empty orange above the card on every screen.
+   Derived from the section scale instead, so it shrinks with the viewport and stays in
+   proportion to every other section's top padding (which is one --sec-pad). The tail is
+   measured off this card's real bottom, so shortening it also shortens the orange run down
+   through work-with-us. */
 .rs[data-s="founder"]{align-items:flex-start;
-  padding-top:calc(var(--status-band,0px) + var(--nav-band,0px) + 100px);}
+  padding-top:calc(var(--status-band,0px) + var(--nav-band,0px) + var(--sec-pad,26px) * 1.5);}
 
 /* ── FOOTER ───────────────────────────────────────────────────────────────────────────
    Black ground with its OWN grid: two verticals framing the column and a hairline under
@@ -2694,10 +2699,18 @@ const TAIL_GAP = 30;
 function layoutTail(){
   const apH = apEl.getBoundingClientRect().height; if (!apH) return;
   const cf  = contFrom();
-  const fndCard = document.querySelector('[data-s="founder"] .fnd');
-  const cardH   = fndCard ? fndCard.getBoundingClientRect().height : apH * 0.7;
-  /* the founder card is centred in its own full-height slide, so its bottom sits here */
-  let y = cf * apH + (apH + cardH) / 2 + TAIL_GAP;
+  const fndSec  = REEL[cf];
+  const fndCard = fndSec && fndSec.querySelector('.fnd');
+  /* MEASURED against the section, not modelled. This used to compute (apH + cardH) / 2 on the
+     belief that the card was vertically centred in its slide — but the founder is
+     align-items:flex-start with its own padding-top, and the two numbers only ever agreed by
+     coincidence at one particular padding value. Change that padding and the whole tail lands
+     in the wrong place: work-with-us either overlaps the founder or leaves a band of the
+     aperture's white base showing. */
+  const cardBottom = (fndSec && fndCard)
+    ? (fndCard.getBoundingClientRect().bottom - fndSec.getBoundingClientRect().top)
+    : apH * 0.85;
+  let y = cf * apH + cardBottom + TAIL_GAP;
   /* TAIL_GAP applies once, after the founder's card. The tail sections themselves butt
      together: a gap between them exposed the aperture's white base as a band between the
      orange section and the black one. */
