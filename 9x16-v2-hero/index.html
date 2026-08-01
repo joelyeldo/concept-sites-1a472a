@@ -2385,6 +2385,10 @@ function setReelPhase(i){
   whiteEl.style.opacity = onOrange ? 0 : 1;
   gridEl.style.setProperty("--grid-c", onOrange ? GRID_LIGHT : GRID_DARK);
   hlVert.style.visibility = onOrange ? "visible" : "hidden";
+  /* the selection frame belongs to that headline, so it lives and dies with it. It sits in
+     .headline, which is a sibling of the reel rather than part of it — so without this it
+     stayed up over story, trust, dashboard and every section after. */
+  if (vfrEl) vfrEl.style.visibility = onOrange ? "visible" : "hidden";
   workCards(REEL[i].dataset.s === "creative");
   storyArm();     /* rewound and held... */
   /* ...then cued almost immediately. This was 520ms — waiting for the reel tween to land —
