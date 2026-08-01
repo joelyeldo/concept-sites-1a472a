@@ -41,7 +41,12 @@ a{color:inherit;}
 
 /* ── PAGE GRID ─────────────────────────────────────────────────────────────────────────── */
 .wrap{position:relative; width:min(1180px,100%); margin:0 auto; padding:0 var(--pad);}
-.grid{position:fixed; inset:0; z-index:0; pointer-events:none;}
+.grid{position:fixed; inset:0; z-index:0; pointer-events:none;
+  /* horizontals complete the box grid: rows step at 29.2vw so the cells stay 9:16 against the
+     six columns — the same rule as the phone-screen .ap-grid. Center-anchored like it too;
+     the verticals stay as the spans below. */
+  background-image:linear-gradient(to bottom, var(--line) 0 1px, transparent 1px);
+  background-size:100% 29.2vw; background-position:0 calc(50% - .5px);}
 .grid span{position:absolute; top:0; bottom:0; width:1px; background:var(--line);}
 
 /* ── APPLY ─────────────────────────────────────────────────────────────────────────────
