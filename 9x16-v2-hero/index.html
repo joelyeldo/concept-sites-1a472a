@@ -1005,7 +1005,7 @@ body.reg #regout{display:block;}
      it gone — that sliver is what tells you the row drags. So one gutter + 1.75 cards spans
      the viewport, and the strip is however tall a 9:16 card of that width comes out. */
   :root{
-    --clip-gap:10px;
+    --clip-gap:6px;
     /* how many clips span the viewport. Past ~2 the card gets small enough that the ribbon
        behind it actually has room to read — at 1.75 the strip was 358px tall and swallowed
        the band whole. The fractional part is the sliver of the next card that says "drag". */
@@ -1015,7 +1015,7 @@ body.reg #regout{display:block;}
   }
   .rs.work-sec{
     padding-left:0; padding-right:0;                        /* the rules span the full width */
-    padding-bottom:calc(var(--carou-h) + var(--sec-pad,26px) * 2);
+    padding-bottom:calc(var(--carou-h) + var(--sec-pad,26px) * 3.4);   /* clears the lifted row */
     align-items:flex-start;    /* copy to the top — centred, it sat in the band's only room */
   }
   .work-sec .card{
@@ -1042,8 +1042,14 @@ body.reg #regout{display:block;}
     margin-bottom:calc(var(--card-gap,26px) * -.5);
   }
   /* the eyebrow belongs WITH its title — a full gap left it floating halfway between the
-     rule above and the words it labels. Negative against the flex gap, so it stays uniform. */
-  .sec__eyebrow{margin-bottom:calc(var(--card-gap,26px) * -.45);}
+     rule above and the words it labels. Negative against the flex gap, so it stays uniform.
+     CHILD selector on purpose: this only works where there IS a gap to pull back against.
+     The group chat's eyebrow lives in .unrel__hd, which has none, so the same rule there
+     pulled it straight onto the title. */
+  .sec > .sec__eyebrow{margin-bottom:calc(var(--card-gap,26px) * -.45);}
+  /* ...so give that header a real gap instead, landing on the same rhythm */
+  .unrel__hd{display:flex; flex-direction:column; gap:calc(var(--card-gap,26px) * .55);}
+  .unrel__hd .sec__eyebrow, .unrel__hd .sec__h, .unrel__hd .unrel__sub{margin:0;}
   .fnd__hd{display:flex; flex-direction:column; gap:var(--card-gap,26px);}
   .fnd__h, .fnd__lede{margin:0;}
 
@@ -1076,8 +1082,9 @@ body.reg #regout{display:block;}
   /* the strip is a FIXED height so the row above can reserve exactly that much room —
      absolutely-positioned clips over a flex-centred card is how they ended up on the copy */
   .vgut{
-    /* clear of the bottom edge, and inset from the left so the first card is not flush */
-    inset:auto 0 var(--sec-pad,26px) 0; height:var(--carou-h); z-index:6;
+    /* lifted well clear of the bottom edge — that pulls the row UP toward the copy row's
+       rule, which is where it should sit, and leaves honest air underneath */
+    inset:auto 0 calc(var(--sec-pad,26px) * 2.4) 0; height:var(--carou-h); z-index:6;
     display:flex; gap:var(--clip-gap); align-items:stretch;
     padding:0 0 0 var(--sec-pad,26px);
     scroll-padding-left:var(--sec-pad,26px);                /* snap respects that gutter */
@@ -1993,12 +2000,54 @@ function sizeSections(){
 function fitWorkBand(){
   const sec = document.querySelector(".work-sec");
   if (!sec) return;
-  const band = sec.querySelector(".work__band");
-  const copy = sec.querySelector(".card");
-  if (!band || !copy) return;
-  if (!MB){ band.style.height = ""; return; }     /* desktop: the band owns the whole slide */
-  const top = copy.offsetTop + copy.offsetHeight + 10;   /* 10px of air under the copy */
-  band.style.height = Math.max(0, sec.offsetHeight - top) + "px";
+  const band  = sec.querySelector(".work__band");
+  const copy  = sec.querySelector(".card");
+  const svg   = band && band.querySelector("svg");
+  const path  = band && band.querySelector("#cbp");
+  const clips = document.getElementById("vgut");
+  if (!band || !copy || !svg || !path) return;
+
+  /* keep the desktop ribbon verbatim so switching back restores it exactly */
+  if (!svg.dataset.vb0){
+    svg.dataset.vb0 = svg.getAttribute("viewBox");
+    svg.dataset.pa0 = svg.getAttribute("preserveAspectRatio") || "xMidYMid slice";
+    path.dataset.d0 = path.getAttribute("d");
+  }
+  if (!MB){                                        /* desktop: the band owns the whole slide */
+    band.style.height = "";
+    svg.setAttribute("viewBox", svg.dataset.vb0);
+    svg.setAttribute("preserveAspectRatio", svg.dataset.pa0);
+    path.setAttribute("d", path.dataset.d0);
+    return;
+  }
+
+  /* FLUSH to the copy row's bottom rule. Any offset here reads as the ribbon being cut off
+     before it reaches the line. */
+  const top = copy.offsetTop + copy.offsetHeight;
+  const H = Math.max(0, sec.offsetHeight - top);
+  const W = sec.offsetWidth;
+  band.style.height = H + "px";
+
+  /* the clips are painted over the bottom of this box, so the ribbon's readable zone is
+     whatever is left above them */
+  const clipsH = clips ? clips.offsetHeight : 0;
+  const clipsBottom = clips ? (parseFloat(getComputedStyle(clips).bottom) || 0) : 0;
+  const visible = Math.max(90, H - clipsH - clipsBottom);
+
+  /* 1 user unit = 1px, so the 20u stroke and 11u type keep the sizes they were tuned at.
+     The desktop viewBox is 400x700 and was being SLICED to a wide short box, which is what
+     chopped the curve's top off. */
+  svg.setAttribute("viewBox", `0 0 ${Math.round(W)} ${Math.round(H)}`);
+  svg.setAttribute("preserveAspectRatio", "none");
+  /* ENTERS past the right edge, EXITS past the left, as one broad sweep. Both ends overshoot
+     the viewport so the ribbon is never seen to start or stop. The turn stays far above the
+     4x-stroke radius floor the desktop path is held to, so the type neither bunches on the
+     inner edge nor gapes on the outer one. */
+  const y0 = Math.round(visible * 0.24);
+  const y1 = Math.round(visible * 0.78);
+  path.setAttribute("d",
+    `M ${Math.round(W + 130)},${y0} ` +
+    `C ${Math.round(W * 0.64)},${y0 - 44} ${Math.round(W * 0.38)},${y1 + 44} -130,${y1}`);
 }
 function sizeHeadlines(){
   /* MOBILE: both headlines sit on the same full-viewport screen, so both size off the
@@ -2813,8 +2862,14 @@ addEventListener("keydown", e => {
   gestureStep(dir, 999);        /* a keypress is always a fresh gesture */
 });
 
-let touchY = null, touchLast = null;
-addEventListener("touchstart", e => { touchY = touchLast = e.touches[0].clientY; }, { passive: true });
+let touchY = null, touchLast = null, touchX = null, touchInClips = false;
+addEventListener("touchstart", e => {
+  touchY = touchLast = e.touches[0].clientY;
+  touchX = e.touches[0].clientX;
+  /* a touch that STARTS on the clip carousel may be a lateral drag, and the reel captures
+     every touchmove on mobile — which froze the row completely. Remember where it began. */
+  touchInClips = !!(e.target.closest && e.target.closest("#vgut"));
+}, { passive: true });
 addEventListener("touchmove", e => {
   if (touchY === null) return;
   const y     = e.touches[0].clientY;
@@ -2827,6 +2882,10 @@ addEventListener("touchmove", e => {
      the snapped slides and the pixel-scrolled tail. */
   if (MB){
     if (chatOpen()) return;         /* the chat log scrolls on its own */
+    /* HORIZONTAL intent on the carousel belongs to the carousel. Returning here leaves the
+       native overflow-x scroller to do its job — calling preventDefault (as this did for
+       every gesture) is exactly what made the clip row impossible to drag. */
+    if (touchInClips && Math.abs(touchX - e.touches[0].clientX) > Math.abs(total)) return;
     e.preventDefault();
     /* the tail needs EVERY frame, so it runs before the one-step threshold */
     if (reelActive && contMove(step * 1.6, step > 0 ? 1 : -1)){
