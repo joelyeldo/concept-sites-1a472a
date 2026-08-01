@@ -964,6 +964,58 @@ body.reg #regout{display:block;}
    time a dead v1 rule has quietly overridden a live one (.work, .cta, now this). */
 
 @media (prefers-reduced-motion:reduce){ .hero{height:auto;} .pin{position:relative;} }
+
+/* ══════════════════════════════════════════════════════════════════════════════════════
+   MOBILE + TABLET-PORTRAIT — ONE breakpoint
+   The viewport is ALREADY 9:16, so there is nothing to crop into: the viewport IS the
+   screen. No phone mockup, no pavement, no gutters, no 16:9 -> 9:16 morph, and no fake iOS
+   status/home bars — a real phone draws its own, ours would be a second set.
+   Everything else is the desktop system at viewport scale: same sections, same grid, same
+   reel rules. Tablet LANDSCAPE deliberately does NOT match this query — it falls through to
+   the desktop rig, which is viewport-derived and simply scales down.
+   LAST in the sheet on purpose: source order is what makes these win. */
+@media (max-width:1024px) and (orientation:portrait){
+
+  /* the page never scrolls — the reel owns every vertical gesture, as it does on desktop */
+  html, body{overflow:hidden; overscroll-behavior:none;}
+  .hero{height:100dvh;}
+  .pin{height:100dvh; overflow:hidden;}
+
+  /* everything that only exists because a phone is standing on a pavement */
+  #ground, #props, .crop, .screenui, .body[data-body="phone"]{display:none !important;}
+
+  /* the crop box IS the screen: square corners, nothing to inset from */
+  .aperture{border-radius:0 !important;}
+  .menu{border-radius:0;}
+
+  /* NAV — always the phone bar. No status band above it, so it sits at the top on its own. */
+  .nav{padding-top:10px;}
+  .nav__links{display:none;}
+  .nav__burger{display:flex;}
+
+  /* WORK CLIPS — no gutters to live in, so they become a lateral carousel on the creative
+     slide, which is what the live mobile site does. Kept as ONE strip below the card. */
+  .vgut{
+    inset:auto 0 var(--sec-pad,26px) 0; height:auto; z-index:6;
+    display:flex; gap:10px; align-items:flex-end;
+    padding:0 var(--sec-pad,26px);
+    overflow-x:auto; overflow-y:hidden;
+    scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .vgut::-webkit-scrollbar{display:none;}
+  .vgut.is-on{pointer-events:auto;}
+  .vgut.is-tight .vc{display:block;}     /* there is no gutter left to be "tight" in */
+  /* inline top:X% and the --gx left/right rules are gutter geometry — all of it has to go */
+  .vc, .vc--l, .vc--r{
+    position:relative !important; left:auto !important; right:auto !important;
+    top:auto !important; flex:0 0 auto;
+    width:min(46vw, 190px); scroll-snap-align:center;
+    transform:translate(0,14px) scale(.96);   /* keep the rise, drop the lateral throw */
+  }
+  .vgut.is-on .vc{transform:translate(0,0) scale(1);}   /* and drop the rotation in a row */
+  .vc__ui{opacity:1;}                                    /* no hover on a touch screen */
+}
 </style>
 </head>
 <body>
@@ -1461,6 +1513,11 @@ let dashPeriod = "monthly";
 /* same reason: setReelPhase calls closeChat, which reads this. reelTo() runs long before the
    chat block further down would have evaluated its own declaration. */
 let chatOpener = null;
+/* MOBILE phase: 0 = hero (widescreen plates), 1 = reel armed (orange). It is what the morph
+   progress is on desktop, driven by a swipe instead of by scroll. Declared up here with the
+   rest of the shared state because reflow() reads it — same TDZ rule as everything above. */
+let mbP = 0;
+let mbBusy = false;        /* a hero<->reel transition is running; swallow input until it lands */
 let trackIdx = 0;          /* which song the player card is on — same hoisting rule */
 let storyCue = 0;          /* pending "play the story clip" timer; storyArm cancels it */
 /* which edge the reel was released at: "top" hands back to the hero, "bottom" hands on to
@@ -1569,8 +1626,26 @@ const ISLAND_MID = 0.0284;/* island's vertical centre, as a fraction of screen h
    the orange corners never sat inside the glass. */
 const CORNER_R   = 0.1363;
 
+/* ── MOBILE / TABLET-PORTRAIT ─────────────────────────────────────────────────────────
+   One breakpoint for phones AND tablets held upright. The viewport is already 9:16, so the
+   desktop premise — reveal a 9:16 frame inside a wide one — has nothing to reveal. Instead
+   the viewport IS the screen. Tablet LANDSCAPE is deliberately excluded: it gets the desktop
+   rig, which derives everything from the viewport and so just scales down.
+   Must be declared ABOVE geo(): geo() reads it on the very first call. */
+const MOBILE_Q = "(max-width:1024px) and (orientation:portrait)";
+let MB = matchMedia(MOBILE_Q).matches;
+
 function geo(){
   const vw = innerWidth, vh = innerHeight;
+  /* MOBILE: the screen is the whole viewport. No mockup photo, so no bezel and no gutter;
+     statusH/homeH are 0, which is what drops the fake iOS bands out of every section's
+     padding without touching a single section rule. navH stays — the bar is still real. */
+  if (MB){
+    return { startW: vw, startH: vw * 9 / 16, endW: vw, endH: vh,
+             photoW: vw, photoH: vh, screenW: vw, screenTop: 0, screenH: vh,
+             statusH: 0, navH: vh * NAVBAND_F, homeH: 0, frameTop: 0,
+             vw, vh, ready: vw > 0 && vh > 0 };
+  }
   /* The whole phone has to be visible — the island is what the nav hangs off, so it can never
      bleed off the top. Work backwards from the mockup: the photo fits the viewport height
      with PHONE_TOP either side, and the screen is a known fraction of the photo. */
@@ -1626,7 +1701,7 @@ function setAperture(w, h, p = 0){
      rather than two. Cells stay 9:16 in both. */
   setPhase(p);
   /* corners only exist once it IS a phone screen — a billboard has square ones */
-  const rad = G.screenW * CORNER_R * p;
+  const rad = MB ? 0 : G.screenW * CORNER_R * p;   /* no mockup on mobile, so no rounded screen */
   root.style.setProperty("--scr-r", rad + "px");
   apEl.style.borderRadius = rad + "px";
   const landH = (screenH0 || h) * 0.58, landW = landH * 9 / 16;
@@ -1640,6 +1715,10 @@ function setAperture(w, h, p = 0){
    p = 0 → fixed 16px from the top, capped at 1180px (v1 geometry, styles.css:116).
    p = 1 → exactly the screen's width, sitting just under the island, hamburger only. */
 function setNav(p){
+  /* MOBILE: the bar is the phone bar from the very first frame and never morphs. Pinning p
+     to its end state keeps is-phone on and stops the width/logo interpolating as the hero
+     hands over to the reel. */
+  if (MB) p = 1;
   const pad    = 20;
   const startW = Math.min(1180, G.vw - pad * 2);
   /* the nav parks in its own band: below the status bar, above the crop line, touching neither.
@@ -1809,9 +1888,22 @@ function sizeSections(){
   /* below this there is no pavement left to stand on: --vcw bottoms out at its clamp floor
      and the cards would ride onto the phone. Narrow gets no clips until the mobile
      breakpoint is built — an overlap would read as broken, an absence just reads as clean. */
-  document.getElementById("vgut")?.classList.toggle("is-tight", gut < 170);
+  /* on mobile there is no gutter to be tight IN — the clips move into a carousel instead,
+     so the tight guard (which hides them) must never fire there */
+  document.getElementById("vgut")?.classList.toggle("is-tight", !MB && gut < 170);
 }
 function sizeHeadlines(){
+  /* MOBILE: both headlines sit on the same full-viewport screen, so both size off the
+     viewport width. The desktop landscape headline sizes off the PLATE's screen height —
+     on a 9:16 viewport that plate is a cover crop, and the type came out far too large. */
+  if (MB){
+    const s = gsap.utils.clamp(26, 52, G.vw * 0.105) + "px";
+    root.style.setProperty("--hls-land",  s);
+    root.style.setProperty("--hls-phone", s);
+    root.style.setProperty("--hlw-land",  G.vw * 0.84 + "px");
+    root.style.setProperty("--hlw-phone", G.vw * 0.84 + "px");
+    return;
+  }
   root.style.setProperty("--hls-land",  gsap.utils.clamp(28, 68, (screenH0Nat || screenH0 || 500) * 0.118) + "px");
   root.style.setProperty("--hlw-land",  Math.min(900, G.vw * 0.62) + "px");
   root.style.setProperty("--hls-phone", gsap.utils.clamp(22, 46, G.screenW * 0.098) + "px");
@@ -1859,7 +1951,9 @@ function showLandscape(i){
      aperture while the photo cuts would leave the box visibly chasing the frame it crops. */
   const g = plateGeom(incoming);
   curPlate = g;
-  if (lastP < MORPH_AT) tweenAperture(g.w, g.h, 0);
+  /* on mobile the aperture is the viewport and never tracks a plate's screen — the plates
+     are a full-bleed backdrop there, deliberately running off both edges */
+  if (!MB && lastP < MORPH_AT) tweenAperture(g.w, g.h, 0);
 }
 function startCycle(){
   if (timer || reduce) return;
@@ -2408,12 +2502,84 @@ if (window.ResizeObserver){
     tailRaf = requestAnimationFrame(() => { tailRaf = 0; layoutTail(); });
   }).observe(apEl);
 }
+/* ── CONTINUOUS ZONE ────────────────────────────────────────────────────────────────
+   From the founder down, input moves the reel by PIXELS instead of snapping a slide at a
+   time, so founder -> work together -> footer reads as one continuous run inside the phone.
+   Coming back up to the founder's own top edge hands control to the snap mechanic, so the
+   seam sits at exactly one place. Shared by wheel AND touch: mobile needs identical tail
+   behaviour, and two copies of this would drift apart the first time either was tuned.
+   Returns true when it has consumed the gesture. */
+function contMove(delta, dir){
+  const cf = contFrom();
+  if (!(reelIdx >= cf && !(contPos <= cf + 0.002 && dir < 0))) return false;
+  const apH = apEl.getBoundingClientRect().height || innerHeight;
+  contPos = gsap.utils.clamp(cf, contEnd || cf, contPos + delta / apH);
+  gsap.killTweensOf(reelProxy);
+  reelProxy.y = contPos;
+  root.style.setProperty("--reel-y", contPos.toFixed(4));
+  /* which section is actually under the aperture — rounding the index cannot answer this
+     once the tail sections no longer sit on screen boundaries */
+  const mid = contPos * apH + apH / 2;
+  let near = cf;
+  REEL.forEach((sec, k) => {
+    const t = parseFloat(sec.style.top) || (k * apH);
+    if (mid >= t) near = k;
+  });
+  if (near !== reelIdx){ reelIdx = near; setReelPhase(near); }   /* keeps the navbar in step */
+  return true;
+}
+
+/* ── MOBILE: the hero is a GESTURE, not a scroll ──────────────────────────────────────
+   On desktop the hero -> reel handover is the scrubbed morph. On mobile there is nothing to
+   morph, so one swipe runs the phase instead: setPhase() already does the whole handover —
+   headline crossfade (widescreen -> "it's a 9x16 world now"), the orange wash and the grid
+   flip — so the swap the brief asks for is exactly this tween, and the reel arms after it. */
+function mbTo(target, then){
+  mbBusy = true;
+  gsap.to({ p: mbP }, {
+    p: target, duration: 0.55, ease: "power2.inOut",
+    onUpdate(){ mbP = this.targets()[0].p; setPhase(mbP); },
+    onComplete(){ mbP = target; setPhase(target); mbBusy = false; then && then(); }
+  });
+}
+/* returns true when the gesture belonged to the hero<->reel seam */
+function mbGate(dir){
+  if (mbBusy) return true;                        /* swallow input mid-transition */
+  if (!reelActive){
+    if (dir > 0) mbTo(1, () => { stopCycle(); enterReel(); });
+    return true;                                  /* the hero has nowhere to hand the page */
+  }
+  if (reelIdx === 0 && dir < 0){                  /* back off the orange, into the hero */
+    reelActive = false;                           /* set BEFORE setReelPhase: that guards its
+                                                     own nav toggle on reelActive */
+    reelEl.style.opacity = 0;
+    setReelPhase(0);
+    navEl.classList.add("is-glass");              /* back over a photograph */
+    startCycle();
+    mbTo(0);
+    return true;
+  }
+  return false;
+}
+
 addEventListener("wheel", e => {
   /* A menu is a modal: nothing behind it moves. Without this the reel kept stepping
      underneath an open menu, so closing it revealed a different section than the one you
      opened it on. preventDefault here (unlike the chat, which has its own scrollable log)
      because the menu has nothing to scroll and the hero above the reel is not pinned. */
   if (navEl.classList.contains("is-open")) { e.preventDefault(); return; }
+  /* MOBILE owns every vertical gesture: there is no page scroll to release to, so the hero
+     and the reel are two states of ONE machine rather than two scroll regions. */
+  if (MB){
+    if (chatOpen()) return;
+    e.preventDefault();
+    if (Math.abs(e.deltaY) < 2) return;
+    const d = e.deltaY > 0 ? 1 : -1;
+    if (mbGate(d)) return;
+    if (contMove(e.deltaY, d)) return;
+    gestureStep(d, Math.abs(e.deltaY));
+    return;
+  }
   if (!reelActive){
     /* Re-arm the moment the visitor scrolls back DOWN. leftReel exists so that releasing at
        the top of the reel doesn't instantly re-grab the page — but keying it only to the
@@ -2435,29 +2601,7 @@ addEventListener("wheel", e => {
   e.preventDefault();
   if (!scrollLocked) lockScroll();             /* re-pin if we had released and came back */
 
-  /* ── CONTINUOUS ZONE ──────────────────────────────────────────────────────────────
-     From the founder down, wheel deltas move the reel by PIXELS instead of snapping a
-     slide at a time, so founder -> work together -> footer reads as one continuous run
-     inside the phone. Scrolling back up to the founder's own top edge hands control
-     back to the snap mechanic, so the seam sits at exactly one place. */
-  const cf = contFrom();
-  if (reelIdx >= cf && !(contPos <= cf + 0.002 && dir < 0)){
-    const apH = apEl.getBoundingClientRect().height || innerHeight;
-    contPos = gsap.utils.clamp(cf, contEnd || cf, contPos + e.deltaY / apH);
-    gsap.killTweensOf(reelProxy);
-    reelProxy.y = contPos;
-    root.style.setProperty("--reel-y", contPos.toFixed(4));
-    /* which section is actually under the aperture — rounding the index cannot answer this
-       once the tail sections no longer sit on screen boundaries */
-    const mid = contPos * apH + apH / 2;
-    let near = cf;
-    REEL.forEach((sec, k) => {
-      const t = parseFloat(sec.style.top) || (k * apH);
-      if (mid >= t) near = k;
-    });
-    if (near !== reelIdx){ reelIdx = near; setReelPhase(near); }   /* keeps the navbar in step */
-    return;
-  }
+  if (contMove(e.deltaY, dir)) return;
   gestureStep(dir, Math.abs(e.deltaY));
 }, { passive: false });
 
@@ -2471,13 +2615,32 @@ addEventListener("keydown", e => {
   gestureStep(dir, 999);        /* a keypress is always a fresh gesture */
 });
 
-let touchY = null;
-addEventListener("touchstart", e => { touchY = e.touches[0].clientY; }, { passive: true });
+let touchY = null, touchLast = null;
+addEventListener("touchstart", e => { touchY = touchLast = e.touches[0].clientY; }, { passive: true });
 addEventListener("touchmove", e => {
-  if (!reelActive || touchY === null) return;
-  const dy = touchY - e.touches[0].clientY;
-  if (Math.abs(dy) < 40) return;
-  const dir = dy > 0 ? 1 : -1;
+  if (touchY === null) return;
+  const y     = e.touches[0].clientY;
+  const total = touchY    - y;      /* since the finger went down — gates the one-per-swipe step */
+  const step  = touchLast - y;      /* since the last frame — drives the continuous tail */
+  touchLast = y;
+  const dir = total > 0 ? 1 : -1;
+
+  /* MOBILE: touch is the primary input, so it carries the whole machine — the hero seam,
+     the snapped slides and the pixel-scrolled tail. */
+  if (MB){
+    if (chatOpen()) return;         /* the chat log scrolls on its own */
+    e.preventDefault();
+    /* the tail needs EVERY frame, so it runs before the one-step threshold */
+    if (reelActive && contMove(step * 1.6, step > 0 ? 1 : -1)) return;
+    if (Math.abs(total) < 40) return;
+    touchY = null;                  /* one snap per swipe */
+    if (mbGate(dir)) return;
+    if (reelActive) gestureStep(dir, 999);
+    return;
+  }
+
+  if (!reelActive) return;
+  if (Math.abs(total) < 40) return;
   if (atEdge(dir)) return;
   e.preventDefault();
   touchY = null;
@@ -2635,8 +2798,23 @@ addEventListener("keydown", e => {
 
 /* re-place everything from the CURRENT geometry at the CURRENT progress */
 function reflow(){
+  /* Rotating a tablet across this line swaps the ENTIRE scroll architecture: the desktop rig
+     is a scrubbed morph timeline on a 360vh pin, the mobile rig has no timeline at all. Hot-
+     swapping two scroll systems mid-session is the exact class of bug this file has already
+     paid for three times, so crossing the breakpoint rebuilds from scratch instead. */
+  const nowMB = matchMedia(MOBILE_Q).matches;
+  if (nowMB !== MB){ location.reload(); return; }
+
   G = geo(); publishCol();
   sizePlates();
+  if (MB){
+    /* the aperture is the viewport at every phase — there is no plate size to interpolate
+       towards, and mbP (not lastP) is what the phase is worth here */
+    setAperture(G.endW, G.endH, mbP);
+    setNav(mbP);
+    requestAnimationFrame(layoutTail);
+    return;
+  }
   if (curPlate) curPlate = plateGeom(LANDSCAPE[cyc]);   /* re-measure at the new viewport */
   const from = curPlate || { w:G.startW, h:G.startH };
   setAperture(gsap.utils.interpolate(from.w, G.endW, lastP),
@@ -2652,6 +2830,10 @@ addEventListener("resize", reflow, {passive:true});
 function check(){
   const g = geo();
   if (!g.ready) return;
+  /* every assertion below measures the DESKTOP rig — the phone mockup, its island, its
+     chrome bands, the aperture registering onto a plate. None of that exists on mobile, so
+     running them there is guaranteed noise, not a signal. */
+  if (MB){ console.info("9x16 — mobile/tablet-portrait rig: viewport is the screen, no morph."); return; }
 
   const endR = g.endH / g.endW;
   /* the aperture no longer starts at a fixed 16:9 — it IS the current plate's screen. The
@@ -2735,6 +2917,25 @@ ${missingBody.map(b => `  · body-${b.dataset.body}.png    — screen blank, cut
 ${missingProp.map(p => `  · prop-${p.dataset.prop}.png    — cut-out, client branding`).join("\n")}
 
 registration : press R over any body to align a swapped photo.`);
+}
+/* ── MOBILE INIT ──────────────────────────────────────────────────────────────────────
+   Runs LAST, below every declaration in this file. It touches the aperture, the nav, the
+   reel and the plate cycle, and a `let` read before its own declaration is what has killed
+   this script three times — so nothing above is allowed to call into this block.
+
+   The desktop morph is a timeline scrubbed by a 360vh pin. On mobile there is nothing to
+   morph: the trigger is killed outright and the timeline held at 0, and the phase is driven
+   by mbTo() from a swipe instead. */
+if (MB){
+  if (tl.scrollTrigger) tl.scrollTrigger.kill();
+  tl.pause(0);
+  G = geo(); publishCol();
+  sizePlates();
+  setAperture(G.endW, G.endH, 0);    /* the aperture IS the viewport, held at the hero phase */
+  setNav(0);                         /* setNav pins p to 1 internally on mobile */
+  setPhase(0);
+  reelEl.style.opacity = 0;          /* the hero shows plates; the reel arms on the first swipe */
+  navEl.classList.add("is-glass");   /* the bar floats over a photograph until the reel starts */
 }
 addEventListener("load", () => { reflow(); check(); });
 check();
