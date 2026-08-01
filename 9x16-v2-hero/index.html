@@ -2039,15 +2039,17 @@ function fitWorkBand(){
      chopped the curve's top off. */
   svg.setAttribute("viewBox", `0 0 ${Math.round(W)} ${Math.round(H)}`);
   svg.setAttribute("preserveAspectRatio", "none");
-  /* ENTERS past the right edge, EXITS past the left, as one broad sweep. Both ends overshoot
-     the viewport so the ribbon is never seen to start or stop. The turn stays far above the
-     4x-stroke radius floor the desktop path is held to, so the type neither bunches on the
-     inner edge nor gapes on the outer one. */
+  /* One broad sweep that overshoots BOTH edges, so the ribbon is never seen to start or stop:
+     it exits past the left of the viewport and enters past the right. The turn stays far
+     above the 4x-stroke radius floor the desktop path is held to, so the type neither bunches
+     on the inner edge nor gapes on the outer one.
+     DRAWN LEFT TO RIGHT — a textPath runs in the path's own direction, so authoring this
+     right-to-left rendered every word mirrored. */
   const y0 = Math.round(visible * 0.24);
   const y1 = Math.round(visible * 0.78);
   path.setAttribute("d",
-    `M ${Math.round(W + 130)},${y0} ` +
-    `C ${Math.round(W * 0.64)},${y0 - 44} ${Math.round(W * 0.38)},${y1 + 44} -130,${y1}`);
+    `M -130,${y1} ` +
+    `C ${Math.round(W * 0.38)},${y1 + 44} ${Math.round(W * 0.64)},${y0 - 44} ${Math.round(W + 130)},${y0}`);
 }
 function sizeHeadlines(){
   /* MOBILE: both headlines sit on the same full-viewport screen, so both size off the
