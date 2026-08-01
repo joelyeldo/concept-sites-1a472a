@@ -37,7 +37,31 @@ a{color:inherit;}
 .nav__links a{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
   text-decoration:none; font-size:1.12rem; opacity:.9;}
 .nav__links a:hover{opacity:1;}
-@media (max-width:640px){ .nav__links{display:none;} .nav__logo{height:44px;} }
+/* the burger only exists below the links' breakpoint — above it the links ARE the nav */
+.nav__burger{display:none; flex-direction:column; justify-content:center; align-items:center; gap:7px;
+  width:44px; height:44px; padding:0; background:none; border:none; cursor:pointer; color:var(--pitch);}
+.nav__burger span{display:block; width:25px; height:2px; background:currentColor;
+  transition:transform .32s var(--ease-out), opacity .2s var(--ease-out);}
+.nav__burger.is-open span:nth-child(1){transform:translateY(9px) rotate(45deg);}
+.nav__burger.is-open span:nth-child(2){opacity:0;}
+.nav__burger.is-open span:nth-child(3){transform:translateY(-9px) rotate(-45deg);}
+@media (max-width:640px){ .nav__links{display:none;} .nav__logo{height:44px;} .nav__burger{display:flex;} }
+
+/* the site's own overlay, same language as the landing page: orange, wipes in from the right,
+   one link per row. visibility (not display) so the wipe can play out on close. */
+.menu{position:fixed; inset:0; z-index:60; visibility:hidden; transition:visibility 0s linear .5s;}
+.menu.is-open{visibility:visible; transition:visibility 0s linear 0s;}
+.menu__links{position:absolute; inset:0; background:var(--orange);
+  display:flex; flex-direction:column; justify-content:center;
+  transform:translateX(100%); transition:transform .5s var(--ease-out);}
+.menu.is-open .menu__links{transform:translateX(0);}
+.menu__row{display:flex; align-items:center; padding:0 9%; min-height:20vh; margin-top:-1px;
+  background:var(--orange); color:#fff; text-decoration:none;
+  font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
+  font-size:clamp(1.8rem,9vw,3.2rem); letter-spacing:-.02em; line-height:1;
+  border-top:1px solid rgba(255,255,255,.45); border-bottom:1px solid rgba(255,255,255,.45);
+  transition:background-color .2s var(--ease-out), color .2s var(--ease-out);}
+.menu__row:hover, .menu__row:active{background:#fff; color:var(--orange);}
 
 /* ── PAGE GRID ─────────────────────────────────────────────────────────────────────────── */
 .wrap{position:relative; width:min(1180px,100%); margin:0 auto; padding:0 var(--pad);}
@@ -75,6 +99,12 @@ a{color:inherit;}
 form{display:flex; flex-direction:column; gap:1px;}
 fieldset{border:none; margin:0; padding:0; display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; background:var(--line);}
+/* Portrait: one field per row. Two-up left ~150px of usable input on a phone — enough to
+   lay out, not enough to type into, and an email that scrolls under the caret is where
+   people abandon a form. The whole page is one column here anyway. */
+@media (max-width:1024px) and (orientation:portrait){
+  fieldset{grid-template-columns:1fr;}
+}
 fieldset[hidden]{display:none;}
 .cell{background:var(--snow); padding:clamp(1.1rem,2.2vw,1.6rem) clamp(1.4rem,3vw,2.6rem);
   display:flex; flex-direction:column; gap:.7rem; justify-content:center;}
@@ -196,8 +226,21 @@ fieldset[hidden]{display:none;}
     <nav class="nav__links" aria-label="Primary">
       <a href="index.html">our story</a><a href="index.html">our work</a><a href="apply.html">work with us</a>
     </nav>
+    <!-- the links collapse on a narrow screen and nothing replaced them — this is the way
+         back out of the form. Same three destinations, same orange overlay as the site. -->
+    <button class="nav__burger" id="burger" type="button" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<div class="menu" id="menu" aria-hidden="true">
+  <nav class="menu__links" aria-label="Mobile primary">
+    <a class="menu__row" href="index.html">our story</a>
+    <a class="menu__row" href="index.html">our work</a>
+    <a class="menu__row" href="apply.html">work with us</a>
+  </nav>
+</div>
 
 <main class="wrap">
   <section class="apply">
@@ -388,6 +431,19 @@ fieldset[hidden]{display:none;}
     document.getElementById("done").classList.add("is-on");
     document.getElementById("done").scrollIntoView({ behavior:"smooth", block:"center" });
   });
+
+  /* burger -> overlay. Locking the body stops the form scrolling behind an open menu. */
+  const burger = document.getElementById("burger");
+  const menu   = document.getElementById("menu");
+  function setMenu(open){
+    menu.classList.toggle("is-open", open);
+    burger.classList.toggle("is-open", open);
+    burger.setAttribute("aria-expanded", String(open));
+    menu.setAttribute("aria-hidden", String(!open));
+    document.body.style.overflow = open ? "hidden" : "";
+  }
+  burger.addEventListener("click", () => setMenu(!menu.classList.contains("is-open")));
+  addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
 })();
 </script>
 </body>

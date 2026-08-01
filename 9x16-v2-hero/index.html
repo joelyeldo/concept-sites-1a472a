@@ -1000,14 +1000,23 @@ body.reg #regout{display:block;}
      grid, partitioned by horizontal rules, with the clips running edge to edge beneath it.
      A boxed card floating above a gapped carousel is the desktop idea and it did not
      survive the narrow viewport. */
-  :root{--carou-h:40vh;}
+  /* CLIP SIZING, from the landing view backwards: the first card sits a gutter in from the
+     left edge, is fully visible, and the second is cut by the right edge with a quarter of
+     it gone — that sliver is what tells you the row drags. So one gutter + 1.75 cards spans
+     the viewport, and the strip is however tall a 9:16 card of that width comes out. */
+  :root{
+    --clip-w:calc((100vw - var(--sec-pad,26px)) / 1.75);
+    --carou-h:calc(var(--clip-w) * 16 / 9);
+  }
   .rs.work-sec{
     padding-left:0; padding-right:0;                        /* the rules span the full width */
-    padding-bottom:calc(var(--carou-h) + var(--sec-pad,26px));
+    padding-bottom:calc(var(--carou-h) + var(--sec-pad,26px) * 2);
   }
   .work-sec .card{
     width:100%; max-width:none; margin:0;
-    background:none; box-shadow:none;
+    /* SOLID white, not transparent: the page grid was ruling straight through the copy.
+       The row is the surface the type sits on, so it has to be opaque. */
+    background:var(--snow); box-shadow:none;
     border:0; border-top:1px solid var(--line); border-bottom:1px solid var(--line);
     padding:var(--sec-pad,26px) 0;
   }
@@ -1028,9 +1037,11 @@ body.reg #regout{display:block;}
   /* the strip is a FIXED height so the row above can reserve exactly that much room —
      absolutely-positioned clips over a flex-centred card is how they ended up on the copy */
   .vgut{
-    inset:auto 0 0 0; height:var(--carou-h); z-index:6;
+    /* clear of the bottom edge, and inset from the left so the first card is not flush */
+    inset:auto 0 var(--sec-pad,26px) 0; height:var(--carou-h); z-index:6;
     display:flex; gap:0; align-items:stretch;               /* clips butt, no gaps */
-    padding:0;                                              /* and run edge to edge */
+    padding:0 0 0 var(--sec-pad,26px);
+    scroll-padding-left:var(--sec-pad,26px);                /* snap respects that gutter */
     overflow-x:auto; overflow-y:hidden;
     scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
     scrollbar-width:none;
@@ -1042,7 +1053,9 @@ body.reg #regout{display:block;}
   .vc, .vc--l, .vc--r{
     position:relative !important; left:auto !important; right:auto !important;
     top:auto !important; flex:0 0 auto;
-    height:100%; width:auto; aspect-ratio:9/16;   /* size off the strip, stay 9:16 */
+    /* width leads (it sets how many land in view), height follows the strip — the two are
+       already a 9:16 pair by construction, see --clip-w/--carou-h */
+    width:var(--clip-w); height:100%; aspect-ratio:auto;
     margin:0;                    /* the gutter rules carry 40px side margins — that was the gap */
     box-shadow:none; scroll-snap-align:start;
     transform:translate(0,14px) scale(.96);   /* keep the rise, drop the lateral throw */
