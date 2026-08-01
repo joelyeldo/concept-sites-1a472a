@@ -210,11 +210,13 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    the whole ground is visible at all. */
 .ground::after{content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
   background:rgba(16,12,8,.32);}
-.ground img{width:100%; height:100%; object-fit:cover; display:block;
-  /* the pavement pans top->bottom as the reel runs slide 0 -> footer, so it scrolls past like
-     a walking POV. object-fit:cover keeps it gap-free at any viewport; --reel-end (the footer's
-     --reel-y, set in layoutTail) is the range, --reel-y the live position. */
-  object-position:50% calc(var(--reel-y, 0) / var(--reel-end, 8) * 100%);}
+/* The pavement pans top->bottom as the reel runs slide 0 -> footer, so it scrolls past like a
+   walking POV. It is driven by a COMPOSITED transform in writeReelY, not object-position:
+   object-position repaints the entire photo every time it changes, and at 1512x4052 that was
+   a full-viewport repaint on every frame of every drag — the single biggest cause of the
+   stutter. Natural aspect + overflow:hidden on .ground gives the same crop. */
+.ground img{width:100%; height:auto; min-height:100%; display:block;
+  will-change:transform;}
 /* .ground--placeholder (temp Swiss-grid pavers) and .ground__tag (slot label) removed —
    the real pavement photo, ground-pavement.jpg, has landed. */
 
@@ -1667,6 +1669,15 @@ let contNeedsNew = false;  /* ...and the flick that landed it must end first */
 let lastWheelT = 0;        /* used to tell one wheel burst from the next */
 let dragging = false;      /* a reels-style drag is running in the snapped zone (mobile) */
 let dragFrom = 0;          /* the slide it started from */
+/* ── SCROLL HOT-PATH CACHE ───────────────────────────────────────────────────────────
+   Everything here exists to keep the per-frame drag path free of layout reads. It used to
+   call getBoundingClientRect() and then write a style in the same handler, which forces a
+   synchronous layout on every wheel/touch event — and those fire several times per frame. */
+let apHc = 0;              /* aperture height, invalidated by the ResizeObserver */
+let cfIdx = -1;            /* contFrom() index — the section order never changes */
+let secTopsU = [];         /* every section's top in SLIDE UNITS, rebuilt in layoutTail */
+let ryVal = 0, ryRaf = 0;  /* coalesced --reel-y write: one style write per frame, never more */
+let groundImg = null, groundTravel = 0;   /* pavement pan, moved onto the compositor */
 let mbBusyAt = 0;          /* when it started — see the rAF-stall guard in mbGate */
 let mbThen = null;         /* what to run once it lands (arm the reel) */
 let mbTarget = 0;          /* the phase it is heading to */
@@ -2315,7 +2326,7 @@ let reelIdx = 0;
 function slidePos(i){
   const sec = REEL[i];
   if (!sec || !sec.classList.contains("rs--cont")) return i;
-  const apH = apEl.getBoundingClientRect().height || innerHeight;
+  const apH = apHeight();
   const topPx = parseFloat(sec.style.top);
   return (isFinite(topPx) && apH) ? topPx / apH : i;
 }
@@ -2329,7 +2340,7 @@ function reelTo(i){
   setReelPhase(i);
   gsap.to(reelProxy, {
     y: pos, duration: 0.5, ease: "power3.out", overwrite: true,   /* ease-OUT: moves at once */
-    onUpdate(){ root.style.setProperty("--reel-y", reelProxy.y.toFixed(4)); }
+    onUpdate(){ writeReelY(reelProxy.y); }
     /* the story clip is cued from setReelPhase on a timer, not from here: overwrite:true
        kills this tween on a fast flick and its onComplete would never fire. */
   });
@@ -2742,7 +2753,9 @@ function atEdge(dir){
 }
 /* From this slide down the reel stops snapping and scrolls continuously: founder ->
    work together -> footer read as one run rather than three flicks. */
-function contFrom(){ return REEL.findIndex(x => x.dataset.s === "founder"); }
+/* the section order is fixed for the life of the page, so this only ever needs finding once —
+   it used to run a findIndex over every section on every drag frame */
+function contFrom(){ return cfIdx >= 0 ? cfIdx : (cfIdx = REEL.findIndex(x => x.dataset.s === "founder")); }
 
 /* Places the content-height tail sections directly after the founder's card, in px, and
    returns how far the reel may scroll. Everything is expressed in SLIDE UNITS because that
@@ -2772,6 +2785,24 @@ function layoutTail(){
   });
   contEnd = Math.max(cf, (y - apH) / apH);
   root.style.setProperty("--reel-end", contEnd);   /* the pavement bg pans across 0 -> contEnd */
+  /* Every section's top in SLIDE UNITS, so the drag path can find which one is on screen
+     without re-parsing nine inline styles each frame. Rebuilt here because this is the one
+     place those tops are ever written. */
+  secTopsU = REEL.map((sec, k) => {
+    const t = parseFloat(sec.style.top);
+    return (sec.classList.contains("rs--cont") && isFinite(t)) ? t / apH : k;
+  });
+  /* how far the pavement photo can travel, for the composited pan in writeReelY */
+  if (!groundImg){
+    groundImg = document.querySelector("#ground img");
+    /* the photo is 1.5MB and lands well after first layout — measured before it decodes, its
+       height is 0 and the pan would never move */
+    if (groundImg && !groundImg.complete) groundImg.addEventListener("load", layoutTail, { once:true });
+  }
+  if (groundImg){
+    const gh = groundImg.offsetHeight, ph = groundImg.parentElement.offsetHeight;
+    groundTravel = Math.max(0, gh - ph);
+  }
 }
 
 /* The tail is positioned in PIXELS off the aperture, and the aperture changes size the whole
@@ -2781,6 +2812,7 @@ function layoutTail(){
 let tailRaf = 0;
 if (window.ResizeObserver){
   const ro = new ResizeObserver(() => {
+    apHc = 0;                       /* the aperture moved: drop the cached height */
     if (tailRaf) return;
     tailRaf = requestAnimationFrame(() => { tailRaf = 0; layoutTail(); });
   });
@@ -2803,22 +2835,48 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { la
    seam sits at exactly one place. Shared by wheel AND touch: mobile needs identical tail
    behaviour, and two copies of this would drift apart the first time either was tuned.
    Returns true when it has consumed the gesture. */
+/* Aperture height without a layout read on every frame. The ResizeObserver already watches
+   this element, so it can simply invalidate the cache. */
+function apHeight(){
+  return apHc || (apHc = apEl.getBoundingClientRect().height || innerHeight);
+}
+
+/* ONE style write per frame, whoever asks and however often.
+   A trackpad fires several wheel events per frame and a drag fires touchmove just as fast;
+   writing --reel-y on each of them meant several full style recalcs per frame, each one
+   invalidating everything downstream of that variable. Coalescing into rAF costs at most one
+   frame of latency and removes the pile-up entirely.
+   The pavement rides along here: it used to pan via object-position, which REPAINTS a
+   1512x4052 image every time it changes. A transform is composited instead — same movement,
+   no repaint. */
+function writeReelY(v){
+  ryVal = v;
+  if (ryRaf) return;
+  ryRaf = requestAnimationFrame(() => {
+    ryRaf = 0;
+    root.style.setProperty("--reel-y", ryVal.toFixed(4));
+    if (groundImg && groundTravel > 0){
+      const end = parseFloat(root.style.getPropertyValue("--reel-end")) || 1;
+      const t = Math.min(1, Math.max(0, ryVal / end));
+      groundImg.style.transform = "translate3d(0," + (-t * groundTravel).toFixed(2) + "px,0)";
+    }
+  });
+}
+
 /* Write an absolute continuous position and keep the section index in step. Deliberately
    does NOT kill tweens — the momentum fling below drives it frame by frame. */
 function contSet(pos){
-  const apH = apEl.getBoundingClientRect().height || innerHeight;
+  const apH = apHeight();
   const cf  = contFrom();
   contPos = gsap.utils.clamp(cf, contEnd || cf, pos);
   reelProxy.y = contPos;
-  root.style.setProperty("--reel-y", contPos.toFixed(4));
+  writeReelY(contPos);
   /* which section is actually under the aperture — rounding the index cannot answer this
-     once the tail sections no longer sit on screen boundaries */
-  const mid = contPos * apH + apH / 2;
+     once the tail sections no longer sit on screen boundaries. Reads a cached array of tops
+     rather than re-parsing nine inline styles on every frame. */
+  const mid = contPos + 0.5;
   let near = cf;
-  REEL.forEach((sec, k) => {
-    const t = parseFloat(sec.style.top) || (k * apH);
-    if (mid >= t) near = k;
-  });
+  for (let k = 0; k < secTopsU.length; k++) if (mid >= secTopsU[k]) near = k;
   if (near !== reelIdx){ reelIdx = near; setReelPhase(near); }   /* keeps the navbar in step */
 }
 /* the tail may only run once the founder has come to rest AND the flick that landed it is over */
@@ -2833,7 +2891,7 @@ function contMove(delta, dir){
      slide — the founder would be skipped entirely instead of merely settling. */
   if (!contReady()) return true;
   gsap.killTweensOf(reelProxy);          /* a new drag overrides any fling still running */
-  const apH = apEl.getBoundingClientRect().height || innerHeight;
+  const apH = apHeight();
   contSet(contPos + delta / apH);
   return true;
 }
@@ -2917,7 +2975,7 @@ const DRAG_FLICK  = 0.45;  /* ...or this fast (px/ms), however short the drag wa
 
 function dragSnapMove(total){
   if (mbBusy) return;
-  const apH = apEl.getBoundingClientRect().height || innerHeight;
+  const apH = apHeight();
   if (!dragging){ dragging = true; dragFrom = reelIdx; gsap.killTweensOf(reelProxy); }
   let off = (total / apH) * DRAG_DAMP;
   const cf = contFrom();
@@ -2925,13 +2983,13 @@ function dragSnapMove(total){
   if (dragFrom + off < 0 || dragFrom + off > cf) off *= 0.3;
   const y = gsap.utils.clamp(dragFrom - DRAG_MAX, dragFrom + DRAG_MAX, dragFrom + off);
   reelProxy.y = y;
-  root.style.setProperty("--reel-y", y.toFixed(4));
+  writeReelY(y);
 }
 
 function dragSnapEnd(total){
   if (!dragging) return;
   dragging = false;
-  const apH = apEl.getBoundingClientRect().height || innerHeight;
+  const apH = apHeight();
   const cf  = contFrom();
   const frac = Math.abs(total / apH);          /* the finger's own travel — see DRAG_COMMIT */
   /* the two ways a feed decides you meant it: you dragged far enough, or you flicked hard */
@@ -2940,7 +2998,7 @@ function dragSnapEnd(total){
   /* dragging back off slide 0 hands the reel to the hero, through the same seam a swipe uses */
   if (commit && dragFrom === 0 && dir < 0){
     reelProxy.y = 0; contPos = 0;
-    root.style.setProperty("--reel-y", "0");
+    writeReelY(0);
     mbGate(-1);
     return;
   }
@@ -2955,7 +3013,7 @@ function dragSnapEnd(total){
   contPos = target;
   gsap.to(reelProxy, {
     y: target, duration: 0.42, ease: "power3.out", overwrite: true,
-    onUpdate(){ root.style.setProperty("--reel-y", reelProxy.y.toFixed(4)); }
+    onUpdate(){ writeReelY(reelProxy.y); }
   });
 }
 
@@ -3125,7 +3183,7 @@ addEventListener("touchend", () => {
   if (!MB || !reelActive || Math.abs(v) < 0.04) return;
   const cf = contFrom();
   if (reelIdx < cf) return;                       /* snapped slides have their own gesture */
-  const apH = apEl.getBoundingClientRect().height || innerHeight;
+  const apH = apHeight();
   const throwPx = v * 240;                        /* how far that speed keeps carrying */
   gsap.killTweensOf(reelProxy);
   gsap.to(reelProxy, {
