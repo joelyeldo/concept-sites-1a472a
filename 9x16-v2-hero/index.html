@@ -1518,6 +1518,9 @@ let chatOpener = null;
    rest of the shared state because reflow() reads it — same TDZ rule as everything above. */
 let mbP = 0;
 let mbBusy = false;        /* a hero<->reel transition is running; swallow input until it lands */
+let mbBusyAt = 0;          /* when it started — see the rAF-stall guard in mbGate */
+let mbThen = null;         /* what to run once it lands (arm the reel) */
+let mbTarget = 0;          /* the phase it is heading to */
 let trackIdx = 0;          /* which song the player card is on — same hoisting rule */
 let storyCue = 0;          /* pending "play the story clip" timer; storyArm cancels it */
 /* which edge the reel was released at: "top" hands back to the hero, "bottom" hands on to
@@ -2535,16 +2538,35 @@ function contMove(delta, dir){
    headline crossfade (widescreen -> "it's a 9x16 world now"), the orange wash and the grid
    flip — so the swap the brief asks for is exactly this tween, and the reel arms after it. */
 function mbTo(target, then){
-  mbBusy = true;
+  mbBusy = true; mbBusyAt = performance.now(); mbThen = then || null; mbTarget = target;
   gsap.to({ p: mbP }, {
     p: target, duration: 0.55, ease: "power2.inOut",
     onUpdate(){ mbP = this.targets()[0].p; setPhase(mbP); },
-    onComplete(){ mbP = target; setPhase(target); mbBusy = false; then && then(); }
+    onComplete: mbLand
   });
+}
+/* Land the transition NOW, wherever the tween actually got to, and run whatever was waiting
+   on it. Normally called by onComplete; also called by the stall guard below. */
+function mbLand(){
+  if (!mbBusy) return;
+  mbBusy = false;
+  mbP = mbTarget;
+  setPhase(mbTarget);
+  const then = mbThen; mbThen = null;
+  if (then) then();
 }
 /* returns true when the gesture belonged to the hero<->reel seam */
 function mbGate(dir){
-  if (mbBusy) return true;                        /* swallow input mid-transition */
+  if (mbBusy){
+    /* GSAP tweens run on rAF, and rAF is not guaranteed: a backgrounded tab, low-power mode
+       or a throttled renderer can stop ticking mid-transition. onComplete would then never
+       fire, mbBusy would stay TRUE for the rest of the session, and EVERY swipe after it
+       would be swallowed — the site would simply read as dead. So the flag is time-boxed to
+       comfortably past the tween's own 550ms: after that it cannot be trusted, and the next
+       gesture lands the transition by hand. */
+    if (performance.now() - mbBusyAt < 900) return true;
+    mbLand();
+  }
   if (!reelActive){
     if (dir > 0) mbTo(1, () => { stopCycle(); enterReel(); });
     return true;                                  /* the hero has nowhere to hand the page */
