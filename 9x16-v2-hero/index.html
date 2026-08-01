@@ -205,6 +205,11 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
    so the geometry is right to build against — herringbone alternates 90°, so half the pavers
    read 9:16 and half read 16:9. The two formats, interlocked, under the whole site. */
 .ground{position:absolute; inset:0; z-index:1; overflow:hidden; background:var(--paper); opacity:0;}
+/* a scrim over the pavement so the phone reads as the lit thing in the frame. On the photo
+   itself rather than the container, so the .ground fade the morph drives still owns whether
+   the whole ground is visible at all. */
+.ground::after{content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:rgba(16,12,8,.32);}
 .ground img{width:100%; height:100%; object-fit:cover; display:block;
   /* the pavement pans top->bottom as the reel runs slide 0 -> footer, so it scrolls past like
      a walking POV. object-fit:cover keeps it gap-free at any viewport; --reel-end (the footer's
@@ -607,8 +612,10 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
   padding:calc(var(--card-pad,34px)*.24) calc(var(--card-pad,34px)*.40);}
 .fstat + .fstat{border-top:1px solid rgba(255,255,255,.55);}
 .fstat__sq{width:7px; height:7px; background:var(--snow); margin-bottom:.35em;}
+/* three boxes now split the height four used to, so the figures can carry more weight —
+   they are the reason anyone reads this card */
 .fstat__v{font-family:"Clash Display",sans-serif; font-weight:600; color:var(--snow);
-  font-size:calc(var(--sec-head,36px)*.52); line-height:1; letter-spacing:-.03em;
+  font-size:calc(var(--sec-head,36px)*.72); line-height:1; letter-spacing:-.03em;
   text-transform:lowercase;}
 .fstat__l{font-family:"Switzer",sans-serif; color:rgba(255,255,255,.9); margin:.25em 0 0;
   font-size:calc(var(--sec-body,15px)*.72); line-height:1.25;}
@@ -823,6 +830,22 @@ body{margin:0; background:var(--snow); color:var(--pitch); font-family:"Switzer"
 .hl{background:var(--orange); color:var(--snow); padding:0 .1em;
     box-decoration-break:clone; -webkit-box-decoration-break:clone;}
 .headline h1{will-change:opacity, transform, filter;}
+
+/* THE SELECTION FRAME around the vertical headline. Absolutely positioned rather than a grid
+   child: the box is taller than the type, and as a grid child it would have grown the
+   headline cell and shifted the WIDE headline's centring during the hero. currentColor rides
+   --vh-c, the same value the vertical headline's own colour interpolates across, so the frame
+   inverts with it on the orange. 2px against 1px grid hairlines is what makes it read as a
+   frame laid ON the grid rather than part of it. */
+.vfr{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:calc(var(--hlw-phone,380px) * 1.06); aspect-ratio:9/16;
+  border:2px solid currentColor; color:var(--vh-c, var(--pitch));
+  opacity:0; pointer-events:none; z-index:-1;}
+.vfr i{position:absolute; width:9px; height:9px; background:currentColor;}
+.vfr i:nth-child(1){top:-5px;    left:-5px;}
+.vfr i:nth-child(2){top:-5px;    right:-5px;}
+.vfr i:nth-child(3){bottom:-5px; left:-5px;}
+.vfr i:nth-child(4){bottom:-5px; right:-5px;}
 
 /* No separate fill element. The orange is the CROP BOX's own background — exactly where the
    white fill used to sit, so its corners and inset match by construction instead of being
@@ -1386,7 +1409,7 @@ body.reg #regout{display:block;}
 
             <article class="ucard" data-chat="0" role="button" tabindex="0">
               <span class="ucard__sq" aria-hidden="true"></span>
-              <p>Our founder does four-digit multiplication in his head and loses his phone twice a day.</p>
+              <p>Our founder is the world&rsquo;s no.&thinsp;2 at mental maths. He&rsquo;ll have your ROI before you finish the sentence, and lose his phone twice before lunch.</p>
             </article>
 
             <article class="ucard" data-chat="1" role="button" tabindex="0">
@@ -1450,8 +1473,9 @@ body.reg #regout{display:block;}
                   <p class="fstat__v">7B+</p><p class="fstat__l">lifetime views</p></div>
                 <div class="fstat"><span class="fstat__sq" aria-hidden="true"></span>
                   <p class="fstat__v">4M+</p><p class="fstat__l">followers of his own</p></div>
-                <div class="fstat"><span class="fstat__sq" aria-hidden="true"></span>
-                  <p class="fstat__v">world no.&thinsp;2</p><p class="fstat__l">in mental maths, he works out your ROI before you&rsquo;ve finished the sentence.</p></div>
+                <!-- the world-no.2 mental-maths line moved to the group chat, where it lands
+                     as a joke rather than as a fourth statistic. The remaining three now share
+                     the photo's full height, so each figure reads bigger. -->
               </div>
             </div>
           </div>
@@ -1531,8 +1555,13 @@ body.reg #regout{display:block;}
     <!-- The headline is NOT inside the aperture. The aperture now resizes to whatever the
          current plate's screen is — the headline has to stay put while that happens. -->
     <div class="headline" id="headline">
-      <h1 class="aperture__h hl-wide" id="hlWide">attention outgrew the <span class="hl">widescreen</span></h1>
+      <h1 class="aperture__h hl-wide" id="hlWide">attention shifted from <span class="hl">widescreens</span></h1>
       <h1 class="aperture__h hl-vert" id="hlVert">it&rsquo;s a <span class="hl">9x16</span> world now</h1>
+      <!-- the selection frame: the logo's own crop-frame language, stated at 9:16 so the
+           section shows the ratio as well as naming it. Fades in with the vertical headline
+           (driven in setPhase, beside hlVert) and is absolutely positioned so it never
+           touches the headline grid's own sizing. -->
+      <div class="vfr" id="vfr" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     </div>
 
     <!-- the phone's screen chrome, sitting on the white screen OUTSIDE the crop box.
@@ -1654,6 +1683,9 @@ const gridEl  = document.querySelector(".ap-grid");
 const uiEl    = document.getElementById("screenui");
 const hlWide  = document.getElementById("hlWide");
 const hlVert  = document.getElementById("hlVert");
+/* the 9:16 selection frame. Declared HERE with the other element handles because setPhase
+   reads it and setPhase runs during init — the same shape that has killed this script. */
+const vfrEl   = document.getElementById("vfr");
 const reelEl  = document.getElementById("reel");
 const whiteEl = document.getElementById("apWhite");
 const REEL    = [...document.querySelectorAll(".rs")];
@@ -1683,6 +1715,12 @@ function setPhase(p){
   hlVert.style.opacity   = inn;
   hlVert.style.transform = `scale(${(0.96 + 0.04 * inn).toFixed(4)})`;   /* never from scale(0) */
   hlVert.style.filter    = inn > 0 && inn < 1 ? `blur(${((1 - inn) * 6).toFixed(2)}px)` : "none";
+  /* the selection frame arrives with the vertical headline and inverts on the same curve —
+     it is lit by --vh-c, so it only has to be told when to be visible */
+  if (vfrEl){
+    vfrEl.style.opacity = inn;
+    vfrEl.style.setProperty("--vh-c", gsap.utils.interpolate("#100C08", "#FFFFFF", warm));
+  }
   hlVert.style.setProperty("--vh-c",  gsap.utils.interpolate("#100C08", "#FFFFFF", warm));
   hlVert.style.setProperty("--vh-bg", gsap.utils.interpolate("#FF7B00", "#FFFFFF", warm));
   hlVert.style.setProperty("--vh-fg", gsap.utils.interpolate("#FAFAFA", "#FF7B00", warm));
@@ -2907,6 +2945,41 @@ function dragSnapEnd(total){
   });
 }
 
+/* ── DESKTOP HERO HANDOVER ───────────────────────────────────────────────────────────
+   The transformation used to be SCRUBBED by ~1.8 viewport-heights of page scroll, so a
+   visitor who simply stopped scrolling was parked in a half-morphed frame — a box neither
+   16:9 nor 9:16, which reads as broken rather than as a moment. It is a reel step now: ONE
+   gesture plays the whole thing and lands on the orange. Slower than an ordinary slide,
+   because this is the piece the entire page is built around.
+   handoff() and the glass nav were the killed ScrollTrigger's job, so they are driven here. */
+const DK_MORPH_S = 1.15;
+let dkBusy = false;
+function dkTo(target, then){
+  dkBusy = true;
+  gsap.to(tl, {
+    progress: target, duration: DK_MORPH_S, ease: "power2.inOut", overwrite: true,
+    onUpdate(){
+      const p = tl.progress();
+      handoff(p);                                   /* the plate -> phone crossfade */
+      navEl.classList.toggle("is-glass", p < 0.004);
+    },
+    onComplete(){ dkBusy = false; if (then) then(); }
+  });
+}
+/* returns true when the gesture belonged to the hero<->reel seam */
+function dkGate(dir){
+  if (dkBusy) return true;                          /* the transformation owns the gesture */
+  if (!reelActive){
+    if (dir > 0) dkTo(1);                           /* enterReel fires from the morph itself */
+    return true;                                    /* nothing above the hero to scroll to */
+  }
+  if (reelIdx === 0 && dir < 0){
+    dkTo(0);                                        /* and exitReel fires on the way back */
+    return true;
+  }
+  return false;
+}
+
 addEventListener("wheel", e => {
   /* A menu is a modal: nothing behind it moves. Without this the reel kept stepping
      underneath an open menu, so closing it revealed a different section than the one you
@@ -2932,11 +3005,14 @@ addEventListener("wheel", e => {
     return;
   }
   if (!reelActive){
-    /* Re-arm the moment the visitor scrolls back DOWN. leftReel exists so that releasing at
-       the top of the reel doesn't instantly re-grab the page — but keying it only to the
-       morph being rewound meant that after releasing you had to scroll all the way up past
-       the morph before the reel would take again. Scrolling down IS the intent to re-enter. */
-    if (e.deltaY > 0) leftReel = false;
+    /* The hero is a gesture state on desktop now too — there is no scrub to ride, so this
+       branch owns the handover instead of letting the page scroll drive it. */
+    if (chatOpen()) return;
+    e.preventDefault();
+    if (Math.abs(e.deltaY) < 2) return;
+    if (!scrollLocked) lockScroll();
+    if (e.deltaY > 0) leftReel = false;   /* scrolling down IS the intent to re-enter */
+    dkGate(e.deltaY > 0 ? 1 : -1);
     return;
   }
   /* the chat log scrolls on its own; letting the reel eat those deltas would flick the
@@ -2952,6 +3028,10 @@ addEventListener("wheel", e => {
   e.preventDefault();
   if (!scrollLocked) lockScroll();             /* re-pin if we had released and came back */
 
+  /* the top edge rewinds the transformation rather than releasing to a page scroll that no
+     longer exists — without this, stepping up off the orange left the reel inactive while the
+     morph stayed at 1, i.e. a phone with nothing in it */
+  if (dkGate(dir)) return;
   if (contMove(e.deltaY, dir)) return;
   gestureStep(dir, Math.abs(e.deltaY));
 }, { passive: false });
@@ -3338,6 +3418,14 @@ if (MB){
   setPhase(0);
   reelEl.style.opacity = 0;          /* the hero shows plates; the reel arms on the first swipe */
   navEl.classList.add("is-glass");   /* the bar floats over a photograph until the reel starts */
+} else {
+  /* DESKTOP: the transformation is gesture-driven too now (see dkTo/dkGate), so the scrub
+     goes with it. The page is pinned from the first frame — every vertical gesture belongs to
+     the rig, and there is no longer a half-scrolled state to get stuck in. */
+  if (tl.scrollTrigger) tl.scrollTrigger.kill();
+  tl.pause(0);
+  lockScroll();
+  navEl.classList.add("is-glass");
 }
 /* Arriving from apply.html: its menu links here as index.html#story / #work / #contact, so
    honour the hash once the rig has laid out. Same three destinations the in-page menu uses. */
