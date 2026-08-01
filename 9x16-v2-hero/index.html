@@ -1017,7 +1017,10 @@ body.reg #regout{display:block;}
   .work-sec .sec__rule{margin:0 calc(-1 * var(--sec-pad,26px));}
   /* THE RIBBON must not cross the copy. On desktop it sweeps the whole slide behind an
      opaque card; with the card's fill gone it ran straight over the title and body. Confine
-     it to the band around the clips — visible above them, never on the type. */
+     it to the band around the clips — visible above them, never on the type.
+     .work is position:relative and only as tall as the copy, so anchoring the band to the
+     SECTION (which is what is full-height) means taking .work out of the positioning chain. */
+  .work-sec .work{position:static;}
   .work-sec .work__band{
     inset:auto 0 0 0; height:calc(var(--carou-h) + 11vh); overflow:hidden;
   }
