@@ -226,7 +226,7 @@ fieldset[hidden]{display:none;}
       <img class="nav__logo" src="assets/logo.svg" alt="9x16 Media">
     </a>
     <nav class="nav__links" aria-label="Primary">
-      <a href="index.html">our story</a><a href="index.html">our work</a><a href="apply.html">work with us</a>
+      <a href="index.html#story">our story</a><a href="index.html#work">our work</a><a href="index.html#contact">work with us</a>
     </nav>
     <!-- the links collapse on a narrow screen and nothing replaced them — this is the way
          back out of the form. Same three destinations, same orange overlay as the site. -->
@@ -238,9 +238,10 @@ fieldset[hidden]{display:none;}
 
 <div class="menu" id="menu" aria-hidden="true">
   <nav class="menu__links" aria-label="Mobile primary">
-    <a class="menu__row" href="index.html">our story</a>
-    <a class="menu__row" href="index.html">our work</a>
-    <a class="menu__row" href="apply.html">work with us</a>
+    <!-- the hash is what index.html reads to land on the right section of the reel -->
+    <a class="menu__row" href="index.html#story">our story</a>
+    <a class="menu__row" href="index.html#work">our work</a>
+    <a class="menu__row" href="index.html#contact">work with us</a>
   </nav>
 </div>
 

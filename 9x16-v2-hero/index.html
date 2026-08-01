@@ -1005,12 +1005,18 @@ body.reg #regout{display:block;}
      it gone — that sliver is what tells you the row drags. So one gutter + 1.75 cards spans
      the viewport, and the strip is however tall a 9:16 card of that width comes out. */
   :root{
-    --clip-w:calc((100vw - var(--sec-pad,26px)) / 1.75);
+    --clip-gap:10px;
+    /* how many clips span the viewport. Past ~2 the card gets small enough that the ribbon
+       behind it actually has room to read — at 1.75 the strip was 358px tall and swallowed
+       the band whole. The fractional part is the sliver of the next card that says "drag". */
+    --clips-across:2.15;
+    --clip-w:calc((100vw - var(--sec-pad,26px) - var(--clip-gap) * 2) / var(--clips-across));
     --carou-h:calc(var(--clip-w) * 16 / 9);
   }
   .rs.work-sec{
     padding-left:0; padding-right:0;                        /* the rules span the full width */
     padding-bottom:calc(var(--carou-h) + var(--sec-pad,26px) * 2);
+    align-items:flex-start;    /* copy to the top — centred, it sat in the band's only room */
   }
   .work-sec .card{
     width:100%; max-width:none; margin:0;
@@ -1035,6 +1041,9 @@ body.reg #regout{display:block;}
     margin-top:calc(var(--card-gap,26px) * -.5);
     margin-bottom:calc(var(--card-gap,26px) * -.5);
   }
+  /* the eyebrow belongs WITH its title — a full gap left it floating halfway between the
+     rule above and the words it labels. Negative against the flex gap, so it stays uniform. */
+  .sec__eyebrow{margin-bottom:calc(var(--card-gap,26px) * -.45);}
   .fnd__hd{display:flex; flex-direction:column; gap:var(--card-gap,26px);}
   .fnd__h, .fnd__lede{margin:0;}
 
@@ -1053,7 +1062,8 @@ body.reg #regout{display:block;}
      SECTION (which is what is full-height) means taking .work out of the positioning chain. */
   .work-sec .work{position:static;}
   .work-sec .work__band{
-    inset:auto 0 0 0; height:calc(var(--carou-h) + 11vh); overflow:hidden;
+    inset:auto 0 0 0; height:calc(var(--carou-h) + var(--sec-pad,26px) + 20vh);
+    overflow:hidden;
   }
 
   /* the strip is a FIXED height so the row above can reserve exactly that much room —
@@ -1061,7 +1071,7 @@ body.reg #regout{display:block;}
   .vgut{
     /* clear of the bottom edge, and inset from the left so the first card is not flush */
     inset:auto 0 var(--sec-pad,26px) 0; height:var(--carou-h); z-index:6;
-    display:flex; gap:0; align-items:stretch;               /* clips butt, no gaps */
+    display:flex; gap:var(--clip-gap); align-items:stretch;
     padding:0 0 0 var(--sec-pad,26px);
     scroll-padding-left:var(--sec-pad,26px);                /* snap respects that gutter */
     overflow-x:auto; overflow-y:hidden;
@@ -2011,9 +2021,32 @@ function tweenAperture(w, h, dur){
     onUpdate(){ setAperture(apProxy.w, apProxy.h, 0); } });
 }
 
+/* MOBILE ONLY — hold the grid inside the plate's white screen.
+   On desktop the aperture IS that screen, so the grid can never escape it. On mobile the
+   aperture is the whole viewport, so the same grid ruled straight across the billboard's
+   surround — the street, the bezel, the sky. The screen's rect is derivable from the plate's
+   own registration (--sw/--sh/--sx/--sy are % of the photo), so clip to it rather than
+   guessing. Cleared at phase 1, where the grid legitimately owns the full screen. */
+function clipGridToPlate(b){
+  if (!MB || !gridEl) return;
+  const r = b.getBoundingClientRect();
+  if (!r.width) return;
+  const n = k => parseFloat(b.style.getPropertyValue("--" + k));
+  const sw = n("sw"), sh = n("sh"), sx = n("sx"), sy = n("sy");
+  if ([sw, sh, sx, sy].some(v => !isFinite(v))) return;
+  const L = r.left + r.width  * (sx - sw / 2) / 100;
+  const T = r.top  + r.height * (sy - sh / 2) / 100;
+  const W = r.width  * sw / 100;
+  const H = r.height * sh / 100;
+  gridEl.style.clipPath =
+    `inset(${Math.max(0, T)}px ${Math.max(0, innerWidth - (L + W))}px ` +
+    `${Math.max(0, innerHeight - (T + H))}px ${Math.max(0, L)}px)`;
+}
+
 function showLandscape(i){
   const incoming = LANDSCAPE[i];
   if (cueEl) cueEl.classList.toggle("on-light", incoming.dataset.tone === "light");
+  if (MB && mbP < 0.5) requestAnimationFrame(() => clipGridToPlate(incoming));
   LANDSCAPE.forEach((b, j) => { b.style.zIndex = j === i ? 2 : 1; });
   gsap.killTweensOf(LANDSCAPE);
   /* DIRECT CUT, no dissolve. The incoming plate goes opaque and the rest go transparent on
@@ -2133,13 +2166,24 @@ root.style.setProperty("--reel-n", REEL.length);
    animation with its own easing. The section holds still, then moves, like a reel. */
 const reelProxy = { y: 0 };
 let reelIdx = 0;
+/* Where a section actually sits, in slide units. The snapped slides sit on screen boundaries
+   (top:600% and friends, so index === position), but layoutTail re-places the TAIL in pixels
+   — so jumping to `together` by index alone landed ~170px off its real top. */
+function slidePos(i){
+  const sec = REEL[i];
+  if (!sec || !sec.classList.contains("rs--cont")) return i;
+  const apH = apEl.getBoundingClientRect().height || innerHeight;
+  const topPx = parseFloat(sec.style.top);
+  return (isFinite(topPx) && apH) ? topPx / apH : i;
+}
 function reelTo(i){
   if (i === reelIdx) return;
   reelIdx = i;
-  contPos = i;               /* keep the continuous position in step with every snap */
+  const pos = slidePos(i);
+  contPos = pos;             /* keep the continuous position in step with every snap */
   setReelPhase(i);
   gsap.to(reelProxy, {
-    y: i, duration: 0.5, ease: "power3.out", overwrite: true,   /* ease-OUT: moves at once */
+    y: pos, duration: 0.5, ease: "power3.out", overwrite: true,   /* ease-OUT: moves at once */
     onUpdate(){ root.style.setProperty("--reel-y", reelProxy.y.toFixed(4)); }
     /* the story clip is cued from setReelPhase on a timer, not from here: overwrite:true
        kills this tween on a fast flick and its onComplete would never fire. */
@@ -2511,6 +2555,14 @@ function goToSlide(name){
   const i = REEL.findIndex(s => s.dataset.s === name);
   if (i < 0) return;
   closeMenu();
+  /* MOBILE: the hero is a gesture state, not a scroll position — there is nothing to
+     scrollTo, so the old path polled for a reelActive that could never arrive and the menu
+     links simply did nothing. Run the same handover a swipe would, then land the section. */
+  if (MB){
+    if (reelActive) { reelTo(i); return; }
+    mbTo(1, () => { stopCycle(); enterReel(); reelTo(i); });
+    return;
+  }
   if (!reelActive) scrollTo(0, document.getElementById("hero").offsetTop + innerHeight * 1.85);
   let tries = 0;
   (function jump(){
@@ -2647,6 +2699,11 @@ function mbLand(){
   mbP = mbTarget;
   setAperture(G.endW, G.endH, mbTarget);   /* lands the grid cells too — see mbTo */
   if (cueEl) cueEl.style.opacity = mbTarget ? 0 : 1;   /* the cue belongs to the hero only */
+  /* in the reel the grid IS the screen, so drop the plate clip; going back, re-apply it */
+  if (gridEl){
+    if (mbTarget) gridEl.style.clipPath = "none";
+    else clipGridToPlate(LANDSCAPE[cyc]);
+  }
   const then = mbThen; mbThen = null;
   if (then) then();
 }
@@ -3079,6 +3136,14 @@ if (MB){
   reelEl.style.opacity = 0;          /* the hero shows plates; the reel arms on the first swipe */
   navEl.classList.add("is-glass");   /* the bar floats over a photograph until the reel starts */
 }
+/* Arriving from apply.html: its menu links here as index.html#story / #work / #contact, so
+   honour the hash once the rig has laid out. Same three destinations the in-page menu uses. */
+const HASH_SLIDE = { "#story":"story", "#work":"creative", "#contact":"together" };
+addEventListener("load", () => {
+  const name = HASH_SLIDE[location.hash];
+  if (name) setTimeout(() => goToSlide(name), 60);   /* after reflow/layoutTail have run */
+});
+
 addEventListener("load", () => { reflow(); check(); });
 check();
 </script>
