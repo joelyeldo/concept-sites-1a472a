@@ -1060,7 +1060,10 @@ body.reg #regout{display:block;}
      it to the band around the clips — visible above them, never on the type.
      .work is position:relative and only as tall as the copy, so anchoring the band to the
      SECTION (which is what is full-height) means taking .work out of the positioning chain. */
-  .work-sec .work{position:static;}
+  /* .work is a full-height flex box that CENTRES the card — that centring, not the section's,
+     is what parked the copy 96px below the navbar and left the band nothing to breathe in.
+     static as well, so the band anchors to the section (see above). */
+  .work-sec .work{position:static; height:auto; align-items:flex-start;}
   /* height is MEASURED in fitWorkBand() — the band has to start below the copy and above the
      clips, and both of those move with type size and viewport height, so any fixed vh
      fraction is right on one screen and overlapping the copy on the next. The fallback here
