@@ -995,9 +995,12 @@ body.reg #regout{display:block;}
 
   /* WORK CLIPS — no gutters to live in, so they become a lateral carousel on the creative
      slide, which is what the live mobile site does. Kept as ONE strip below the card. */
+  /* the strip is a FIXED height so the card above can reserve exactly that much room —
+     absolutely-positioned clips over a flex-centred card is how they ended up on the copy */
   .vgut{
-    inset:auto 0 var(--sec-pad,26px) 0; height:auto; z-index:6;
-    display:flex; gap:10px; align-items:flex-end;
+    --carou-h:32vh;
+    inset:auto 0 var(--sec-pad,26px) 0; height:var(--carou-h); z-index:6;
+    display:flex; gap:10px; align-items:stretch;
     padding:0 var(--sec-pad,26px);
     overflow-x:auto; overflow-y:hidden;
     scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
@@ -1006,11 +1009,14 @@ body.reg #regout{display:block;}
   .vgut::-webkit-scrollbar{display:none;}
   .vgut.is-on{pointer-events:auto;}
   .vgut.is-tight .vc{display:block;}     /* there is no gutter left to be "tight" in */
+  /* the creative card stops short of the strip instead of running under it */
+  .rs.work-sec{padding-bottom:calc(32vh + var(--sec-pad,26px) * 1.6);}
   /* inline top:X% and the --gx left/right rules are gutter geometry — all of it has to go */
   .vc, .vc--l, .vc--r{
     position:relative !important; left:auto !important; right:auto !important;
     top:auto !important; flex:0 0 auto;
-    width:min(46vw, 190px); scroll-snap-align:center;
+    height:100%; width:auto; aspect-ratio:9/16;   /* size off the strip, stay 9:16 */
+    scroll-snap-align:center;
     transform:translate(0,14px) scale(.96);   /* keep the rise, drop the lateral throw */
   }
   .vgut.is-on .vc{transform:translate(0,0) scale(1);}   /* and drop the rotation in a row */
@@ -2541,7 +2547,12 @@ function mbTo(target, then){
   mbBusy = true; mbBusyAt = performance.now(); mbThen = then || null; mbTarget = target;
   gsap.to({ p: mbP }, {
     p: target, duration: 0.55, ease: "power2.inOut",
-    onUpdate(){ mbP = this.targets()[0].p; setPhase(mbP); },
+    /* setAperture, NOT setPhase: the phase alone moves the headline and the orange, but the
+       GRID CELLS (--cell-w/--cell-h) only advance inside setAperture — and .card is
+       width:calc(5 * --cell-w). Driving the phase on its own left every card sized off the
+       landscape rhythm, i.e. far too narrow. The width/height args are constant here; on
+       mobile the aperture is the viewport at every phase. */
+    onUpdate(){ mbP = this.targets()[0].p; setAperture(G.endW, G.endH, mbP); },
     onComplete: mbLand
   });
 }
@@ -2551,7 +2562,8 @@ function mbLand(){
   if (!mbBusy) return;
   mbBusy = false;
   mbP = mbTarget;
-  setPhase(mbTarget);
+  setAperture(G.endW, G.endH, mbTarget);   /* lands the grid cells too — see mbTo */
+  if (cueEl) cueEl.style.opacity = mbTarget ? 0 : 1;   /* the cue belongs to the hero only */
   const then = mbThen; mbThen = null;
   if (then) then();
 }
