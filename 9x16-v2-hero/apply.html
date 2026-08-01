@@ -36,7 +36,11 @@ a{color:inherit;}
 .nav__links{display:flex; align-items:center; gap:clamp(1.1rem,2.4vw,2.1rem); padding-right:.7rem;}
 .nav__links a{font-family:"Clash Display",sans-serif; font-weight:600; text-transform:lowercase;
   text-decoration:none; font-size:1.12rem; opacity:.9;}
-.nav__links a:hover{opacity:1;}
+/* same hover as the landing page's wide bar: SHARP orange fill, white text — matching the
+   .hl title highlight, so no radius */
+.nav__links a{padding:.32rem .7rem;
+  transition:background-color .2s var(--ease-out), color .2s var(--ease-out), opacity .2s var(--ease-out);}
+.nav__links a:hover{background:var(--orange); color:#fff; opacity:1;}
 /* the burger only exists below the links' breakpoint — above it the links ARE the nav */
 .nav__burger{display:none; flex-direction:column; justify-content:center; align-items:center; gap:7px;
   width:44px; height:44px; padding:0; background:none; border:none; cursor:pointer; color:var(--pitch);}

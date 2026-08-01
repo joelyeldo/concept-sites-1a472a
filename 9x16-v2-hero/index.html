@@ -1613,6 +1613,16 @@ let mbP = 0;
 let mbBusy = false;        /* a hero<->reel transition is running; swallow input until it lands */
 let contVel = 0;           /* px/ms of the last drag frame, for the momentum fling on release */
 let contT = 0;             /* timestamp of that frame */
+/* THE FOUNDER LOCK. The founder is the last snapped slide AND the first slide of the
+   continuous tail. Arming the tail the moment reelIdx reached it meant the very flick that
+   snapped the founder in carried straight on as pixel-scroll, dragging it up under the navbar
+   before it had ever come to rest. The tail now stays shut until the slide has landed and a
+   genuinely NEW gesture arrives. Declared up here: contMove() reads both. */
+let contLockUntil = 0;     /* founder still settling until this timestamp */
+let contNeedsNew = false;  /* ...and the flick that landed it must end first */
+let lastWheelT = 0;        /* used to tell one wheel burst from the next */
+let dragging = false;      /* a reels-style drag is running in the snapped zone (mobile) */
+let dragFrom = 0;          /* the slide it started from */
 let mbBusyAt = 0;          /* when it started — see the rAF-stall guard in mbGate */
 let mbThen = null;         /* what to run once it lands (arm the reel) */
 let mbTarget = 0;          /* the phase it is heading to */
@@ -2261,6 +2271,8 @@ function reelTo(i){
   reelIdx = i;
   const pos = slidePos(i);
   contPos = pos;             /* keep the continuous position in step with every snap */
+  /* landing ON the founder shuts the tail until it has settled — see the founder lock */
+  if (i === contFrom()){ contLockUntil = performance.now() + 620; contNeedsNew = true; }
   setReelPhase(i);
   gsap.to(reelProxy, {
     y: pos, duration: 0.5, ease: "power3.out", overwrite: true,   /* ease-OUT: moves at once */
@@ -2744,9 +2756,17 @@ function contSet(pos){
   });
   if (near !== reelIdx){ reelIdx = near; setReelPhase(near); }   /* keeps the navbar in step */
 }
+/* the tail may only run once the founder has come to rest AND the flick that landed it is over */
+function contReady(){
+  return performance.now() >= contLockUntil && !contNeedsNew;
+}
 function contMove(delta, dir){
   const cf = contFrom();
   if (!(reelIdx >= cf && !(contPos <= cf + 0.002 && dir < 0))) return false;
+  /* In the tail's territory but not yet armed: CONSUME the gesture rather than returning
+     false. Falling through would hand it to gestureStep, which would snap on to the next
+     slide — the founder would be skipped entirely instead of merely settling. */
+  if (!contReady()) return true;
   gsap.killTweensOf(reelProxy);          /* a new drag overrides any fling still running */
   const apH = apEl.getBoundingClientRect().height || innerHeight;
   contSet(contPos + delta / apH);
@@ -2816,12 +2836,73 @@ function mbGate(dir){
   return false;
 }
 
+/* ── REELS-STYLE DRAG (mobile, snapped zone) ─────────────────────────────────────────
+   Gesture-then-animate reads as a slideshow: nothing happens, then everything does at once.
+   A reels feed feels the way it does because the slide is ATTACHED to the finger and only
+   commits when you let go. The follow is damped and capped, so even a long drag exposes only
+   the neighbouring slide — which keeps this a strictly local change to the snapped zone.
+   The continuous tail and the hero seam are untouched, and desktop never runs it. */
+const DRAG_DAMP   = 0.62;  /* how much of the finger's travel the stack takes */
+const DRAG_MAX    = 0.60;  /* never expose more than this much of the next slide */
+const DRAG_COMMIT = 0.26;  /* past this fraction of a slide, release advances */
+const DRAG_FLICK  = 0.45;  /* ...or this fast (px/ms), however short the drag was */
+
+function dragSnapMove(total){
+  if (mbBusy) return;
+  const apH = apEl.getBoundingClientRect().height || innerHeight;
+  if (!dragging){ dragging = true; dragFrom = reelIdx; gsap.killTweensOf(reelProxy); }
+  let off = (total / apH) * DRAG_DAMP;
+  const cf = contFrom();
+  /* resist past either end rather than stopping dead — an edge should be felt, not hit */
+  if (dragFrom + off < 0 || dragFrom + off > cf) off *= 0.3;
+  const y = gsap.utils.clamp(dragFrom - DRAG_MAX, dragFrom + DRAG_MAX, dragFrom + off);
+  reelProxy.y = y;
+  root.style.setProperty("--reel-y", y.toFixed(4));
+}
+
+function dragSnapEnd(total){
+  if (!dragging) return;
+  dragging = false;
+  const apH = apEl.getBoundingClientRect().height || innerHeight;
+  const cf  = contFrom();
+  const frac = Math.abs((total / apH) * DRAG_DAMP);
+  /* the two ways a feed decides you meant it: you dragged far enough, or you flicked hard */
+  const commit = frac > DRAG_COMMIT || Math.abs(contVel) > DRAG_FLICK;
+  const dir = total > 0 ? 1 : -1;
+  /* dragging back off slide 0 hands the reel to the hero, through the same seam a swipe uses */
+  if (commit && dragFrom === 0 && dir < 0){
+    reelProxy.y = 0; contPos = 0;
+    root.style.setProperty("--reel-y", "0");
+    mbGate(-1);
+    return;
+  }
+  let target = dragFrom;
+  if (commit) target = gsap.utils.clamp(0, cf, dragFrom + dir);
+  if (target !== reelIdx){
+    reelIdx = target;
+    /* landing on the founder shuts the tail while it settles, exactly as reelTo does */
+    if (target === cf){ contLockUntil = performance.now() + 620; contNeedsNew = true; }
+    setReelPhase(target);
+  }
+  contPos = target;
+  gsap.to(reelProxy, {
+    y: target, duration: 0.42, ease: "power3.out", overwrite: true,
+    onUpdate(){ root.style.setProperty("--reel-y", reelProxy.y.toFixed(4)); }
+  });
+}
+
 addEventListener("wheel", e => {
   /* A menu is a modal: nothing behind it moves. Without this the reel kept stepping
      underneath an open menu, so closing it revealed a different section than the one you
      opened it on. preventDefault here (unlike the chat, which has its own scrollable log)
      because the menu has nothing to scroll and the hero above the reel is not pinned. */
   if (navEl.classList.contains("is-open")) { e.preventDefault(); return; }
+  /* A GAP in the wheel stream means the previous flick has ended, so this event opens a new
+     gesture — which is what re-arms the tail after the founder lock. A trackpad flick's own
+     inertia keeps firing for 1-2s, and that tail must NOT count as the new gesture. */
+  const wNow = performance.now();
+  if (contNeedsNew && wNow - lastWheelT > 200) contNeedsNew = false;
+  lastWheelT = wNow;
   /* MOBILE owns every vertical gesture: there is no page scroll to release to, so the hero
      and the reel are two states of ONE machine rather than two scroll regions. */
   if (MB){
@@ -2894,18 +2975,21 @@ addEventListener("touchmove", e => {
        every gesture) is exactly what made the clip row impossible to drag. */
     if (touchInClips && Math.abs(touchX - e.touches[0].clientX) > Math.abs(total)) return;
     e.preventDefault();
-    /* the tail needs EVERY frame, so it runs before the one-step threshold */
-    if (reelActive && contMove(step * 1.6, step > 0 ? 1 : -1)){
-      /* remember how fast the finger was going, for the fling on release */
-      const now = performance.now(), dt = now - contT;
-      if (dt > 0 && dt < 120) contVel = (step * 1.6) / dt;   /* px per ms */
-      contT = now;
+    /* speed of the last frame — both zones use it to decide a flick on release */
+    const now = performance.now(), dt = now - contT;
+    if (dt > 0 && dt < 120) contVel = (step * 1.6) / dt;   /* px per ms */
+    contT = now;
+    /* the tail needs EVERY frame, so it runs before anything thresholded */
+    if (reelActive && contMove(step * 1.6, step > 0 ? 1 : -1)) return;
+    /* the hero seam stays a thresholded one-shot — there is no slide to drag yet */
+    if (!reelActive){
+      if (Math.abs(total) < 40) return;
+      touchY = null;
+      mbGate(dir);
       return;
     }
-    if (Math.abs(total) < 40) return;
-    touchY = null;                  /* one snap per swipe */
-    if (mbGate(dir)) return;
-    if (reelActive) gestureStep(dir, 999);
+    /* SNAPPED ZONE — the slide follows the finger and commits on release */
+    dragSnapMove(total);
     return;
   }
 
@@ -2921,7 +3005,12 @@ addEventListener("touchmove", e => {
    instant it lifted — no scroller on a phone behaves like that, and "stops dead" is what
    reads as choppy. Carry the last measured velocity out under a decay. */
 addEventListener("touchend", () => {
+  const total = (touchY !== null && touchLast !== null) ? touchY - touchLast : 0;
   touchY = null;
+  /* the finger is up, so whatever comes next is a NEW gesture — this is what re-arms the
+     continuous tail after the founder lock */
+  contNeedsNew = false;
+  if (dragging){ dragSnapEnd(total); contVel = 0; return; }
   const v = contVel; contVel = 0;
   if (!MB || !reelActive || Math.abs(v) < 0.04) return;
   const cf = contFrom();
@@ -3218,6 +3307,14 @@ registration : press R over any body to align a swapped photo.`);
 if (MB){
   if (tl.scrollTrigger) tl.scrollTrigger.kill();
   tl.pause(0);
+  /* THE CLIPS MUST RIDE THE REEL. Left in .pin they are a sibling of the whole translated
+     stack, so the creative slide would slide in and the carousel simply appeared, already in
+     place — the one element not moving with its own section. Inside the section it inherits
+     that transform for free. Desktop keeps them in .pin, where they are gutter furniture and
+     deliberately do NOT move; crossing the breakpoint reloads, so this move is one-way. */
+  const creativeSec = REEL.find(s => s.dataset.s === "creative");
+  const clipRow = document.getElementById("vgut");
+  if (creativeSec && clipRow) creativeSec.appendChild(clipRow);
   G = geo(); publishCol();
   sizePlates();
   setAperture(G.endW, G.endH, 0);    /* the aperture IS the viewport, held at the hero phase */
