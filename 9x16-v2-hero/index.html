@@ -1015,7 +1015,7 @@ body.reg #regout{display:block;}
   }
   .rs.work-sec{
     padding-left:0; padding-right:0;                        /* the rules span the full width */
-    padding-bottom:calc(var(--carou-h) + var(--sec-pad,26px) * 3.4);   /* clears the lifted row */
+    padding-bottom:calc(var(--carou-h) + var(--sec-pad,26px) * 2.4);   /* clears the lifted row */
     align-items:flex-start;    /* copy to the top — centred, it sat in the band's only room */
   }
   .work-sec .card{
@@ -1082,9 +1082,9 @@ body.reg #regout{display:block;}
   /* the strip is a FIXED height so the row above can reserve exactly that much room —
      absolutely-positioned clips over a flex-centred card is how they ended up on the copy */
   .vgut{
-    /* lifted well clear of the bottom edge — that pulls the row UP toward the copy row's
-       rule, which is where it should sit, and leaves honest air underneath */
-    inset:auto 0 calc(var(--sec-pad,26px) * 2.4) 0; height:var(--carou-h); z-index:6;
+    /* clear of the bottom edge, but not so high that the row climbs onto the ribbon —
+       fitWorkBand() keeps the curve above whatever this resolves to */
+    inset:auto 0 calc(var(--sec-pad,26px) * 1.4) 0; height:var(--carou-h); z-index:6;
     display:flex; gap:var(--clip-gap); align-items:stretch;
     padding:0 0 0 var(--sec-pad,26px);
     scroll-padding-left:var(--sec-pad,26px);                /* snap respects that gutter */
@@ -2045,8 +2045,13 @@ function fitWorkBand(){
      on the inner edge nor gapes on the outer one.
      DRAWN LEFT TO RIGHT — a textPath runs in the path's own direction, so authoring this
      right-to-left rendered every word mirrored. */
-  const y0 = Math.round(visible * 0.24);
-  const y1 = Math.round(visible * 0.78);
+  /* Hold the curve inside a band that is SHORTER than the gap to the clips. The ribbon is a
+     20u stroke, so its ink reaches ~10u past the path, and the outgoing control point pulls
+     it lower again — sizing the curve to the full gap is what let the clip row sit on top of
+     it. The 30u reserve covers both, at any viewport height. */
+  const safeH = Math.max(70, visible - 30);
+  const y0 = Math.round(safeH * 0.20);
+  const y1 = Math.round(safeH * 0.70);
   path.setAttribute("d",
     `M -130,${y1} ` +
     `C ${Math.round(W * 0.38)},${y1 + 44} ${Math.round(W * 0.64)},${y0 - 44} ${Math.round(W + 130)},${y0}`);
