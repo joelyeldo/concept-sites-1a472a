@@ -1022,8 +1022,30 @@ body.reg #regout{display:block;}
   }
   .work-sec .sec{padding:0 var(--sec-pad,26px);}
   .work-sec .sec__eyebrow{color:var(--orange);}             /* orange, per the reference */
-  /* the rule was pulled out by the CARD's padding; the card has none horizontally now */
-  .work-sec .sec__rule{margin:0 calc(-1 * var(--sec-pad,26px));}
+  /* the rule was pulled out by the CARD's padding; the card has none horizontally now.
+     LONGHAND on purpose — a margin shorthand here would wipe the vertical centring below. */
+  .work-sec .sec__rule{margin-left:calc(-1 * var(--sec-pad,26px)); margin-right:calc(-1 * var(--sec-pad,26px));}
+
+  /* ── ONE RHYTHM FOR EVERY SECTION ────────────────────────────────────────────────────
+     Measured, the page ran three different ones: eyebrow->title 23 everywhere, but
+     title->body 48 wherever a rule sat between them (the rule is a flex child, so it ate a
+     gap on BOTH sides), and the founder 9/8 because its header is its own component.
+     Centre the rule inside a single gap, and give the founder's header the same gap. */
+  .sec__rule{
+    margin-top:calc(var(--card-gap,26px) * -.5);
+    margin-bottom:calc(var(--card-gap,26px) * -.5);
+  }
+  .fnd__hd{display:flex; flex-direction:column; gap:var(--card-gap,26px);}
+  .fnd__h, .fnd__lede{margin:0;}
+
+  /* every in-phone card is one column wide, so the founder and work-with-us line up — they
+     were 334 and 318, which reads as a wobble rather than a grid */
+  .rs .card{width:100%; max-width:none;}
+  .work-sec .card{width:100%;}                 /* creative stays full-bleed, see above */
+
+  /* more air between the founder's card and work-with-us: 30px of TAIL_GAP plus one pad was
+     still reading as "stuck together" on a phone */
+  .rs.rs--cont{padding-top:calc(var(--sec-pad,26px) * 2);}
   /* THE RIBBON must not cross the copy. On desktop it sweeps the whole slide behind an
      opaque card; with the card's fill gone it ran straight over the title and body. Confine
      it to the band around the clips — visible above them, never on the type.
@@ -1565,6 +1587,8 @@ let chatOpener = null;
    rest of the shared state because reflow() reads it — same TDZ rule as everything above. */
 let mbP = 0;
 let mbBusy = false;        /* a hero<->reel transition is running; swallow input until it lands */
+let contVel = 0;           /* px/ms of the last drag frame, for the momentum fling on release */
+let contT = 0;             /* timestamp of that frame */
 let mbBusyAt = 0;          /* when it started — see the rAF-stall guard in mbGate */
 let mbThen = null;         /* what to run once it lands (arm the reel) */
 let mbTarget = 0;          /* the phase it is heading to */
@@ -2570,12 +2594,12 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => layo
    seam sits at exactly one place. Shared by wheel AND touch: mobile needs identical tail
    behaviour, and two copies of this would drift apart the first time either was tuned.
    Returns true when it has consumed the gesture. */
-function contMove(delta, dir){
-  const cf = contFrom();
-  if (!(reelIdx >= cf && !(contPos <= cf + 0.002 && dir < 0))) return false;
+/* Write an absolute continuous position and keep the section index in step. Deliberately
+   does NOT kill tweens — the momentum fling below drives it frame by frame. */
+function contSet(pos){
   const apH = apEl.getBoundingClientRect().height || innerHeight;
-  contPos = gsap.utils.clamp(cf, contEnd || cf, contPos + delta / apH);
-  gsap.killTweensOf(reelProxy);
+  const cf  = contFrom();
+  contPos = gsap.utils.clamp(cf, contEnd || cf, pos);
   reelProxy.y = contPos;
   root.style.setProperty("--reel-y", contPos.toFixed(4));
   /* which section is actually under the aperture — rounding the index cannot answer this
@@ -2587,6 +2611,13 @@ function contMove(delta, dir){
     if (mid >= t) near = k;
   });
   if (near !== reelIdx){ reelIdx = near; setReelPhase(near); }   /* keeps the navbar in step */
+}
+function contMove(delta, dir){
+  const cf = contFrom();
+  if (!(reelIdx >= cf && !(contPos <= cf + 0.002 && dir < 0))) return false;
+  gsap.killTweensOf(reelProxy);          /* a new drag overrides any fling still running */
+  const apH = apEl.getBoundingClientRect().height || innerHeight;
+  contSet(contPos + delta / apH);
   return true;
 }
 
@@ -2717,7 +2748,13 @@ addEventListener("touchmove", e => {
     if (chatOpen()) return;         /* the chat log scrolls on its own */
     e.preventDefault();
     /* the tail needs EVERY frame, so it runs before the one-step threshold */
-    if (reelActive && contMove(step * 1.6, step > 0 ? 1 : -1)) return;
+    if (reelActive && contMove(step * 1.6, step > 0 ? 1 : -1)){
+      /* remember how fast the finger was going, for the fling on release */
+      const now = performance.now(), dt = now - contT;
+      if (dt > 0 && dt < 120) contVel = (step * 1.6) / dt;   /* px per ms */
+      contT = now;
+      return;
+    }
     if (Math.abs(total) < 40) return;
     touchY = null;                  /* one snap per swipe */
     if (mbGate(dir)) return;
@@ -2732,6 +2769,25 @@ addEventListener("touchmove", e => {
   touchY = null;
   gestureStep(dir, 999);        /* one swipe already threshold-gated above */
 }, { passive: false });
+
+/* MOMENTUM. The continuous tail moved only while a finger was down and stopped dead the
+   instant it lifted — no scroller on a phone behaves like that, and "stops dead" is what
+   reads as choppy. Carry the last measured velocity out under a decay. */
+addEventListener("touchend", () => {
+  touchY = null;
+  const v = contVel; contVel = 0;
+  if (!MB || !reelActive || Math.abs(v) < 0.04) return;
+  const cf = contFrom();
+  if (reelIdx < cf) return;                       /* snapped slides have their own gesture */
+  const apH = apEl.getBoundingClientRect().height || innerHeight;
+  const throwPx = v * 240;                        /* how far that speed keeps carrying */
+  gsap.killTweensOf(reelProxy);
+  gsap.to(reelProxy, {
+    y: gsap.utils.clamp(cf, contEnd || cf, contPos + throwPx / apH),
+    duration: 0.6, ease: "power2.out",
+    onUpdate(){ contSet(reelProxy.y); }
+  });
+}, { passive: true });
 
 /* The reel used to arm/disarm off a ScrollTrigger's isActive flag. That flag flips on a
    single sampled frame, and a hard flick can push the scroll out of range for exactly one
